@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eventos - Entre Laços</title>
+    <link rel="stylesheet" href="eventos.css">
+    <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+    <header class="cabecalho">
+        <div class="cabecalho-conteudo">
+            <div class="logo">
+                <img src="logo.png" alt="logo" height="40">
+                <span>Entre Laços</span>
+            </div>
+            <nav class="menu-links">
+                <a href="index.html">Início</a>
+                <a href="animais.html">Animais</a>
+                <a href="doar.html">Doar</a>
+                <a class="ativo" href="eventos.html">Eventos</a>
+                <a href="historias.html">Histórias</a>
+                <a href="dicas.html">Dicas</a>
+            </nav>
+            <div class="perfil-topo">
+                <a href="index.html" class="botao-voltar">Voltar ao Início</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="principal-detalhes">
+        <div class="container-detalhes-animal">
+            <div class="titulo-secao-eventos">
+                <h1>Eventos e Feiras</h1>
+                <p>Campanhas de vacinação, feiras de adoção e encontros perto de si.</p>
+            </div>
+
+            <div class="barra-filtros-eventos">
+                <input type="text" id="busca-evento" placeholder="🔍 Procurar por nome, local ou categoria...">
+
+                <select id="filtro-categoria">
+                    <option value="todos">📅 Todas as Categorias</option>
+                    <option value="Feira de Adoção">Feira de Adoção</option>
+                    <option value="Campanha de Vacinação">Campanha de Vacinação</option>
+                    <option value="Mutirão de Castração">Mutirão de Castração</option>
+                    <option value="Outros">Outros</option>
+                </select>
+
+                <button id="btn-perto-mim" class="btn-gps-proximidade" onclick="alternarFiltroProximidade()">
+                    📍 Perto de Mim (50km)
+                </button>
+            </div>
+
+            <div class="grid-eventos-layouts"></div>
+        </div>
+    </main>
+
+    <div class="fixo-mapa-eventos">
+        <button onclick="abrirMapaGeral()" class="botao-ver-mapa">
+            🗺️ Abrir no Google Maps
+        </button>
+    </div>
+
+    <div class="fixo-cadastrar-evento">
+        <a href="cadEventos.html" class="botao-divulgar">
+            + Divulgar Evento
+        </a>
+    </div>
+
+    <section class="fim">
+        <div class="fim-container">
+            <div class="fim-sobre">
+                <div class="fim-logo">
+                    <img src="logo.png" alt="logo" height="40">
+                    <h3>Entre Laços</h3>
+                </div>
+                <p>
+                    Conectando corações e transformando vidas.
+                    Nossa missão é encontrar lares amorosos para
+                    animais resgatados e promover a posse responsável.
+                </p>
+            </div>
+
+            <div class="fim-contato">
+                <h4>Contato</h4>
+                <span> Email: contato@entrelacos.org</span>
+                <span> Telefone: (00) 00000-0000</span>
+                <span> Facebook: entrelaços.consulta</span>
+                <span> Instagram: entrelaços.consulta </span>
+            </div>
+        </div>
+        <div class="fim-copy">
+            © 2026 Entre Laços. Todos os direitos reservados.
+        </div>
+    </section>
+
+    <script>
+        let todosOsEventos = [];
+        let filtrandoPorProximidade = false;
+
+        const perfilContainer = document.querySelector(".perfil-topo");
+
+        function usuarioEstaLogado() {
+            return localStorage.getItem('token') !== null;
+        }
+
+        function atualizarInterface() {
+            const nomeOng = localStorage.getItem("nomeOngAtiva");
+            const tipoUsuario = localStorage.getItem("tipoUsuario");
+            const nomeUsuario = sessionStorage.getItem("nome") || "Usuário";
+
+            perfilContainer.innerHTML = "";
+      
+            if (usuarioEstaLogado()) {
+                const infoUser = document.createElement('span');
+                infoUser.className = 'info-dinamica';
+                infoUser.style.marginRight = "15px";
+                infoUser.style.fontSize = "14px";
+
+                if (tipoUsuario === "ong" && nomeOng) {
+                    infoUser.innerHTML = `<strong style="color: #e67e22;">ONG: ${nomeOng}</strong>`;
+                } else {
+                    infoUser.innerText = `Olá, ${nomeUsuario}`;
+                }
+                perfilContainer.appendChild(infoUser);
+            }
+
+            const botaoVoltar = document.createElement('a');
+            botaoVoltar.href = "index.html";
+            botaoVoltar.className = "botao-voltar";
+            botaoVoltar.innerText = "Voltar ao Início";
+            perfilContainer.appendChild(botaoVoltar);
+        }
+
+        const botoesPrivados = document.querySelectorAll('.menu-links a:not(.ativo), .botao-divulgar');
+        botoesPrivados.forEach(elemento => {
+            elemento.addEventListener('click', function(event) {
+                if (!usuarioEstaLogado()) {
+                    event.preventDefault();
+                    alert("Acesso restrito! Por favor, faça login para continuar.");
+                    window.location.href = "acesso.html";
+                }
+            });
+        });
+
+        function obterIdUsuarioLogado() {
+            const token = localStorage.getItem("token");
+            if (!token) return null;
+            try {
+                const base64Url = token.split('.')[1];
+                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+                    return '%' + ('0' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(''));
+
+                const usuarioDecodificado = JSON.parse(jsonPayload);
+                return usuarioDecodificado.id_ong || usuarioDecodificado.id_usuario || usuarioDecodificado.id || null;
+            } catch (error) {
+                console.error("Erro ao decodificar token:", error);
+                return null;
+            }
+        }
+
+        async function carregarEventosDoBanco() {
+            try {
+                filtrandoPorProximidade = false;
+                document.getElementById("btn-perto-mim").classList.remove("ativo");
+                document.getElementById("btn-perto-mim").innerText = "📍 Perto de Mim (50km)";
+                
+                const response = await fetch("http://localhost:3000/mostrarEventos");
+                if (!response.ok) throw new Error("Erro ao buscar eventos.");
+
+                todosOsEventos = await response.json();
+                exibirEventos(todosOsEventos);
+            } catch (error) {
+                console.error("Erro:", error);
+            }
+        }
+
+        async function alternarFiltroProximidade() {
+            const botao = document.getElementById("btn-perto-mim");
+
+            if (filtrandoPorProximidade) {
+                carregarEventosDoBanco();
+                return;
+            }
+
+            if (!navigator.geolocation) {
+                alert("A geolocalização não é suportada pelo seu navegador.");
+                return;
+            }
+
+            botao.innerText = "🔍 Buscando Localização...";
+
+            navigator.geolocation.getCurrentPosition(async (position) => {
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+
+                try {
+                    const response = await fetch(`http://localhost:3000/eventos-proximos?lat=${lat}&lng=${lng}&raio=50`);
+                    if (!response.ok) throw new Error("Erro ao buscar eventos próximos.");
+
+                    todosOsEventos = await response.json();
+                    filtrandoPorProximidade = true;
+                    botao.classList.add("ativo");
+                    botao.innerText = "📍 Filtro: Até 50km";
+                    
+                    exibirEventos(todosOsEventos);
+                } catch (error) {
+                    console.error(error);
+                    alert("Erro ao buscar campanhas próximas.");
+                    botao.innerText = "📍 Perto de Mim (50km)";
+                }
+            }, (error) => {
+                console.error(error);
+                alert("Não foi possível obter sua localização. Certifique-se de dar permissão ao navegador.");
+                botao.innerText = "📍 Perto de Mim (50km)";
+            });
+        }
+
+        function abrirMapaGeral() {
+            if (todosOsEventos.length === 0) {
+                alert("Não existem eventos carregados na lista para visualizar no mapa.");
+                return;
+            }
+
+            const primeiro = todosOsEventos[0];
+            let urlMaps = "";
+
+            if (primeiro.latitude && primeiro.longitude) {
+                urlMaps = `https://www.google.com/maps/search/?api=1&query=${primeiro.latitude},${primeiro.longitude}`;
+            } else {
+                urlMaps = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(primeiro.endereco + ", " + primeiro.localizacao)}`;
+            }
+            
+            window.open(urlMaps, '_blank');
+        }
+
+        function abrirRotaCard(endereco, localizacao, lat, lng) {
+            let urlRota = "";
+            if (lat && lng) {
+                urlRota = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+            } else {
+                urlRota = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(endereco + ", " + localizacao)}`;
+            }
+            window.open(urlRota, '_blank');
+        }
+        function exibirEventos(listaDeEventos) {
+            const grid = document.querySelector(".grid-eventos-layouts");
+            grid.innerHTML = ""; 
+
+            const idUsuarioLogado = obterIdUsuarioLogado();
+
+            if (listaDeEventos.length === 0) {
+                grid.innerHTML = `<p class="sem-resultados-evento">Nenhum evento encontrado nesta região. 🐾</p>`;
+                return;
+            }
+
+            listaDeEventos.forEach(evento => {
+                const card = document.createElement("div");
+                card.className = "card-evento-exibicao";
+                card.style.position = "relative";
+                
+                const idCriadorBanco = evento.id_ong || evento.id_usuario;
+
+                // REGRA ESTRITA DE DONO + CORREÇÃO PROVISÓRIA DO SEU USUÁRIO
+                // O botão SÓ aparece se:
+                // 1. O ID logado for idêntico ao do banco (Regra Oficial) OR
+                // 2. Você for o usuário 44 e o evento estiver preso no ID 42 (Sua Exceção)
+                const ehDonoDoEvento = idUsuarioLogado && idCriadorBanco && (
+                    String(idUsuarioLogado).trim() === String(idCriadorBanco).trim() || 
+                    (String(idUsuarioLogado).trim() === "44" && String(idCriadorBanco).trim() === "42")
+                );
+
+                const dataFormatada = new Date(evento.data).toLocaleDateString('pt-BR', {timeZone: 'UTC'});
+                
+                let badgeDistancia = "";
+                if (evento.distancia_km !== undefined) {
+                    badgeDistancia = `<span class="distancia-badge">A ${parseFloat(evento.distancia_km).toFixed(1)} km de você</span>`;
+                }
+
+                const imagemExibir = evento.imagem && evento.imagem.trim() !== "" && evento.imagem !== "placeholder.png";
+
+                card.innerHTML = `
+                    <!-- O botão só é renderizado se passar na validação estrita de posse -->
+                    ${ehDonoDoEvento ? `
+                    <div class="acoes-admin-inline" style="position: absolute; top: 15px; right: 15px; display: flex; gap: 8px; z-index: 999;">
+                        <button class="btn-acao-inline editar" onclick="editarEvento(${evento.id_evento})" title="Editar Evento" style="width: 36px; height: 36px; border-radius: 50%; border: 1px solid #e0e0e0; background: #ffffff; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); color: #000;">
+                            ✏️
+                        </button>
+                        <button class="btn-acao-inline excluir" onclick="deletarEvento(${evento.id_evento}, ${idCriadorBanco})" title="Excluir Evento" style="width: 36px; height: 36px; border-radius: 50%; border: 1px solid #e0e0e0; background: #ffffff; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); color: #000;">
+                            🗑️
+                        </button>
+                    </div>
+                    ` : ''}
+
+                    ${imagemExibir ? `
+                    <div class="container-foto-evento">
+                        <img src="${evento.imagem}" alt="Imagem do Evento" class="foto-evento-card">
+                    </div>
+                    ` : ''}
+                    
+                    <div class="topo-card-evento" style="display: flex; align-items: center; width: 100%; margin-bottom: 15px; padding-right: 90px;">
+                        <div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center;">
+                            <span class="status-badge-evento">${evento.categoria}</span>
+                            ${badgeDistancia}
+                        </div>
+                    </div>
+
+                    <h3>${evento.nome_evento}</h3>
+                    
+                    <div class="detalhes-lista-evento">
+                        <div class="item-detalhe-evento"><strong>📅 Data</strong> <span>${dataFormatada}</span></div>
+                        <div class="item-detalhe-evento"><strong>⏰ Horário</strong> <span>${evento.hora}</span></div>
+                        <div class="item-detalhe-evento"><strong>📍 Cidade</strong> <span>${evento.localizacao}</span></div>
+                        <div class="item-detalhe-evento"><strong>🗺️ Endereço</strong> <span>${evento.endereco}</span></div>
+                    </div>
+                    
+                    <button class="btn-gps-proximidade" style="width:100%; margin-top:15px; justify-content:center; font-size:13px;" 
+                        onclick="abrirRotaCard('${evento.endereco}', '${evento.localizacao}', ${evento.latitude || null}, ${evento.longitude || null})">
+                        🗺️ Como Chegar (Google Maps)
+                    </button>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function filtrarEventos() {
+            const termoBusca = document.getElementById("busca-evento").value.toLowerCase();
+            const categoriaSelecionada = document.getElementById("filtro-categoria").value;
+
+            const eventosFiltrados = todosOsEventos.filter(evento => {
+                const bateTexto = evento.nome_evento.toLowerCase().includes(termoBusca) || 
+                                  evento.localizacao.toLowerCase().includes(termoBusca) ||
+                                  evento.endereco.toLowerCase().includes(termoBusca);
+
+                const bateCategoria = categoriaSelecionada === "todos" || evento.categoria === categoriaSelecionada;
+
+                return bateTexto && bateCategoria;
+            });
+
+            exibirEventos(eventosFiltrados);
+        }
+
+        document.getElementById("busca-evento").addEventListener("input", filtrarEventos);
+        document.getElementById("filtro-categoria").addEventListener("change", filtrarEventos);
+
+        async function editarEvento(id) {
+            window.location.href = `cadEventos.html?id=${id}`;
+        }
+
+        async function deletarEvento(id, idCriador) {
+            const idUsuarioLogado = obterIdUsuarioLogado();
+
+            // Validação estrita de exclusão baseada na regra combinada
+            const ehCriadorReal = idUsuarioLogado && idCriador && (
+                String(idUsuarioLogado).trim() === String(idCriador).trim() || 
+                (String(idUsuarioLogado).trim() === "44" && String(idCriador).trim() === "42")
+            );
+
+            if (!ehCriadorReal) {
+                alert("Ação negada! Apenas o criador deste evento pode excluí-lo. 🐾");
+                return;
+            }
+
+            if (!confirm("Tem certeza que deseja cancelar/remover este evento? 🐾")) return;
+
+            const token = localStorage.getItem("token");
+            try {
+                const response = await fetch("http://localhost:3000/deletarEvento", {
+                    method: "DELETE",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ id_evento: id })
+                });
+
+                if (response.ok) {
+                    alert("Evento removido com sucesso!");
+                    window.location.reload();
+                } else {
+                    const err = await response.json();
+                    alert("Erro ao deletar: " + (err.erro || "Sem permissão no Servidor"));
+                }
+            } catch (error) {
+                alert("Erro na conexão com o servidor.");
+            }
+        }
+        document.addEventListener("DOMContentLoaded", () => {
+            atualizarInterface();
+            carregarEventosDoBanco();
+        });
+    </script>
+</body>
+
+</html>

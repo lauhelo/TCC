@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dica - Entre Laços</title>
+    <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="cadDicas.css">
+</head>
+<body>
+
+    <header class="cabecalho">
+        <div class="cabecalho-conteudo">
+            <div class="logo">
+                <img src="logo.png" alt="logo" height="35">
+                <span>Entre Laços</span>
+            </div>
+            <nav class="menu-links">
+                <a href="index.html">Início</a>
+                <a href="animais.html">Animais</a>
+                <a href="doar.html">Doar</a>
+                <a href="eventos.html">Eventos</a>
+                <a href="historias.html">Histórias</a>
+                <a href="dicas.html" class="ativo">Dicas</a>
+            </nav>
+            <div class="perfil-topo">
+                <a href="dicas.html" class="nome-usuario">Cancelar</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="container-principal">
+        <div class="lado-imagem">
+            <img src="https://i.pinimg.com/1200x/5c/11/a5/5c11a58dfac731d2833e48211d9dc9f6.jpg" alt="Imagem Decorativa">
+        </div>
+
+        <div class="caixa-cadastro">
+            <h2 id="tituloPagina">Informações Básicas</h2>
+            <form id="formCadDica">
+                <div class="campo-grupo">
+                    <label for="titulo">Título da Dica</label>
+                    <input type="text" id="titulo" placeholder="Ex: Banho em Gatos Filhotes" required>
+                </div>
+
+                <div class="campo-grupo">
+                    <label for="categoria">Categoria</label>
+                    <select id="categoria" required>
+                        <option value="" disabled selected>Selecione a categoria...</option>
+                        <option value="Alimentação">Alimentação</option>
+                        <option value="Saúde">Saúde</option>
+                        <option value="Passeio">Passeio</option>
+                        <option value="Bem-estar">Bem-estar</option>
+                        <option value="Higiene">Higiene</option>
+                    </select>
+                </div>
+
+                <div class="campo-grupo">
+                    <label for="qualPet">Para qual Pet?</label>
+                    <select id="qualPet" required>
+                        <option value="" disabled selected>Selecione o tipo...</option>
+                        <option value="Cachorro">Cachorro</option>
+                        <option value="Gato">Gato</option>
+                        <option value="Todos">Todos os Pets</option>
+                    </select>
+                </div>
+
+                <div class="campo-grupo">
+                    <label for="conteudo">Conteúdo da Dica</label>
+                    <textarea id="conteudo" placeholder="Escreva detalhadamente o passo a passo da sua dica aqui..." rows="6" required></textarea>
+                </div>
+
+                <button type="submit" id="btnEnviar" class="botao-enviar">Publicar Dica</button>
+            </form>
+        </div>
+    </main>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const idDicaEdicao = urlParams.get('id'); // Pega o id da URL caso seja edição
+        const token = localStorage.getItem("token");
+
+        // Se houver ID na URL, muda o comportamento da página para EDIÇÃO
+        if (idDicaEdicao) {
+            document.getElementById("tituloPagina").innerText = "Editar Dica";
+            document.getElementById("btnEnviar").innerText = "Salvar Alterações ✓";
+            carregarDadosParaEdicao();
+        }
+
+        // Função para buscar os dados da dica específica e preencher o formulário
+        async function carregarDadosParaEdicao() {
+            try {
+                const response = await fetch("http://localhost:3000/mostrarDicas");
+                const dicas = await response.json();
+                // Localiza a dica específica pelo ID
+                const dica = dicas.find(d => d.id_dica == idDicaEdicao);
+
+                if (dica) {
+                    document.getElementById("titulo").value = dica.titulo;
+                    document.getElementById("categoria").value = dica.categoria;
+                    document.getElementById("qualPet").value = dica.qualPet;
+                    document.getElementById("conteudo").value = dica.conteudo;
+                }
+            } catch (error) {
+                console.error("Erro ao carregar dados da dica:", error);
+            }
+        }
+
+        // Evento de Submit (Salvar novo ou Atualizar existente)
+        document.getElementById("formCadDica").addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            if (!token) {
+                alert("Você precisa estar logado para realizar esta ação!");
+                window.location.href = "login.html"; 
+                return;
+            }
+
+            const dados = {
+                titulo: document.getElementById("titulo").value,
+                categoria: document.getElementById("categoria").value,
+                qualPet: document.getElementById("qualPet").value, // Corrigido para qualPet
+                conteudo: document.getElementById("conteudo").value
+            };
+
+            // Define se vai usar a rota de POST (Novo) ou PUT (Editar)
+            let url = "http://localhost:3000/inserirDica";
+            let metodo = "POST";
+
+            if (idDicaEdicao) {
+                url = "http://localhost:3000/atualizarDica";
+                metodo = "PUT";
+                dados.id_dica = idDicaEdicao; // Inclui o id que o back-end exige no update
+            }
+
+            try {
+                const response = await fetch(url, {
+                    method: metodo,
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    },
+                    body: JSON.stringify(dados)
+                });
+
+                if (response.ok) {
+                    alert(idDicaEdicao ? "Dica atualizada com sucesso! 🐾" : "Dica publicada com sucesso! 🐾");
+                    window.location.href = "dicas.html";
+                    return;
+                }
+
+                const textoErro = await response.text();
+                alert("Erro do Servidor: " + textoErro);
+
+            } catch (error) {
+                console.error("Erro na conexão:", error);
+                alert("Não foi possível conectar ao servidor.");
+            }
+        });
+    </script>
+</body>
+</html>

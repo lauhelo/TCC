@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dicas - Entre Laços</title>
+    <link rel="stylesheet" href="dicas.css">
+    <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Fundo com efeito de brilho e profundidade nas laterais */
+        .bg-glow-esquerdo,
+        .bg-glow-direito {
+            position: fixed;
+            top: 20%;
+            width: 320px;
+            height: 320px;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.15;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .bg-glow-esquerdo {
+            left: -100px;
+            background: radial-gradient(circle, #8b5cf6 0%, #f4a261 100%);
+        }
+
+        .bg-glow-direito {
+            right: -100px;
+            background: radial-gradient(circle, #2a9d8f 0%, #e63946 100%);
+        }
+
+        /* Elementos decorativos sutis nas laterais */
+        .decoracao-lateral {
+            position: fixed;
+            top: 180px;
+            width: 140px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 24px;
+            color: #8b5cf6;
+            opacity: 0.25;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .decoracao-esquerda {
+            left: 20px;
+        }
+
+        .decoracao-direita {
+            right: 20px;
+        }
+
+        .decoracao-lateral span {
+            font-size: 2.2rem;
+            animation: flutuar 4s ease-in-out infinite alternate;
+        }
+
+        .decoracao-direita span {
+            animation-delay: 2s;
+        }
+
+        @keyframes flutuar {
+            from {
+                transform: translateY(0px) rotate(0deg);
+            }
+            to {
+                transform: translateY(-12px) rotate(8deg);
+            }
+        }
+
+        /* Oculta os elementos laterais em telas menores */
+        @media (max-width: 1300px) {
+            .decoracao-lateral,
+            .bg-glow-esquerdo,
+            .bg-glow-direito {
+                display: none;
+            }
+        }
+
+        .grid-dicas {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .card-dica {
+            background-color: transparent;
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            transition: all 0.3s ease;
+        }
+
+        .card-dica:hover {
+            box-shadow: 0 10px 30px var(--cor-sombra-card, rgba(0, 0, 0, 0.08));
+            transform: translateY(-2px);
+        }
+
+        .card-dica.aberto {
+            border-color: var(--cor-borda);
+            box-shadow: 0 8px 28px var(--cor-sombra-card, rgba(0, 0, 0, 0.12));
+        }
+
+        .botao-patinha-dica {
+            background: #ffffff;
+            border: 2px solid var(--cor-borda, #e2e8f0);
+            border-radius: 50px;
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 12px;
+            cursor: pointer;
+            box-shadow: 0 0 10px 1px var(--cor-sombra-card, rgba(0, 0, 0, 0.08));
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            user-select: none;
+        }
+
+        .botao-patinha-dica:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 0 14px 2px var(--cor-sombra-card, rgba(0, 0, 0, 0.15));
+        }
+
+        .icone-pata-grande {
+            font-size: 1.6rem;
+            transition: transform 0.3s ease;
+        }
+
+        .titulo-pata-preview {
+            font-family: 'Lora', serif;
+            font-weight: 600;
+            font-size: 1rem;
+            color: #333;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Conteúdo da Dica (Expandido ao clicar) */
+        .corpo-dica-expandida {
+            width: 100%;
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+            border: 1px solid #f1f5f9;
+            margin-top: 12px;
+            display: none;
+            animation: surgirDica 0.35s ease forwards;
+            box-sizing: border-box;
+            word-break: break-word;
+        }
+
+        @keyframes surgirDica {
+            from {
+                opacity: 0;
+                transform: translateY(-8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Estado ativo da patinha ao abrir */
+        .card-dica.aberto .botao-patinha-dica {
+            background: #fff5f5;
+            border-color: #f87171;
+        }
+
+        .card-dica.aberto .icone-pata-grande {
+            transform: rotate(-15deg) scale(1.15);
+        }
+
+        .card-dica.aberto .corpo-dica-expandida {
+            display: block;
+        }
+
+        /* Estilização da Tag de Categoria com Sombra Colorida */
+        .tag-dica {
+            padding: 5px 14px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #ffffff;
+            display: inline-block;
+            text-transform: capitalize;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px var(--cor-sombra, rgba(0, 0, 0, 0.15));
+        }
+
+        .tag-pet {
+            background-color: #8b5cf6;
+            color: #ffffff;
+            border: none;
+            margin-left: 6px;
+            box-shadow: 0 4px 10px rgba(139, 92, 246, 0.3);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Fundo Decorativo Abstrato das Laterais -->
+
+    <header class="cabecalho">
+        <div class="cabecalho-conteudo">
+            <div class="logo">
+                <img src="logo.png" alt="logo" height="35">
+                <span>Entre Laços</span>
+            </div>
+            <nav class="menu-links">
+                <a href="index.html">Início</a>
+                <a href="animais.html">Animais</a>
+                <a href="doar.html">Doar</a>
+                <a href="eventos.html">Eventos</a>
+                <a href="historias.html">Histórias</a>
+                <a href="dicas.html" class="ativo">Dicas</a>
+            </nav>
+            <div class="perfil-topo">
+                <a href="index.html" class="nome-usuario">Voltar ao Início</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="container-dicas">
+        <div class="titulo-secao">
+            <h1>Dicas para seu Pet</h1>
+            <p>Clique na pata 🐾 para visualizar a dica completa.</p>
+        </div>
+
+        <div class="barra-filtros">
+            <input type="text" id="busca-dica" placeholder="🔍 Procurar nas dicas (título ou conteúdo)...">
+            <select id="filtro-pet">
+                <option value="todos">🐾 Todos os Pets</option>
+                <option value="cachorro">🐶 Cachorro</option>
+                <option value="gato">🐱 Gato</option>
+            </select>
+        </div>
+
+        <div class="grid-dicas"></div>
+    </main>
+
+    <div class="fixo-cadastrar">
+        <a href="cadDicas.html" class="botao-cadastrar">
+            + Cadastrar Nova Dica
+        </a>
+    </div>
+
+    <section class="fim">
+        <div class="fim-container">
+            <div class="fim-sobre">
+                <div class="fim-logo">
+                    <img src="logo.png" alt="logo" height="40">
+                    <h3>Entre Laços</h3>
+                </div>
+                <p>
+                    Conectando corações e transformando vidas.
+                    Nossa missão é encontrar lares amorosos para
+                    animais resgatados e promover a posse responsável.
+                </p>
+            </div>
+
+            <div class="fim-contato">
+                <h4>Contato</h4>
+                <span> Email: contato@entrelacos.org</span>
+                <span> Telefone: (00) 00000-0000</span>
+                <span> Facebook: entrelaços.consulta</span>
+                <span> Instagram: entrelaços.consulta </span>
+            </div>
+        </div>
+        <div class="fim-copy">
+            © 2026 Entre Laços. Todos os direitos reservados.
+        </div>
+    </section>
+
+    <script>
+        let todasAsDicas = [];
+
+        const mapaCoresCategoria = {
+            "Alimentação": "#F4A261",
+            "Saúde": "#E63946",
+            "Passeio": "#2A9D8F",
+            "Bem-estar": "#6A994E",
+            "Higiene": "#4D96FF"
+        };
+
+        function obterCorCategoria(categoria) {
+            return mapaCoresCategoria[categoria] || "#6c757d";
+        }
+
+        function hexParaRgba(hex, alpha = 0.4) {
+            hex = hex.replace('#', '');
+            if (hex.length === 3) {
+                hex = hex.split('').map(c => c + c).join('');
+            }
+            const r = parseInt(hex.substring(0, 2), 16) || 0;
+            const g = parseInt(hex.substring(2, 4), 16) || 0;
+            const b = parseInt(hex.substring(4, 6), 16) || 0;
+            return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+        }
+
+        function obterIdUsuarioLogado() {
+            const token = localStorage.getItem("token");
+            if (!token) return null;
+            try {
+                const base64Url = token.split('.')[1];
+                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function (c) {
+                    return '%' + ('0' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(''));
+
+                const usuarioDecodificado = JSON.parse(jsonPayload);
+                return usuarioDecodificado.id_usuario || usuarioDecodificado.id || null;
+            } catch (error) {
+                console.error("Erro ao decodificar token:", error);
+                return null;
+            }
+        }
+
+        async function carregarDicasDoBanco() {
+            try {
+                const response = await fetch("http://localhost:3000/mostrarDicas");
+                if (!response.ok) throw new Error("Erro ao buscar dicas.");
+
+                todasAsDicas = await response.json();
+                exibirDicas(todasAsDicas);
+            } catch (error) {
+                console.error("Erro:", error);
+            }
+        }
+
+        function exibirDicas(listaDeDicas) {
+            const gridDicas = document.querySelector(".grid-dicas");
+            gridDicas.innerHTML = "";
+
+            const idUsuarioLogado = obterIdUsuarioLogado();
+
+            if (listaDeDicas.length === 0) {
+                gridDicas.innerHTML = `<p class="sem-resultados">Nenhuma dica encontrada para os filtros selecionados. 🐾</p>`;
+                return;
+            }
+
+            listaDeDicas.forEach(dica => {
+                const card = document.createElement("div");
+                card.className = "card-dica";
+
+                const conteudoFormatado = dica.conteudo.replace(/\n/g, '<br>');
+
+                const corCategoria = obterCorCategoria(dica.categoria);
+                const corSombra = hexParaRgba(corCategoria, 0.35);
+
+                const corBordaSuave = hexParaRgba(corCategoria, 0.4);
+                const corSombraSuave = hexParaRgba(corCategoria, 0.25);
+
+                card.style.setProperty('--cor-sombra-card', corSombraSuave);
+                card.style.setProperty('--cor-borda', corBordaSuave);
+
+                let botoesAcao = "";
+                if (idUsuarioLogado && String(dica.id_usuario) === String(idUsuarioLogado)) {
+                    botoesAcao = `
+                        <div class="acoes-dica" onclick="event.stopPropagation()">
+                            <button onclick="editarDica(${dica.id_dica})" class="btn-editar" title="Editar dica">✏️</button>
+                            <button onclick="deletarDica(${dica.id_dica})" class="btn-excluir" title="Excluir dica">🗑️</button>
+                        </div>
+                    `;
+                }
+
+                card.innerHTML = `
+                    <div class="botao-patinha-dica">
+                        <span class="icone-pata-grande">🐾</span>
+                        <span class="titulo-pata-preview">${dica.titulo}</span>
+                    </div>
+
+                    <div class="corpo-dica-expandida">
+                        <div class="card-topo-dica" style="display: flex; justify-content: space-between; align-items: center;">
+                            <div class="card-tags-container">
+                                <span class="tag-dica" style="background-color: ${corCategoria}; --cor-sombra: ${corSombra};">${dica.categoria}</span>
+                                <span class="tag-dica tag-pet">🐾 ${dica.qualPet}</span>
+                            </div>
+                            ${botoesAcao}
+                        </div>
+                        <p style="margin-top: 15px; color: #4a5568; line-height: 1.6;">${conteudoFormatado}</p>
+                    </div>
+                `;
+
+                const botaoPata = card.querySelector(".botao-patinha-dica");
+                botaoPata.addEventListener("click", () => {
+                    card.classList.toggle("aberto");
+                });
+
+                gridDicas.appendChild(card);
+            });
+        }
+
+        function filtrarDicas() {
+            const termoBusca = document.getElementById("busca-dica").value.toLowerCase();
+            const petSelecionado = document.getElementById("filtro-pet").value.toLowerCase();
+
+            const dicasFiltradas = todasAsDicas.filter(dica => {
+                const bateTexto = dica.titulo.toLowerCase().includes(termoBusca) ||
+                    dica.conteudo.toLowerCase().includes(termoBusca) ||
+                    dica.categoria.toLowerCase().includes(termoBusca);
+
+                const batePet = petSelecionado === "todos" || dica.qualPet.toLowerCase().includes(petSelecionado);
+
+                return bateTexto && batePet;
+            });
+
+            exibirDicas(dicasFiltradas);
+        }
+
+        document.getElementById("busca-dica").addEventListener("input", filtrarDicas);
+        document.getElementById("filtro-pet").addEventListener("change", filtrarDicas);
+
+        function editarDica(id) {
+            window.location.href = `cadDicas.html?id=${id}`;
+        }
+
+        async function deletarDica(id) {
+            if (!confirm("Tem certeza que deseja remover esta dica? 🐾")) return;
+
+            const token = localStorage.getItem("token");
+            try {
+                const response = await fetch("http://localhost:3000/deletarDica", {
+                    method: "DELETE",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ id_dica: id })
+                });
+
+                if (response.ok) {
+                    alert("Dica removida com sucesso!");
+                    window.location.reload();
+                } else {
+                    const err = await response.json();
+                    alert("Erro ao deletar: " + (err.erro || "Sem permissão"));
+                }
+            } catch (error) {
+                alert("Erro na conexão.");
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", carregarDicasDoBanco);
+    </script>
+</body>
+
+</html>

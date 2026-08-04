@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entrar - Entre laços</title>
+    <link rel="stylesheet" href="ong.css">
+    <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <header class="cabecalho">
+        <div class="cabecalho-conteudo">
+            <div class="logo">
+                <img src="logo.png" alt="logo" height="40">
+                <span>Entre laços</span>
+            </div>
+            <nav class="menu-links">
+                <a href="index.html" onclick="return verificarNavegacao(event)">Início</a>
+                <a href="animais.html" onclick="return verificarNavegacao(event)">Animais</a>
+                <a href="doar.html" onclick="return verificarNavegacao(event)">Doar</a>
+                <a href="eventos.html" onclick="return verificarNavegacao(event)">Eventos</a>
+                <a href="historias.html" onclick="return verificarNavegacao(event)">Histórias</a>
+                <a href="dicas.html" onclick="return verificarNavegacao(event)">Dicas</a>
+            </nav>
+            <div class="perfil-topo">
+                <a class="botao-voltar" href="escolherOng.html" ">Voltar</a>
+            </div>
+        </div>
+    </header>
+
+    <div class="caixinha-container">
+
+        <!-- TÍTULO CENTRAL -->
+        <div class="titulo-area">
+            <h1>Completar Perfil da ONG</h1>
+            <p>
+                Preencha as informações da sua instituição para conectar mais animais
+                a novos lares.
+            </p>
+        </div>
+    
+        <!-- FORMULÁRIO -->
+        <form id="formOng">
+            <div class="conteudo-formulario">
+    
+                <p id="infoUsuario"></p>
+    
+                <input id="nome" placeholder="Nome da ONG" maxlength="100" required>
+                <input id="email" type="email" placeholder="E-mail de Contato da ONG" maxlength="100" required>
+                <input id="cnpj" placeholder="CNPJ" maxlength="18" required>
+                <input id="telefone" placeholder="Telefone" maxlength="15" required>
+                <input id="endereco" placeholder="Endereço Completo" maxlength="150" required>
+                <input id="cidade" placeholder="Cidade" maxlength="50" required>
+                <input id="estado" placeholder="UF (Ex: SP)" maxlength="2" style="text-transform: uppercase;" required>
+                <input id="pix" placeholder="Chave PIX (Opcional)" maxlength="100">
+    
+                <textarea id="trabalho_ofe"
+                    placeholder="Descrição curta do trabalho da ONG"
+                    maxlength="500"></textarea>
+    
+                <button type="submit" class="btn-acao">
+                    Finalizar Cadastro
+                </button>
+    
+                <div style="margin-top: 15px;">
+                    <span class="link-alternar">
+                        Já tem uma ONG cadastrada?
+                        <a href="escolherOng.html">Escolher Instituição</a>
+                    </span>
+                </div>
+    
+            </div>
+        </form>
+    
+        <!-- IMAGEM -->
+        <div class="conteudo-imagem">
+            <img src="https://i.pinimg.com/1200x/1a/43/c7/1a43c7dfbdf32b73644ec86b99f05775.jpg" alt="Pet feliz">
+        </div>
+    
+    </div>
+    <script>
+        // --- MÁSCARAS ---
+        document.getElementById("cnpj").addEventListener("input", function (e) {
+            let v = e.target.value.replace(/\D/g, "");
+            v = v.replace(/^(\d{2})(\d)/, "$1.$2");
+            v = v.replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3");
+            v = v.replace(/\.(\d{3})(\d)/, ".$1/$2");
+            v = v.replace(/(\d{4})(\d)/, "$1-$2");
+            e.target.value = v;
+        });
+
+        document.getElementById("telefone").addEventListener("input", function (e) {
+            let v = e.target.value.replace(/\D/g, "");
+            v = v.replace(/^(\d{2})(\d)/g, "($1) $2");
+            v = v.replace(/(\d{5})(\d)/, "$1-$2");
+            e.target.value = v;
+        });
+
+        document.getElementById("estado").addEventListener("input", function (e) {
+            e.target.value = e.target.value.toUpperCase().replace(/[^A-Z]/g, "");
+        });
+
+        function verificarNavegacao(event) {
+            const ongAtiva = localStorage.getItem("idOngAtiva");
+            if (!ongAtiva || ongAtiva === "null") {
+                event.preventDefault();
+                alert("Ação necessária: Você precisa cadastrar uma ONG para continuar.");
+                return false;
+            }
+            return true;
+        }
+
+        const infoUser = document.getElementById("infoUsuario");
+        infoUser.innerText = `Responsável: ${sessionStorage.getItem("nome") || 'Usuário'}`;
+
+        document.getElementById("formOng").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            console.log("Botão clicado, preparando envio...");
+
+            const token = localStorage.getItem("token");
+            if (!token) {
+                alert("Sessão expirada. Faça login novamente.");
+                window.location.href = "acesso.html";
+                return;
+            }
+
+            const dados = {
+                nome: document.getElementById("nome").value,
+                email: document.getElementById("email").value, 
+                cnpj: document.getElementById("cnpj").value.replace(/\D/g, ""),
+                telefone: document.getElementById("telefone").value.replace(/\D/g, ""),
+                endereco: document.getElementById("endereco").value,
+                cidade: document.getElementById("cidade").value,
+                estado: document.getElementById("estado").value,
+                pix: document.getElementById("pix").value || null,
+                trabalho_ofe: document.getElementById("trabalho_ofe").value || null
+            };
+
+            console.log("Dados enviados:", dados);
+
+            try {
+                const response = await fetch("http://localhost:3000/inserirOng", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    },
+                    body: JSON.stringify(dados)
+                });
+
+                const resultado = await response.json();
+
+                if (response.ok) {
+                    alert("ONG cadastrada com sucesso!");
+                    window.location.href = "escolherOng.html";
+                } else {
+                    alert("Erro: " + (resultado.erro || "Falha ao cadastrar"));
+                }
+            } catch (error) {
+                console.error("Erro na requisição:", error);
+                alert("Erro ao conectar com o servidor. Verifique se o backend está rodando.");
+            }
+        });
+    </script>
+</body>
+</html>

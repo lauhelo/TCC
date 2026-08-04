@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastrar Animal - Entre Laços</title>
+    <link rel="stylesheet" href="cadAnimal.css">
+    <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <header class="cabecalho">
+        <div class="cabecalho-conteudo">
+            <div class="logo">
+                <img src="logo.png" alt="logo" height="40">
+                <span>Entre Laços</span>
+            </div>
+            <nav class="menu-links">
+                <a href="index.html">Início</a>
+                <a href="animais.html">Animais</a>
+                <a href="doar.html">Doar</a>
+                <a href="eventos.html">Eventos</a>
+                <a href="historias.html">Histórias</a>
+                <a href="dicas.html">Dicas</a>
+            </nav>
+            <a href="animais.html" class="botao-voltar">Voltar</a>
+        </div>
+    </header>
+
+    <main class="principal">
+        <div class="titulo-secao">
+            <h2>Cadastrar Novo Animal</h2>
+            <p id="subtitulo-passo">Passo 1: Informações Básicas</p>
+        </div>
+
+        <form id="formAnimal">
+            <div class="form-container-flex">
+                
+                <div class="conteudo-imagem">
+                    <img src="https://i.pinimg.com/736x/27/7a/16/277a16ea2a6bcfd67040668954763124.jpg" alt="Pet feliz">
+                </div>
+
+                <div class="form-box" id="etapa1">
+                    <h3>Informações Básicas</h3>
+                    <label>Nome do Animal</label>
+                    <input type="text" name="nome" placeholder="Ex: Bob" required>
+
+                    <label>Espécie</label>
+                    <select name="especie" required>
+                        <option value="">Selecione a espécie</option>
+                        <option value="Cachorro">Cachorro</option>
+                        <option value="Gato">Gato</option>
+                        <option value="Outro">Outro</option>
+                    </select>
+
+                    <label>Raça</label>
+                    <input type="text" name="raca" placeholder="Ex: Poodle" required>
+
+                    <label>Sexo</label>
+                    <select name="sexo" required>
+                        <option value="">Selecione</option>
+                        <option value="Macho">Macho</option>
+                        <option value="Fêmea">Fêmea</option>
+                    </select>
+
+                    <label>Porte</label>
+                    <select name="porte" required>
+                        <option value="">Selecione o porte</option>
+                        <option value="Pequeno">Pequeno</option>
+                        <option value="Médio">Médio</option>
+                        <option value="Grande">Grande</option>
+                    </select>
+
+                    <label>Idade Aproximada</label>
+                    <input type="text" name="idade" placeholder="Ex: 2 anos" required>
+
+                    <button type="button" class="btn" id="btnProximo">Continuar →</button>
+                </div>
+
+                <div class="form-box" id="etapa2" style="display: none;">
+                    <h3>Detalhes e Localização</h3>
+
+                    <label>Descrição / História</label>
+                    <textarea name="descricao" placeholder="Conte um pouco sobre a personalidade..." required></textarea>
+
+                    <label>Status Atual</label>
+                    <select name="status" id="selectStatus" required>
+                        <option value="">Selecione o status</option>
+                        <option value="Disponível">Disponível</option>
+                        <option value="Em Adoção">Em Processo de Adoção</option>
+                        <option value="Adotado">Adotado</option>
+                        <option value="Urgente">Urgente (Lar Temporário)</option>
+                    </select>
+
+                    <label>Foto do Animal</label>
+                    <input type="file" id="inputFoto" name="foto" accept="image/*" required>
+
+                    <label>Nome da ONG Responsável</label>
+                    <input type="text" name="ong" id="campoOng" placeholder="Nome da sua ONG" required readonly>
+
+                    <label>Cidade</label>
+                    <input type="text" name="cidade" id="campoCidade" placeholder="Sua cidade" required readonly>
+
+                    <label>Estado</label>
+                    <input type="text" name="estado" id="campoEstado" placeholder="Ex: SP" required readonly>
+
+                    <div style="display: flex; gap: 10px; margin-top: 20px;">
+                        <button type="button" class="btn" id="btnVoltar" style="background: #ccc; color: #333; box-shadow: none;">← Voltar</button>
+                        <button type="submit" class="btn">Concluir</button>
+                    </div>
+                </div>
+
+            </div>
+        </form>
+    </main>
+
+    <script>
+        const etapa1 = document.getElementById("etapa1");
+        const etapa2 = document.getElementById("etapa2");
+        const btnProximo = document.getElementById("btnProximo");
+        const btnVoltar = document.getElementById("btnVoltar");
+        const subtitulo = document.getElementById("subtitulo-passo");
+        const selectStatus = document.getElementById("selectStatus");
+        const campoOng = document.getElementById("campoOng");
+        const campoCidade = document.getElementById("campoCidade");
+        const campoEstado = document.getElementById("campoEstado");
+
+        // ===== AUTO-PREENCHER DADOS DA ONG =====
+        async function carregarDadosOng() {
+            const idOngAtiva = localStorage.getItem("idOngAtiva");
+            const token = localStorage.getItem("token");
+
+            if (!idOngAtiva || idOngAtiva === "null") {
+                alert("Nenhuma ONG selecionada. Selecione uma ONG antes de cadastrar um animal.");
+                window.location.href = "escolherOng.html";
+                return;
+            }
+
+            if (!token) {
+                alert("Sessão expirada. Faça login novamente.");
+                window.location.href = "acesso.html";
+                return;
+            }
+
+            try {
+                const res = await fetch(`http://localhost:3000/mostrarOng/${idOngAtiva}`, {
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+
+                if (!res.ok) throw new Error("Erro ao carregar dados da ONG");
+
+                const ong = await res.json();
+
+                // Preenche automaticamente os campos com os dados da ONG
+                campoOng.value = ong.nome || "";
+                campoCidade.value = ong.cidade || "";
+                campoEstado.value = ong.estado || "";
+
+                console.log("Dados da ONG carregados:", ong.nome, ong.cidade, ong.estado);
+
+            } catch (err) {
+                console.error("Erro ao carregar ONG:", err);
+                alert("Erro ao carregar dados da sua ONG. Verifique o servidor.");
+            }
+        }
+
+        // Chama o carregamento assim que a página abrir
+        document.addEventListener("DOMContentLoaded", carregarDadosOng);
+
+        // Troca de cor do Status
+        selectStatus.addEventListener("change", function() {
+            this.classList.remove("status-disponivel", "status-adocao", "status-adotado", "status-urgente");
+            if (this.value === "Disponível") this.classList.add("status-disponivel");
+            if (this.value === "Em Adoção") this.classList.add("status-adocao");
+            if (this.value === "Adotado") this.classList.add("status-adotado");
+            if (this.value === "Urgente") this.classList.add("status-urgente");
+        });
+
+        // Navegação Etapas
+        btnProximo.addEventListener("click", function () {
+            const camposEtapa1 = etapa1.querySelectorAll("input[required], select[required]");
+            let valida = true;
+
+            camposEtapa1.forEach(campo => {
+                if (!campo.value) {
+                    valida = false;
+                    campo.style.borderColor = "#fa5eb4";
+                } else {
+                    campo.style.borderColor = "#ffc971";
+                }
+            });
+
+            if (valida) {
+                etapa1.style.display = "none";
+                etapa2.style.display = "block";
+                subtitulo.innerText = "Passo 2: Detalhes finais e Localização";
+                window.scrollTo(0, 0);
+            } else {
+                alert("Por favor, preencha todos os campos da primeira etapa.");
+            }
+        });
+
+        btnVoltar.addEventListener("click", function () {
+            etapa2.style.display = "none";
+            etapa1.style.display = "block";
+            subtitulo.innerText = "Passo 1: Informações Básicas";
+        });
+
+        const converterParaBase64 = (file) => {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = (error) => reject(error);
+            });
+        };
+
+        document.getElementById("formAnimal").addEventListener("submit", async function (e) {
+            e.preventDefault();
+            const inputFoto = document.getElementById("inputFoto");
+            const fotoArquivo = inputFoto.files[0];
+            let fotoBase64 = "";
+
+            if (fotoArquivo) {
+                fotoBase64 = await converterParaBase64(fotoArquivo);
+            }
+
+            const formData = new FormData(this);
+            const idOngAtiva = localStorage.getItem("idOngAtiva");
+
+            const animal = {
+                id_ong: idOngAtiva ? parseInt(idOngAtiva) : null,
+                nome: formData.get("nome"),
+                especie: formData.get("especie"),
+                raca: formData.get("raca"),
+                porte: formData.get("porte"),
+                idade: formData.get("idade"),
+                sexo: formData.get("sexo"),
+                descricao: formData.get("descricao"),
+                status: formData.get("status"),
+                imagem: fotoBase64,
+                ong: formData.get("ong"),
+                cidade: formData.get("cidade"),
+                estado: formData.get("estado")
+            };
+
+            if (!animal.id_ong) {
+                alert("Erro: ONG não identificada. Faça login novamente.");
+                return;
+            }
+
+            try {
+                const token = localStorage.getItem("token");
+                const resposta = await fetch("http://localhost:3000/inserirAnimal", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": "Bearer " + token
+                    },
+                    body: JSON.stringify(animal)
+                });
+
+                if (resposta.ok) {
+                    alert("Animal cadastrado com sucesso!");
+                    window.location.href = "animais.html";
+                } else {
+                    const dados = await resposta.json();
+                    alert("Erro: " + (dados.detalhe || "Falha no cadastro"));
+                }
+            } catch (erro) {
+                alert("Erro ao conectar com o servidor.");
+            }
+        });
+    </script>
+</body>
+</html>

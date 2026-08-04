@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Entrar - Entre laços</title>
+  <link rel="stylesheet" href="atuOng.css">
+  <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+  <header class="cabecalho">
+    <div class="cabecalho-conteudo">
+      <div class="logo">
+        <img src="logo.png" alt="logo" height="40">
+        <span>Entre laços</span>
+      </div>
+
+      <nav class="menu-links">
+        <a href="index.html">Início</a>
+        <a href="animais.html">Animais</a>
+        <a href="doar.html">Doar</a>
+        <a href="eventos.html">Eventos</a>
+        <a href="historias.html">Histórias</a>
+        <a href="dicas.html">Dicas</a>
+      </nav>
+
+      <div class="perfil-topo">
+        <a class="botao-voltar" href="escolherOng.html">Voltar</a>
+      </div>
+
+    </div>
+  </header>
+
+  <section class="secao-acesso">
+    <div class="container-acesso">
+  
+      <!-- IMAGEM -->
+      <div class="conteudo-imagem">
+        <img src="https://i.pinimg.com/1200x/90/db/20/90db2046816be4e27fc388f8b43ac07f.jpg" alt="Pet feliz">
+      </div>
+  
+      <!-- LADO DIREITO -->
+      <div class="lado-formulario">
+  
+        <!-- TÍTULO FORA DO CONTAINER -->
+        <div class="titulo-area">
+          <h1>Editar Informações</h1>
+          <p>
+            Atualize os dados da sua ONG para manter as informações sempre corretas.
+          </p>
+        </div>
+  
+        <!-- CARD -->
+        <div class="caixinha-container">
+          <form id="formEdicao">
+            <input id="nome" placeholder="Nome da ONG" required>
+            <input id="email" type="email" placeholder="E-mail" required>
+            <input id="telefone" placeholder="Telefone" required>
+            <input id="endereco" placeholder="Endereço" required>
+            <input id="cidade" placeholder="Cidade" required>
+            <input id="estado" placeholder="UF" maxlength="2" required>
+            <input id="pix" placeholder="Chave PIX">
+            <textarea id="trabalho_ofe" placeholder="Descrição"></textarea>
+  
+            <button type="submit" class="btn-acao">
+              Salvar Alterações
+            </button>
+          </form>
+        </div>
+  
+      </div>
+    </div>
+  </section>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const idOng = urlParams.get('id');
+        const token = localStorage.getItem("token");
+
+        async function carregarDadosOng() {
+    if (!idOng) {
+        alert("ID da ONG não encontrado na URL");
+        return window.location.href = 'escolherOng.html';
+    }
+
+    try {
+        const res = await fetch(`http://localhost:3000/mostrarOng/${idOng}`, {
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+        
+        if (!res.ok) throw new Error("ONG não encontrada no banco");
+
+        const ong = await res.json();
+
+        // Preenchimento com Fallback (caso o campo venha nulo)
+        document.getElementById("nome").value = ong.nome || "";
+        document.getElementById("email").value = ong.email || "";
+        document.getElementById("telefone").value = ong.telefone || "";
+        document.getElementById("endereco").value = ong.endereco || "";
+        document.getElementById("cidade").value = ong.cidade || "";
+        document.getElementById("estado").value = ong.estado || "";
+        document.getElementById("pix").value = ong.pix || "";
+        document.getElementById("trabalho_ofe").value = ong.trabalho_ofe || "";
+
+    } catch (err) { 
+        console.error(err);
+        alert("Erro ao carregar dados: " + err.message); 
+    }
+}async function carregarDadosOng() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const idOng = urlParams.get('id');
+    const token = localStorage.getItem("token");
+
+    console.log("ID da ONG na URL:", idOng);
+
+    if (!idOng || idOng === 'undefined') {
+        alert("ID da ONG inválido.");
+        window.location.href = 'escolherOng.html';
+        return;
+    }
+
+    try {
+        const res = await fetch(`http://localhost:3000/mostrarOng/${idOng}`, {
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+
+        if (!res.ok) {
+            const erroData = await res.json();
+            throw new Error(erroData.erro || "Erro desconhecido");
+        }
+
+        const ong = await res.json();
+
+        // Preenchimento seguro dos campos
+        document.getElementById("nome").value = ong.nome || "";
+        document.getElementById("email").value = ong.email || "";
+        document.getElementById("telefone").value = ong.telefone || "";
+        document.getElementById("endereco").value = ong.endereco || "";
+        document.getElementById("cidade").value = ong.cidade || "";
+        document.getElementById("estado").value = ong.estado || "";
+        document.getElementById("pix").value = ong.pix || "";
+        document.getElementById("trabalho_ofe").value = ong.trabalho_ofe || "";
+
+    } catch (err) {
+        console.error(err);
+        alert("Erro ao carregar: " + err.message);
+    }
+}
+        // FUNÇÃO EDITAR (PUT)
+        document.getElementById("formEdicao").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const dados = {
+                nome: document.getElementById("nome").value,
+                email: document.getElementById("email").value,
+                telefone: document.getElementById("telefone").value,
+                endereco: document.getElementById("endereco").value,
+                cidade: document.getElementById("cidade").value,
+                estado: document.getElementById("estado").value,
+                pix: document.getElementById("pix").value,
+                trabalho_ofe: document.getElementById("trabalho_ofe").value
+            };
+
+            const res = await fetch(`http://localhost:3000/atualizarOng/${idOng}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+                body: JSON.stringify(dados)
+            });
+
+            if (res.ok) {
+                alert("ONG atualizada!");
+                window.location.href = "escolherOng.html";
+            } else { alert("Erro ao atualizar."); }
+        });
+
+        // FUNÇÃO DELETAR (DELETE)
+        async function deletarOng() {
+            if (!confirm("TEM CERTEZA? Isso apagará todos os dados desta ONG permanentemente!")) return;
+
+            const res = await fetch(`http://localhost:3000/deletarOng/${idOng}`, {
+                method: "DELETE",
+                headers: { "Authorization": `Bearer ${token}` }
+            });
+
+            if (res.ok) {
+                alert("ONG removida com sucesso.");
+                // Se a ONG deletada era a ativa, limpa o cache
+                if (localStorage.getItem("idOngAtiva") === idOng) {
+                    localStorage.removeItem("idOngAtiva");
+                }
+                window.location.href = "escolherOng.html";
+            } else { alert("Erro ao deletar."); }
+        }
+    </script>
+</body>
+
+</html>

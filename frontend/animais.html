@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animais - Entre Laços</title>
+    <link rel="stylesheet" href="animais.css">
+    <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <header class="cabecalho">
+        <div class="cabecalho-conteudo">
+            <div class="logo">
+                <img src="logo.png" alt="logo" height="40">
+                <span>Entre Laços</span>
+            </div>
+            <nav class="menu-links">
+                <a href="index.html">Início</a>
+                <a class="ativo" href="animais.html">Animais</a>
+                <a href="doar.html">Doar</a>
+                <a href="eventos.html">Eventos</a>
+                <a href="historias.html">Histórias</a>
+                <a href="dicas.html">Dicas</a>
+            </nav>
+            <div class="perfil-topo">
+                <a class="botao-voltar" href="index.html">Voltar ao Início</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="principal">
+        <div class="titulo-secao">
+            <h2>Encontre seu novo amiguinho!</h2>
+            <p>Filtre por espécie, porte ou sexo para encontrar o pet ideal para você.</p>
+            <div id="area-admin-ong" style="display: none; margin-top: 20px;">
+                <button class="botao-principal-admin" onclick="window.location.href='cadAnimal.html'">
+                    ➕ Cadastrar Novo Animal
+                </button>
+            </div>
+        </div>
+
+        <div class="container-adocao">
+            <aside class="filtros-lateral">
+                <h3>🔻 Filtros</h3>
+                <div class="secao-filtro">
+                    <p>Espécie</p>
+                    <div class="tags-filtro">
+                        <button class="btn-filtro active" onclick="setFiltro(this, 'especie', '')">🐾 Todos</button>
+                        <button class="btn-filtro" onclick="setFiltro(this, 'especie', 'Cachorro')">🐶 Cães</button>
+                        <button class="btn-filtro" onclick="setFiltro(this, 'especie', 'Gato')">🐱 Gatos</button>
+                    </div>
+                </div>
+                <div class="secao-filtro">
+                    <p>Porte</p>
+                    <select id="filtroPorte" onchange="carregarAnimais()">
+                        <option value="">Todos os tamanhos</option>
+                        <option value="Pequeno">Pequeno</option>
+                        <option value="Médio">Médio</option>
+                        <option value="Grande">Grande</option>
+                    </select>
+                </div>
+                <div class="secao-filtro">
+                    <p>Sexo</p>
+                    <div class="tags-filtro">
+                        <button class="btn-filtro active" onclick="setFiltro(this, 'sexo', '')">Todos</button>
+                        <button class="btn-filtro" onclick="setFiltro(this, 'sexo', 'Fêmea')">Fêmeas</button>
+                        <button class="btn-filtro" onclick="setFiltro(this, 'sexo', 'Macho')">Machos</button>
+                    </div>
+                </div>
+            </aside>
+            <section id="lista-pets" class="grid-pets"></section>
+        </div>
+    </main>
+
+    <section class="fim">
+        <div class="fim-container">
+    
+          <!-- Logo + descrição -->
+          <div class="fim-sobre">
+            <div class="fim-logo">
+            <img src="logo.png" alt="logo" height="40">
+             
+              <h3>Entre Laços</h3>
+            </div>
+    
+            <p>
+              Conectando corações e transformando vidas.
+              Nossa missão é encontrar lares amorosos para
+              animais resgatados e promover a posse responsável.
+            </p>
+          </div>
+    
+          <!-- Contato -->
+          <div class="fim-contato">
+            <h4>Contato</h4>
+    
+            <span> Email: contato@entrelacos.org</span>
+            <span> Telefone: (00) 00000-0000</span>
+            <span> Facebook: entrelaços.consulta</span>
+            <span> Instagram: entrelaços.consulta </span>
+          </div>
+        </div>
+        <div class="fim-copy">
+          © 2026 Entre Laços. Todos os direitos reservados.
+        </div>
+      </section>
+    <script>
+        let filtros = { especie: "", sexo: "", porte: "" };
+
+        function verificarPermissaoOng() {
+            const idOngAtiva = localStorage.getItem("idOngAtiva");
+            const areaAdmin = document.getElementById("area-admin-ong");
+            if (areaAdmin) {
+                areaAdmin.style.display = (idOngAtiva && idOngAtiva !== "null") ? "block" : "none";
+            }
+        }
+
+        function setFiltro(btn, tipo, valor) {
+            filtros[tipo] = valor;
+            btn.parentElement.querySelectorAll('.btn-filtro').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            carregarAnimais();
+        }
+
+        async function carregarAnimais() {
+            const lista = document.getElementById("lista-pets");
+            const token = localStorage.getItem('token');
+            const idOngLogada = localStorage.getItem("idOngAtiva");
+
+            if (!token) {
+                alert("Você precisa estar logado para ver os animais.");
+                window.location.href = "acesso.html";
+                return;
+            }
+
+            lista.innerHTML = "<p>Carregando animais...</p>";
+            const selectPorte = document.getElementById("filtroPorte");
+            if (selectPorte) filtros.porte = selectPorte.value;
+
+            const params = new URLSearchParams(filtros);
+            const url = `http://localhost:3000/mostrarAnimal?${params.toString()}`;
+
+            try {
+                const res = await fetch(url, { headers: { "Authorization": `Bearer ${token}` } });
+                const dados = await res.json();
+                lista.innerHTML = "";
+
+                if (!dados || dados.length === 0) {
+                    lista.innerHTML = `<div class="aviso-vazio"><p>Nenhum pet encontrado. 🐾</p></div>`;
+                    return;
+                }
+
+                dados.forEach(pet => {
+                    const ehDono = idOngLogada && parseInt(idOngLogada) === pet.id_ong;
+                    const clean = (val, fallback = "") => (val === null || val === "null" || val === undefined || val === "") ? fallback : val;
+                    
+                    const statusTexto = clean(pet.status, "Disponível");
+                    const statusClasse = statusTexto.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-');
+                    const ehUrgente = pet.urgente === 1 || pet.urgente === "Sim";
+
+                    const card = document.createElement("div");
+                    card.className = "card-pet";
+                    card.innerHTML = `
+                        <div class="card-img" style="background-image: url('${pet.imagem || 'placeholder.jpg'}')">
+                            ${ehUrgente ? `<span class="tag-urgente">🔥 URGENTE</span>` : ''}
+                            <span class="badge-status ${statusClasse}">${statusTexto}</span>
+                        </div>
+                        <div class="card-info">
+                            <div class="header-card-pet">
+                                <h3>${clean(pet.nome, "Sem Nome")}</h3>
+                                <span class="info-especie">${clean(pet.especie, "Pet")}</span>
+                            </div>
+                            
+                            <div class="mini-tags">
+                                <span>${clean(pet.idade, "Idade")}</span>
+                                <span>Porte ${clean(pet.porte, "Médio").toLowerCase()}</span>
+                                <span>${clean(pet.sexo, "Macho")}</span>
+                            </div>
+
+                            <p class="localizacao">${clean(pet.cidade, "Cidade")} - ${clean(pet.estado, "SP")}</p>
+
+                            <button class="btn-conhecer" onclick="ver(${pet.id_animal})">Conhecer</button>
+
+                            ${ehDono ? `
+                                <div class="acoes-admin-inline">
+                                    <button class="btn-acao-inline editar" onclick="window.location.href='atuAnimal.html?id=${pet.id_animal}'">✏️</button>
+                                    <button class="btn-acao-inline excluir" onclick="excluirAnimal(${pet.id_animal})">🗑️</button>
+                                </div>
+                            ` : ''}
+                        </div>
+                    `;
+                    lista.appendChild(card);
+                });
+            } catch (erro) {
+                lista.innerHTML = "<p>Erro ao conectar com o servidor.</p>";
+            }
+        }
+
+        async function excluirAnimal(id) {
+            if (!confirm("Deseja excluir permanentemente este cadastro?")) return;
+            const token = localStorage.getItem("token");
+            try {
+                const res = await fetch(`http://localhost:3000/excluirAnimal/${id}`, {
+                    method: "DELETE",
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+                if (res.ok) {
+                    alert("Animal removido com sucesso!");
+                    carregarAnimais(); 
+                }
+            } catch (err) { alert("Erro de conexão."); }
+        }
+
+        function ver(id) { window.location.href = "animal.html?id=" + id; }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            verificarPermissaoOng();
+            carregarAnimais();
+        });
+    </script>
+    
+</body>
+</html>

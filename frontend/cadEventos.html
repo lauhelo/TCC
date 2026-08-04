@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Divulgar Evento - Entre Laços</title>
+    <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="cadEventos.css"> 
+</head>
+<body>
+
+    <header class="cabecalho">
+        <div class="cabecalho-conteudo">
+            <div class="logo">
+                <img src="logo.png" alt="logo" height="35">
+                <span>Entre Laços</span>
+            </div>
+            <nav class="menu-links">
+                <a href="index.html">Início</a>
+                <a href="animais.html">Animais</a>
+                <a href="doar.html">Doar</a>
+                <a href="eventos.html" class="ativo">Eventos</a>
+                <a href="historias.html">Histórias</a>
+                <a href="dicas.html">Dicas</a>
+            </nav>
+            <div class="perfil-topo">
+                <a href="eventos.html" class="nome-usuario">Cancelar</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="container-principal">
+        <div class="cartao-formulario">
+            <div class="form-cabecalho">
+                <h1 id="titulo-pagina">Divulgar Novo Evento</h1>
+                <p>Preencha os campos para convidar a comunidade para a sua ação social.</p>
+            </div>
+
+            <form id="formEvento">
+                <div class="campo-grupo">
+                    <label for="foto_evento">Foto de Capa do Evento</label>
+                    <input type="file" id="foto_evento" accept="image/*">
+                    <div class="preview-imagem-container" id="containerPreview">
+                        <img src="" id="preview-img" alt="Previsão da imagem">
+                    </div>
+                </div>
+
+                <div class="campo-grupo">
+                    <label for="nome_evento">Nome do Evento</label>
+                    <input type="text" id="nome_evento" placeholder="Ex: 1ª Feira de Adoção Entre Laços" required>
+                </div>
+
+                <div class="campo-grupo">
+                    <label for="categoria">Categoria do Evento</label>
+                    <select id="categoria" required>
+                        <option value="" disabled selected>Selecione a categoria...</option>
+                        <option value="Feira de Adoção">Feira de Adoção</option>
+                        <option value="Campanha de Vacinação">Campanha de Vacinação</option>
+                        <option value="Mutirão de Castração">Mutirão de Castração</option>
+                        <option value="Outros">Outros</option>
+                    </select>
+                </div>
+
+                <div class="campo-grupo">
+                    <label for="localizacao">Cidade/Região (Para Filtro rápido)</label>
+                    <input type="text" id="localizacao" placeholder="Ex: Presidente Prudente - SP" required>
+                </div>
+
+                <div class="campo-grupo">
+                    <label for="endereco">Endereço Completo</label>
+                    <input type="text" id="endereco" placeholder="Ex: Av. Washington Luiz, 2400 - Centro" required>
+                    <button type="button" class="btn-geolocalizar" onclick="obterCoordenadasPorEndereco()">📍 Obter Coordenadas via Endereço</button>
+                </div>
+
+                <input type="hidden" id="latitude">
+                <input type="hidden" id="longitude">
+
+                <div style="display: flex; gap: 15px;">
+                    <div class="campo-grupo" style="flex: 1;">
+                        <label for="data">Data</label>
+                        <input type="date" id="data" required>
+                    </div>
+                    <div class="campo-grupo" style="flex: 1;">
+                        <label for="hora">Horário</label>
+                        <input type="time" id="hora" required>
+                    </div>
+                </div>
+
+                <button type="submit" class="botao-enviar" id="btn-salvar">Publicar Evento 🐾</button>
+            </form>
+        </div>
+    </main>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const idEventoEdicao = params.get("id");
+        const token = localStorage.getItem("token");
+
+        let imagemBase64 = null; 
+
+        if (!token) {
+            alert("Você precisa estar logado para gerenciar eventos!");
+            window.location.href = "index.html";
+        }
+
+        function obterIdOngLogada() {
+            try {
+                const base64Url = token.split('.')[1];
+                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                const decoded = JSON.parse(window.atob(base64));
+                return decoded.id_ong || decoded.id_usuario || decoded.id || null;
+            } catch (e) {
+                console.error("Erro crítico ao decodificar payload do token:", e);
+                return null;
+            }
+        }
+
+        document.getElementById("foto_evento").addEventListener("change", function(e) {
+            const arquivo = e.target.files[0];
+            if (arquivo) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    imagemBase64 = event.target.result;
+                    const previewContainer = document.getElementById("containerPreview");
+                    const previewImg = document.getElementById("preview-img");
+                    previewImg.src = imagemBase64;
+                    previewContainer.style.display = "block";
+                };
+                reader.readAsDataURL(arquivo);
+            }
+        });
+
+        async function obterCoordenadasPorEndereco() {
+            const endereco = document.getElementById("endereco").value;
+            const cidade = document.getElementById("localizacao").value;
+            
+            if (!endereco) {
+                alert("Por favor, digite o endereço completo antes de buscar.");
+                return;
+            }
+
+            const queryCompleta = `${endereco}, ${cidade}`;
+            
+            try {
+                const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(queryCompleta)}`);
+                const dadosMap = await response.json();
+
+                if (dadosMap && dadosMap.length > 0) {
+                    document.getElementById("latitude").value = dadosMap[0].lat;
+                    document.getElementById("longitude").value = dadosMap[0].lon;
+                    alert("Coordenadas geográficas sincronizadas com sucesso! 📍");
+                } else {
+                    alert("Não encontramos as coordenadas exatas. O endereço em formato de texto será enviado normalmente.");
+                }
+            } catch (error) {
+                console.error("Falha na requisição Nominatim:", error);
+            }
+        }
+
+        if (idEventoEdicao) {
+            document.getElementById("titulo-pagina").innerText = "Editar Evento";
+            document.getElementById("btn-salvar").innerText = "Salvar Alterações 🐾";
+            carregarDadosDoEvento(idEventoEdicao);
+        }
+
+        async function carregarDadosDoEvento(id) {
+            try {
+                const response = await fetch("http://localhost:3000/mostrarEventos");
+                if (response.ok) {
+                    const eventos = await response.json();
+                    const evento = eventos.find(e => Number(e.id_evento) === Number(id));
+
+                    if (evento) {
+                        const idLogado = obterIdOngLogada();
+                        const donoEhOng = evento.id_ong !== null && evento.id_ong !== undefined && evento.id_ong !== 0;
+                        const idCriador = donoEhOng ? evento.id_ong : evento.id_usuario;
+                        const tipoUsuarioLogado = localStorage.getItem("tipoUsuario");
+
+                        // Proteção extra na URL impedindo que entrem no Form se não for o criador original
+                        const ehDono = idLogado && String(idCriador) === String(idLogado) &&
+                                       ((donoEhOng && tipoUsuarioLogado === "ong") || (!donoEhOng && tipoUsuarioLogado !== "ong"));
+
+                        if (!ehDono) {
+                            alert("Você não tem autorização para editar este evento!");
+                            window.location.href = "eventos.html";
+                            return;
+                        }
+
+                        document.getElementById("nome_evento").value = evento.nome_evento;
+                        document.getElementById("categoria").value = evento.categoria;
+                        document.getElementById("localizacao").value = evento.localizacao;
+                        document.getElementById("endereco").value = evento.endereco;
+                        document.getElementById("hora").value = evento.hora;
+                        document.getElementById("latitude").value = evento.latitude || "";
+                        document.getElementById("longitude").value = evento.longitude || "";
+                        
+                        if(evento.imagem) {
+                            imagemBase64 = evento.imagem;
+                            const previewContainer = document.getElementById("containerPreview");
+                            const previewImg = document.getElementById("preview-img");
+                            previewImg.src = imagemBase64;
+                            previewContainer.style.display = "block";
+                        }
+
+                        if(evento.data) {
+                            document.getElementById("data").value = evento.data.split("T")[0];
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error("Erro ao resgatar informações do evento:", error);
+            }
+        }
+
+        document.getElementById("formEvento").addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const idLogado = obterIdOngLogada();
+            const tipoUsuarioLogado = localStorage.getItem("tipoUsuario"); 
+            
+            if (!idLogado) {
+                alert("Sua sessão expirou ou o identificador do perfil é inválido. Faça login novamente.");
+                return;
+            }
+
+            const dados = {
+                nome_evento: document.getElementById("nome_evento").value,
+                categoria: document.getElementById("categoria").value,
+                localizacao: document.getElementById("localizacao").value,
+                endereco: document.getElementById("endereco").value,
+                data: document.getElementById("data").value,
+                hora: document.getElementById("hora").value,
+                imagem: imagemBase64,
+                latitude: document.getElementById("latitude").value ? parseFloat(document.getElementById("latitude").value) : null,
+                longitude: document.getElementById("longitude").value ? parseFloat(document.getElementById("longitude").value) : null
+            };
+
+            // Define dinamicamente o campo com base no tipo de usuário ativo logado
+            if (tipoUsuarioLogado === "ong") {
+                dados.id_ong = Number(idLogado);
+                dados.id_usuario = null;
+            } else {
+                dados.id_usuario = Number(idLogado);
+                dados.id_ong = null;
+            }
+
+            let url = "http://localhost:3000/inserirEvento";
+            let metodo = "POST";
+
+            if (idEventoEdicao) {
+                url = "http://localhost:3000/atualizarEvento";
+                metodo = "PUT";
+                dados.id_evento = Number(idEventoEdicao);
+            }
+
+            try {
+                const response = await fetch(url, {
+                    method: metodo,
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    },
+                    body: JSON.stringify(dados)
+                });
+
+                if (response.ok) {
+                    alert(idEventoEdicao ? "Evento atualizado com sucesso! 🐾" : "Evento publicado com sucesso! 🐾");
+                    window.location.href = "eventos.html";
+                } else {
+                    const respostaErro = await response.json();
+                    alert("Aviso do Servidor: " + (respostaErro.erro || respostaErro.mensagem || "Erro na operação com o banco."));
+                }
+            } catch (error) {
+                console.error("Erro operacional de rede:", error);
+                alert("Não foi possível estabelecer contato com o servidor de banco de dados.");
+            }
+        });
+    </script>
+</body>
+</html>
