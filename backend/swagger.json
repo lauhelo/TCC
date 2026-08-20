@@ -1,0 +1,1061 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "1.0.0",
+    "title": "API de Proteção Animal",
+    "description": "Documentação completa das APIs do sistema de proteção animal (ONGs, Animais, Eventos, Histórias e Dicas) baseada no arquivo `app.js`.",
+    "contact": {
+      "name": "Suporte da API",
+      "email": "suporte@sistema-pet.com"
+    }
+  },
+  "host": "localhost:3000",
+  "basePath": "/",
+  "tags": [
+    { "name": "Autenticação & Usuários", "description": "Gerenciamento de contas de usuários e fluxo de login" },
+    { "name": "Animais", "description": "Operações de cadastro, listagem, filtros e exclusão de pets" },
+    { "name": "ONGs", "description": "Gerenciamento de ONGs/Instituições parceiras e vínculos" },
+    { "name": "Dicas", "description": "Publicação e gerenciamento de dicas e artigos sobre pets" },
+    { "name": "Necessidades", "description": "Itens e demandas críticas que os animais precisam" },
+    { "name": "Eventos", "description": "Divulgação de campanhas e eventos com cálculo de geolocalização" },
+    { "name": "Histórias & Homenagens", "description": "CRUD de histórias de sucesso e finais felizes das adoções" }
+  ],
+  "schemes": ["http"],
+  "consumes": ["application/json"],
+  "produces": ["application/json"],
+  "securityDefinitions": {
+    "BearerAuth": {
+      "type": "apiKey",
+      "name": "Authorization",
+      "in": "header",
+      "description": "Insira o token JWT no formato: Bearer <seu_token_aqui>"
+    }
+  },
+  "paths": {
+    "/login": {
+      "post": {
+        "tags": ["Autenticação & Usuários"],
+        "summary": "Login Unificado",
+        "description": "Autentica um usuário ou ONG e retorna um token JWT válido por 2 horas.",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": ["email", "senha"],
+              "properties": {
+                "email": { "type": "string", "example": "usuario@teste.com" },
+                "senha": { "type": "string", "example": "123456" }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Login efetuado com sucesso.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "token": { "type": "string" },
+                "possuiOngs": { "type": "boolean" },
+                "usuario": {
+                  "type": "object",
+                  "properties": {
+                    "id_usuario": { "type": "integer" },
+                    "nome": { "type": "string" },
+                    "email": { "type": "string" },
+                    "tipo": { "type": "string" }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "description": "E-mail ou senha incorretos." },
+          "500": { "description": "Erro interno no servidor durante o login." }
+        }
+      }
+    },
+    "/inserir": {
+      "post": {
+        "tags": ["Autenticação & Usuários"],
+        "summary": "Cadastro de novo usuário / ONG",
+        "description": "Realiza o registro na tabela `cadastro`. A senha é criptografada em SHA-256 e um token é retornado imediatamente.",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": { "$ref": "#/definitions/CadastroInput" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Cadastro efetuado com sucesso.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "resposta": { "type": "string", "example": "Cadastro efetuado!" },
+                "token": { "type": "string" },
+                "usuario": {
+                  "type": "object",
+                  "properties": {
+                    "id_usuario": { "type": "integer" },
+                    "tipo": { "type": "string" }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "Campos obrigatórios ausentes ou e-mail já cadastrado (ER_DUP_ENTRY)." },
+          "500": { "description": "Erro ao salvar no banco de dados." }
+        }
+      }
+    },
+    "/mostrar": {
+      "get": {
+        "tags": ["Autenticação & Usuários"],
+        "summary": "Listar todos os usuários cadastrados",
+        "description": "Retorna todos os registros da tabela `cadastro`. Requer Token.",
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Lista de usuários cadastrados.",
+            "schema": {
+              "type": "array",
+              "items": { "$ref": "#/definitions/Cadastro" }
+            }
+          },
+          "401": { "description": "Token não enviado, mal formatado, inválido ou expirado." },
+          "500": { "description": "Erro no servidor." }
+        }
+      }
+    },
+    "/atualizar": {
+      "put": {
+        "tags": ["Autenticação & Usuários"],
+        "summary": "Atualizar dados do perfil",
+        "description": "Atualiza os dados do usuário. O `id_usuario` enviado no corpo deve coincidir estritamente com o ID contido no Token JWT.",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": { "$ref": "#/definitions/CadastroUpdate" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resposta da atualização.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "resposta": { "type": "string", "example": "Perfil atualizado com sucesso!" }
+              }
+            }
+          },
+          "403": { "description": "Sem permissão para atualizar este perfil (IDs não coincidem)." },
+          "401": { "description": "Não autorizado." },
+          "500": { "description": "Erro interno no servidor." }
+        }
+      }
+    },
+    "/deletar": {
+      "delete": {
+        "tags": ["Autenticação & Usuários"],
+        "summary": "Excluir a própria conta",
+        "description": "Remove os vínculos na tabela `usuario_ong` e apaga permanentemente o usuário da tabela `cadastro` com base no Token fornecido.",
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Conta excluída.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "resposta": { "type": "string", "example": "Conta excluída com sucesso!" }
+              }
+            }
+          },
+          "404": { "description": "Usuário não encontrado." },
+          "401": { "description": "Não autorizado." },
+          "500": { "description": "Erro ao excluir conta. Verifique dependências de chaves estrangeiras." }
+        }
+      }
+    },
+    "/recuperar-senha": {
+      "put": {
+        "tags": ["Autenticação & Usuários"],
+        "summary": "Recuperação de senha",
+        "description": "Atualiza a senha do usuário caso o e-mail e a palavra-chave informados estejam corretos no banco.",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": ["email", "senha", "confirmar_senha", "palavra_chave"],
+              "properties": {
+                "email": { "type": "string", "example": "usuario@teste.com" },
+                "senha": { "type": "string", "example": "novaSenha123" },
+                "confirmar_senha": { "type": "string", "example": "novaSenha123" },
+                "palavra_chave": { "type": "string", "example": "Nome do meu primeiro pet" }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Senha atualizada com sucesso.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "resposta": { "type": "string", "example": "Senha atualizada com sucesso!" }
+              }
+            }
+          },
+          "400": { "description": "Campos obrigatórios ausentes ou as senhas não coincidem." },
+          "401": { "description": "E-mail ou Palavra-Chave incorretos." },
+          "500": { "description": "Erro interno no servidor ao atualizar senha." }
+        }
+      }
+    },
+    "/mostrarAnimal": {
+      "get": {
+        "tags": ["Animais"],
+        "summary": "Buscar animais com filtros (Público)",
+        "description": "Lista todos os animais aplicando correspondência parcial (LIKE) para sexo e porte, e exata para espécie.",
+        "parameters": [
+          { "name": "especie", "in": "query", "type": "string", "required": false, "description": "Espécie do animal (ex: cachorro)" },
+          { "name": "sexo", "in": "query", "type": "string", "required": false, "description": "Filtro inicial por sexo (M ou F)" },
+          { "name": "porte", "in": "query", "type": "string", "required": false, "description": "Porte do animal (Pequeno, Medio, Grande)" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de animais encontrados.",
+            "schema": {
+              "type": "array",
+              "items": { "$ref": "#/definitions/Animal" }
+            }
+          },
+          "500": { "description": "Erro ao buscar animais." }
+        }
+      }
+    },
+    "/inserirAnimal": {
+      "post": {
+        "tags": ["Animais"],
+        "summary": "Inserir novo animal",
+        "description": "Cadastra um animal associando-o ao ID da ONG extraído do token ou do corpo da requisição.",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": { "$ref": "#/definitions/AnimalInput" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Animal inserido com sucesso.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "resposta": { "type": "string", "example": "Animal cadastrado com sucesso!" }
+              }
+            }
+          },
+          "400": { "description": "O sistema não identificou a ONG logada ou o nome do animal não foi preenchido." },
+          "500": { "description": "Erro interno no banco de dados." }
+        }
+      }
+    },
+    "/atualizarAnimal/{id}": {
+      "put": {
+        "tags": ["Animais"],
+        "summary": "Atualizar dados de um animal",
+        "description": "Atualiza dinamicamente as informações do pet. Se a imagem estiver em branco, mantém a atual.",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "type": "integer", "required": true, "description": "ID numérico do animal (id_animal)" },
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "nome": { "type": "string" },
+                "especie": { "type": "string" },
+                "raca": { "type": "string" },
+                "porte": { "type": "string" },
+                "idade": { "type": "string" },
+                "sexo": { "type": "string" },
+                "descricao": { "type": "string" },
+                "status": { "type": "string" },
+                "imagem": { "type": "string" }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Atualizado com sucesso!" },
+          "400": { "description": "Nenhuma alteração detectada." },
+          "404": { "description": "Animal não encontrado." },
+          "500": { "description": "Erro ao atualizar no banco." }
+        }
+      }
+    },
+    "/excluirAnimal/{id}": {
+      "delete": {
+        "tags": ["Animais"],
+        "summary": "Remover um animal",
+        "description": "Remove definitivamente o registro do animal correspondente ao `id_animal` no banco de dados.",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "type": "integer", "required": true, "description": "ID do animal a ser deletado" }
+        ],
+        "responses": {
+          "200": { "description": "Excluído com sucesso!" },
+          "404": { "description": "Animal não encontrado no banco." },
+          "500": { "description": "Erro técnico ou restrição de chave no MySQL." }
+        }
+      }
+    },
+    "/animais": {
+      "get": {
+        "tags": ["Animais"],
+        "summary": "Listagem inteligente de Animais Disponíveis",
+        "description": "Se o parâmetro `id` for enviado, retorna os detalhes daquele animal específico. Se não, lista todos os pets com status 'disponivel', tratando variações ortográficas e de gênero.",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "query", "type": "integer", "required": false, "description": "Buscar detalhe de um animal específico" },
+          { "name": "especie", "in": "query", "type": "string", "required": false },
+          { "name": "sexo", "in": "query", "type": "string", "required": false, "description": "Filtra tratando femininos (femea/fêmea)" },
+          { "name": "porte", "in": "query", "type": "string", "required": false, "description": "Filtra tratando variações (ex: médio)" }
+        ],
+        "responses": {
+          "200": { "description": "Dados do animal ou lista de animais disponíveis retornada." },
+          "404": { "description": "Animal não encontrado (quando buscado por ID)." },
+          "500": { "description": "Erro interno no servidor." }
+        }
+      }
+    },
+    "/minhas-ongs": {
+      "get": {
+        "tags": ["ONGs"],
+        "summary": "Listar ONGs do usuário logado",
+        "description": "Retorna uma lista contendo as ONGs vinculadas ao ID de usuário recuperado no token.",
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Lista de instituições vinculadas.",
+            "schema": {
+              "type": "array",
+              "items": { "$ref": "#/definitions/Ong" }
+            }
+          },
+          "500": { "description": "Erro ao buscar instituições." }
+        }
+      }
+    },
+    "/mostrarOng/{id}": {
+      "get": {
+        "tags": ["ONGs"],
+        "summary": "Buscar dados de uma ONG específica",
+        "description": "Busca todos os campos cadastrados de uma determinada ONG informando seu ID na URL.",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "type": "integer", "required": true, "description": "ID da ONG" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Dados da ONG obtidos.",
+            "schema": { "$ref": "#/definitions/Ong" }
+          },
+          "404": { "description": "ONG não encontrada no banco de dados." },
+          "500": { "description": "Erro interno ao buscar dados da ONG." }
+        }
+      }
+    },
+    "/inserirOng": {
+      "post": {
+        "tags": ["ONGs"],
+        "summary": "Cadastrar nova ONG",
+        "description": "Insere uma ONG na tabela `ong` e automaticamente cria a relação de gerência na tabela intermediária `usuario_ong` vinculada ao usuário autenticado.",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": { "$ref": "#/definitions/OngInput" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "ONG registrada e vinculada.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "resposta": { "type": "string", "example": "ONG cadastrada com sucesso!" },
+                "id_ong": { "type": "integer" }
+              }
+            }
+          },
+          "500": { "description": "Erro ao salvar ONG no banco." }
+        }
+      }
+    },
+    "/atualizarOng/{id}": {
+      "put": {
+        "tags": ["ONGs"],
+        "summary": "Atualizar dados estruturais da ONG",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "type": "integer", "required": true, "description": "ID da ONG (id_ong)" },
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "nome": { "type": "string" },
+                "email": { "type": "string" },
+                "telefone": { "type": "string" },
+                "endereco": { "type": "string" },
+                "cidade": { "type": "string" },
+                "estado": { "type": "string" },
+                "pix": { "type": "string" },
+                "trabalho_ofe": { "type": "string" }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": { "description": "ONG atualizada com sucesso!" },
+          "404": { "description": "ONG não encontrada para atualizar." },
+          "500": { "description": "Erro ao atualizar os dados." }
+        }
+      }
+    },
+    "/deletarOng/{id}": {
+      "delete": {
+        "tags": ["ONGs"],
+        "summary": "Excluir uma instituição",
+        "description": "Remove primeiramente as associações existentes em `usuario_ong` e em seguida exclui a entidade de `ong`.",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "type": "integer", "required": true }
+        ],
+        "responses": {
+          "200": { "description": "ONG removida com sucesso!" },
+          "404": { "description": "ONG não encontrada." },
+          "500": { "description": "Erro ao excluir a instituição." }
+        }
+      }
+    },
+    "/mostrarDicas": {
+      "get": {
+        "tags": ["Dicas"],
+        "summary": "Listar dicas publicadas",
+        "responses": {
+          "200": {
+            "description": "Sucesso",
+            "schema": {
+              "type": "array",
+              "items": { "$ref": "#/definitions/Dica" }
+            }
+          },
+          "500": { "description": "Erro no MySQL ao buscar." }
+        }
+      }
+    },
+    "/inserirDica": {
+      "post": {
+        "tags": ["Dicas"],
+        "summary": "Criar uma nova dica",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": ["titulo", "categoria", "qualPet", "conteudo"],
+              "properties": {
+                "titulo": { "type": "string" },
+                "categoria": { "type": "string" },
+                "qualPet": { "type": "string", "description": "Para qual animal serve a dica" },
+                "conteudo": { "type": "string" }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Dica publicada com sucesso!" },
+          "400": { "description": "Campos obrigatórios faltando no formulário." },
+          "401": { "description": "ID do usuário não mapeado dentro do token JWT." },
+          "500": { "description": "O banco rejeitou a inserção." }
+        }
+      }
+    },
+    "/atualizarDica": {
+      "put": {
+        "tags": ["Dicas"],
+        "summary": "Atualizar conteúdo de uma dica",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": ["id_dica"],
+              "properties": {
+                "id_dica": { "type": "integer" },
+                "titulo": { "type": "string" },
+                "categoria": { "type": "string" },
+                "qualPet": { "type": "string" },
+                "conteudo": { "type": "string" }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Dica updated com sucesso!" },
+          "500": { "description": "Erro ao atualizar." }
+        }
+      }
+    },
+    "/deletarDica": {
+      "delete": {
+        "tags": ["Dicas"],
+        "summary": "Excluir dica",
+        "description": "Deleta a dica correspondente informando o `id_dica` no corpo (JSON) da requisição.",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": ["id_dica"],
+              "properties": {
+                "id_dica": { "type": "integer" }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Dica removida com sucesso!" },
+          "500": { "description": "Erro ao deletar." }
+        }
+      }
+    },
+    "/mostrarNecessidades": {
+      "get": {
+        "tags": ["Necessidades"],
+        "summary": "Listar necessidades urgentes",
+        "description": "Retorna uma junção (JOIN) entre a tabela de necessidades e a tabela de animais para exibir o nome do pet.",
+        "responses": {
+          "200": {
+            "description": "Sucesso",
+            "schema": {
+              "type": "array",
+              "items": { "$ref": "#/definitions/Necessidade" }
+            }
+          },
+          "500": { "description": "Erro no servidor." }
+        }
+      }
+    },
+    "/inserirNecessidade": {
+      "post": {
+        "tags": ["Necessidades"],
+        "summary": "Adicionar nova necessidade",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": ["id_animal", "nome"],
+              "properties": {
+                "id_animal": { "type": "integer" },
+                "nome": { "type": "string", "example": "Ração Filhote" },
+                "categoria": { "type": "string", "example": "Alimentação" },
+                "grau_importancia": { "type": "string", "example": "Alta" },
+                "descricao": { "type": "string" },
+                "botao": { "type": "string", "example": "Link para doar" }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Mensagem indicando sucesso ou falha no cadastro." },
+          "400": { "description": "Campos obrigatórios faltando." },
+          "500": { "description": "Erro no servidor." }
+        }
+      }
+    },
+    "/atualizarNecessidade": {
+      "put": {
+        "tags": ["Necessidades"],
+        "summary": "Atualizar dados de uma necessidade",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": ["id_necessidade"],
+              "properties": {
+                "id_necessidade": { "type": "integer" },
+                "id_animal": { "type": "integer" },
+                "nome": { "type": "string" },
+                "categoria": { "type": "string" },
+                "grau_importancia": { "type": "string" },
+                "descricao": { "type": "string" },
+                "botao": { "type": "string" }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Atualizado com sucesso! ou Erro ao atualizar!" },
+          "400": { "description": "id_necessidade é obrigatório." },
+          "500": { "description": "Erro no servidor." }
+        }
+      }
+    },
+    "/deletarNecessidade": {
+      "delete": {
+        "tags": ["Necessidades"],
+        "summary": "Deletar necessidade",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": ["id_necessidade"],
+              "properties": {
+                "id_necessidade": { "type": "integer" }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Deletado com sucesso! ou Erro ao deletar!" },
+          "400": { "description": "id_necessidade é obrigatório." },
+          "500": { "description": "Erro no servidor." }
+        }
+      }
+    },
+    "/mostrarEventos": {
+      "get": {
+        "tags": ["Eventos"],
+        "summary": "Exibir todos os eventos",
+        "description": "Traz dados dos eventos mesclando as informações da ONG responsável.",
+        "responses": {
+          "200": {
+            "description": "Sucesso",
+            "schema": {
+              "type": "array",
+              "items": { "$ref": "#/definitions/Evento" }
+            }
+          },
+          "500": { "description": "Erro no servidor." }
+        }
+      }
+    },
+    "/eventos-proximos": {
+      "get": {
+        "tags": ["Eventos"],
+        "summary": "Buscar eventos perto de mim (Raio KM)",
+        "description": "Utiliza a fórmula trigonométrica de Haversine diretamente no MySQL para encontrar eventos de ONGs no raio de distância configurado.",
+        "parameters": [
+          { "name": "lat", "in": "query", "type": "number", "required": true, "description": "Sua Latitude atual" },
+          { "name": "lng", "in": "query", "type": "number", "required": true, "description": "Sua Longitude atual" },
+          { "name": "raio", "in": "query", "type": "number", "required": false, "description": "Raio máximo de busca em Km. Padrão: 50" }
+        ],
+        "responses": {
+          "200": { "description": "Lista de eventos próximos ordenada por menor distância." },
+          "400": { "description": "Latitude ou Longitude ausentes na requisição." },
+          "500": { "description": "Erro interno no servidor ao calcular proximidade." }
+        }
+      }
+    },
+    "/inserirEvento": {
+      "post": {
+        "tags": ["Eventos"],
+        "summary": "Criar evento para a ONG",
+        "description": "Detecta automaticamente a ONG à qual o usuário logado pertence. Impede a criação se o perfil não tiver ONGs ativas.",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": ["nome_evento"],
+              "properties": {
+                "nome_evento": { "type": "string" },
+                "hora": { "type": "string" },
+                "data": { "type": "string", "format": "date" },
+                "endereco": { "type": "string" },
+                "categoria": { "type": "string" },
+                "localizacao": { "type": "string" },
+                "imagem": { "type": "string" },
+                "latitude": { "type": "number" },
+                "longitude": { "type": "number" }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Evento cadastrado com sucesso!" },
+          "400": { "description": "O nome do evento é obrigatório." },
+          "403": { "description": "Este perfil não possui nenhuma ONG cadastrada." },
+          "500": { "description": "Erro no servidor." }
+        }
+      }
+    },
+    "/atualizarEvento": {
+      "put": {
+        "tags": ["Eventos"],
+        "summary": "Atualizar um evento gerenciado",
+        "description": "Modifica o evento contanto que o criador logado possua o vínculo de gerência com a mesma ONG dona do evento.",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": ["id_evento"],
+              "properties": {
+                "id_evento": { "type": "integer" },
+                "nome_evento": { "type": "string" },
+                "hora": { "type": "string" },
+                "data": { "type": "string" },
+                "endereco": { "type": "string" },
+                "categoria": { "type": "string" },
+                "localizacao": { "type": "string" },
+                "imagem": { "type": "string" },
+                "latitude": { "type": "number" },
+                "longitude": { "type": "number" }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Evento atualizado com sucesso!" },
+          "404": { "description": "Evento não encontrado." },
+          "403": { "description": "Você não tem permissão para editar este evento ou não possui ONG vinculada." },
+          "500": { "description": "Erro no servidor." }
+        }
+      }
+    },
+    "/deletarEvento": {
+      "delete": {
+        "tags": ["Eventos"],
+        "summary": "Remover um evento",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": ["id_evento"],
+              "properties": {
+                "id_evento": { "type": "integer" }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Evento deletado com sucesso!" },
+          "404": { "description": "Evento não encontrado." },
+          "403": { "description": "Você não tem permissão para excluir este evento." },
+          "500": { "description": "Erro no servidor." }
+        }
+      }
+    },
+    "/api/historias": {
+      "get": {
+        "tags": ["Histórias & Homenagens"],
+        "summary": "Listar histórias de sucesso (Público)",
+        "description": "Retorna uma lista contendo as histórias e injeta um placeholder de imagem caso o registro esteja nulo.",
+        "responses": {
+          "200": {
+            "description": "Lista de histórias estruturada.",
+            "schema": {
+              "type": "array",
+              "items": { "$ref": "#/definitions/HistoriaResponse" }
+            }
+          },
+          "500": { "description": "Erro no servidor ao buscar homenagens." }
+        }
+      },
+      "post": {
+        "tags": ["Histórias & Homenagens"],
+        "summary": "Publicar uma nova história de adoção",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": ["titulo", "texto"],
+              "properties": {
+                "titulo": { "type": "string", "example": "A nova vida de Floquinho" },
+                "texto": { "type": "string", "example": "Ele foi adotado e agora tem um grande quintal..." },
+                "imagens": { "type": "array", "items": { "type": "string" }, "description": "Array contendo URLs de fotos" }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "História criada com sucesso.",
+            "schema": { "$ref": "#/definitions/HistoriaResponse" }
+          },
+          "400": { "description": "Título e texto são obrigatórios." },
+          "500": { "description": "Erro ao salvar a homenagem no banco de dados." }
+        }
+      }
+    },
+    "/api/historias/{id}": {
+      "put": {
+        "tags": ["Histórias & Homenagens"],
+        "summary": "Atualizar uma história salva",
+        "description": "Atualiza os campos contanto que o `ong_id` gravado na história pertença ao ID do usuário do Token logado.",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "type": "integer", "required": true, "description": "ID incremental da história" },
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "titulo": { "type": "string" },
+                "texto": { "type": "string" },
+                "imagens": { "type": "array", "items": { "type": "string" } }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Retorna os dados atualizados estruturados." },
+          "404": { "description": "História não encontrada." },
+          "403": { "description": "Ação não permitida. Você não é o criador desta história." },
+          "500": { "description": "Erro ao atualizar história no servidor." }
+        }
+      },
+      "delete": {
+        "tags": ["Histórias & Homenagens"],
+        "summary": "Remover história por ID",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "type": "integer", "required": true }
+        ],
+        "responses": {
+          "200": { "description": "História deletada com sucesso!" },
+          "404": { "description": "História não encontrada." },
+          "403": { "description": "Ação não permitida. Você não possui a autoria." },
+          "500": { "description": "Erro interno ao deletar a história." }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "Cadastro": {
+      "type": "object",
+      "properties": {
+        "id_usuario": { "type": "integer" },
+        "nome": { "type": "string" },
+        "email": { "type": "string" },
+        "cep": { "type": "string" },
+        "cpf": { "type": "string" },
+        "telefone": { "type": "string" },
+        "data_nascimento": { "type": "string" },
+        "tipo": { "type": "string" },
+        "palavra_chave": { "type": "string" }
+      }
+    },
+    "CadastroInput": {
+      "type": "object",
+      "required": ["nome", "email", "senha"],
+      "properties": {
+        "nome": { "type": "string" },
+        "email": { "type": "string" },
+        "senha": { "type": "string" },
+        "cep": { "type": "string" },
+        "cpf": { "type": "string" },
+        "telefone": { "type": "string" },
+        "data_nascimento": { "type": "string" },
+        "palavra_chave": { "type": "string" },
+        "tipo": { "type": "string", "enum": ["usuario", "ong"], "default": "usuario" }
+      }
+    },
+    "CadastroUpdate": {
+      "type": "object",
+      "required": ["id_usuario"],
+      "properties": {
+        "id_usuario": { "type": "integer" },
+        "nome": { "type": "string" },
+        "email": { "type": "string" },
+        "cep": { "type": "string" },
+        "cpf": { "type": "string" },
+        "telefone": { "type": "string" },
+        "data_nascimento": { "type": "string" },
+        "senha": { "type": "string", "description": "Opcional. Se enviado, será gerada uma nova hash." },
+        "palavra_chave": { "type": "string" }
+      }
+    },
+    "Animal": {
+      "type": "object",
+      "properties": {
+        "id_animal": { "type": "integer" },
+        "id_ong": { "type": "integer" },
+        "nome": { "type": "string" },
+        "especie": { "type": "string" },
+        "raca": { "type": "string" },
+        "porte": { "type": "string" },
+        "idade": { "type": "string" },
+        "sexo": { "type": "string" },
+        "descricao": { "type": "string" },
+        "status": { "type": "string" },
+        "imagem": { "type": "string" },
+        "ong": { "type": "string" },
+        "cidade": { "type": "string" },
+        "estado": { "type": "string" }
+      }
+    },
+    "AnimalInput": {
+      "type": "object",
+      "required": ["nome"],
+      "properties": {
+        "id_ong": { "type": "integer" },
+        "nome": { "type": "string" },
+        "especie": { "type": "string" },
+        "raca": { "type": "string" },
+        "porte": { "type": "string" },
+        "idade": { "type": "string" },
+        "sexo": { "type": "string" },
+        "descricao": { "type": "string" },
+        "status": { "type": "string" },
+        "imagem": { "type": "string" },
+        "ong": { "type": "string" },
+        "cidade": { "type": "string" },
+        "estado": { "type": "string" }
+      }
+    },
+    "Ong": {
+      "type": "object",
+      "properties": {
+        "id_ong": { "type": "integer" },
+        "nome": { "type": "string" },
+        "email": { "type": "string" },
+        "telefone": { "type": "string" },
+        "endereco": { "type": "string" },
+        "cnpj": { "type": "string" },
+        "cidade": { "type": "string" },
+        "estado": { "type": "string" },
+        "pix": { "type": "string" },
+        "trabalho_ofe": { "type": "string" }
+      }
+    },
+    "OngInput": {
+      "type": "object",
+      "required": ["nome", "email", "cnpj"],
+      "properties": {
+        "type": "object",
+        "nome": { "type": "string" },
+        "email": { "type": "string" },
+        "telefone": { "type": "string" },
+        "endereco": { "type": "string" },
+        "cnpj": { "type": "string" },
+        "cidade": { "type": "string" },
+        "estado": { "type": "string" },
+        "pix": { "type": "string" },
+        "trabalho_ofe": { "type": "string" }
+      }
+    },
+    "Dica": {
+      "type": "object",
+      "properties": {
+        "id_dica": { "type": "integer" },
+        "id_usuario": { "type": "integer" },
+        "titulo": { "type": "string" },
+        "categoria": { "type": "string" },
+        "qualPet": { "type": "string" },
+        "conteudo": { "type": "string" }
+      }
+    },
+    "Necessidade": {
+      "type": "object",
+      "properties": {
+        "id_necessidade": { "type": "integer" },
+        "id_animal": { "type": "integer" },
+        "nome": { "type": "string" },
+        "categoria": { "type": "string" },
+        "grau_importancia": { "type": "string" },
+        "descricao": { "type": "string" },
+        "botao": { "type": "string" },
+        "animal": { "type": "string", "description": "Nome do animal obtido no JOIN" }
+      }
+    },
+    "Evento": {
+      "type": "object",
+      "properties": {
+        "id_evento": { "type": "integer" },
+        "id_ong": { "type": "integer" },
+        "nome_evento": { "type": "string" },
+        "hora": { "type": "string" },
+        "data": { "type": "string" },
+        "endereco": { "type": "string" },
+        "categoria": { "type": "string" },
+        "localizacao": { "type": "string" },
+        "imagem": { "type": "string" },
+        "latitude": { "type": "number" },
+        "longitude": { "type": "number" },
+        "ong": { "type": "string", "description": "Nome da Ong associada" }
+      }
+    },
+    "HistoriaResponse": {
+      "type": "object",
+      "properties": {
+        "_id": { "type": "string" },
+        "id": { "type": "integer" },
+        "ong_id": { "type": "integer" },
+        "titulo": { "type": "string" },
+        "texto": { "type": "string" },
+        "imagens": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  }
+}
