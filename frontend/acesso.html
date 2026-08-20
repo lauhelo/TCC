@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Entrar - Entre laços</title>
+  <link rel="stylesheet" href="acesso.css">
+  <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+  <header class="cabecalho">
+    <div class="cabecalho-conteudo">
+      <div class="logo">
+        <img src="logo.png" alt="logo" height="40">
+        <span>Entre laços</span>
+      </div>
+
+      <nav class="menu-links">
+        <a href="index.html">Início</a>
+        <a href="animais.html">Animais</a>
+        <a href="doar.html">Doar</a>
+        <a href="eventos.html">Eventos</a>
+        <a href="historias.html">Histórias</a>
+        <a href="dicas.html">Dicas</a>
+      </nav>
+
+      <div class="perfil-topo">
+        <a class="botao-voltar" href="index.html">Voltar ao Início</a>
+      </div>
+
+    </div>
+  </header>
+
+  <section class="secao-acesso">
+    <div class="container-acesso">
+
+      <div class="conteudo-imagem">
+        <img src="https://i.pinimg.com/736x/28/ab/03/28ab03b5467e4af2ae0229b1aacf63d2.jpg" alt="Pet feliz">
+      </div>
+
+      <div class="card-acesso">
+        <h2>Entrar</h2>
+        <p>Acesse sua conta e continue espalhando amor</p>
+
+        <form id="formLogin">
+          <input id="login_email" type="email" placeholder="E-mail" required>
+          <input id="login_senha" type="password" placeholder="Senha" required>
+          <button type="submit" class="botao-principal">Entrar</button>
+        </form>
+
+        <span class="link-alternar"> Esqueceu sua senha? <a href="recusenha.html">Redefinir senha</a> </span>
+        <span class="link-alternar"> Não tem conta? <a href="cadastro.html">Cadastre-se</a> </span>
+      </div>
+
+    </div>
+    <script>
+      function atualizarInterface() {
+        const nomeOng = localStorage.getItem("nomeOngAtiva");
+        const perfilContainer = document.querySelector(".perfil-topo");
+
+        if (nomeOng && perfilContainer) {
+          perfilContainer.innerHTML = `
+                  <span style="color: #e67e22; font-weight: bold; margin-right: 15px;">ONG: ${nomeOng}</span>
+                  <a class="botao-voltar" href="#" onclick="sairDaOng()">Sair da ONG</a>
+              `;
+        }
+      }
+
+      function sairDaOng() {
+        localStorage.removeItem("idOngAtiva");
+        localStorage.removeItem("nomeOngAtiva");
+        window.location.reload();
+      }
+
+      window.addEventListener("DOMContentLoaded", atualizarInterface);
+
+      document.getElementById("formLogin").addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const email = document.getElementById("login_email").value;
+        const senha = document.getElementById("login_senha").value;
+
+        try {
+          const res = await fetch("http://localhost:3000/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, senha })
+          });
+
+          const data = await res.json();
+
+          if (!res.ok) {
+            alert(data.erro || "E-mail ou senha incorretos.");
+            return;
+          }
+
+          localStorage.setItem("token", data.token);
+          localStorage.setItem("tipoUsuario", data.usuario.tipo);
+          sessionStorage.setItem("nome", data.usuario.nome);
+
+          if (data.usuario.tipo === "ong") {
+            await verificarOngsECaminhar(data.token);
+          } else {
+            window.location.href = "index.html";
+          }
+
+        } catch (error) {
+          console.error("Erro ao conectar:", error);
+          alert("Erro ao conectar com o servidor.");
+        }
+      });
+
+      async function verificarOngsECaminhar(token) {
+        try {
+          const resOng = await fetch("http://localhost:3000/minhas-ongs", {
+            headers: { "Authorization": "Bearer " + token }
+          });
+
+          const ongs = await resOng.json();
+
+          if (resOng.ok && Array.isArray(ongs) && ongs.length > 0) {
+            window.location.href = "escolherOng.html";
+          } else {
+            window.location.href = "ong.html";
+          }
+        } catch (err) {
+          console.error("Erro ao verificar ONGs:", err);
+          window.location.href = "ong.html";
+        }
+      }
+
+    </script>
+</body>
+
+</html>

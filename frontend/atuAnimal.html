@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Atualizar Animal - Entre Laços</title>
+
+    <link rel="stylesheet" href="atuAnimal.css">
+
+    <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+    <!-- ================= CABEÇALHO ================= -->
+
+    <header class="cabecalho">
+
+        <div class="cabecalho-conteudo">
+
+            <div class="logo">
+                <img src="logo.png" alt="Logo Entre Laços" height="40">
+                <span>Entre Laços</span>
+            </div>
+
+            <nav class="menu-links">
+
+                <a href="index.html">Início</a>
+
+                <a href="animais.html" class="ativo">
+                    Animais
+                </a>
+
+                <a href="doar.html">
+                    Doar
+                </a>
+
+                <a href="eventos.html">
+                    Eventos
+                </a>
+
+                <a href="historias.html">
+                    Histórias
+                </a>
+
+                <a href="dicas.html">
+                    Dicas
+                </a>
+
+            </nav>
+
+            <div class="perfil-topo">
+
+                <a href="animais.html" class="botao-voltar">
+                    ← Voltar
+                </a>
+
+            </div>
+
+        </div>
+
+    </header>
+
+
+    <!-- ================= CONTEÚDO ================= -->
+
+    <main class="principal">
+
+        <div class="titulo-secao">
+
+            <span class="subtitulo">
+                🐾 Gerenciamento de animais
+            </span>
+
+            <h1>
+                Atualizar Animal
+            </h1>
+
+            <p id="subtitulo-passo">
+                Edite as informações do pet abaixo.
+            </p>
+
+        </div>
+
+
+        <form id="formAtualizar">
+
+            <div class="form-layout">
+
+
+                <!-- ================= FORMULÁRIO ================= -->
+
+                <div class="form-box">
+
+                    <div class="form-titulo">
+
+                        <div class="icone-form">
+                            🐾
+                        </div>
+
+                        <div>
+                            <h2>
+                                Informações do Pet
+                            </h2>
+
+                            <p>
+                                Atualize os dados do animal.
+                            </p>
+                        </div>
+
+                    </div>
+
+
+                    <!-- NOME -->
+
+                    <div class="campo">
+
+                        <label for="inputNome">
+                            Nome do Animal
+                        </label>
+
+                        <input type="text" name="nome" id="inputNome" placeholder="Digite o nome do animal" required>
+
+                    </div>
+
+
+                    <!-- ESPÉCIE -->
+
+                    <div class="campo">
+
+                        <label for="inputEspecie">
+                            Espécie
+                        </label>
+
+                        <select name="especie" id="inputEspecie" required>
+
+                            <option value="">
+                                Selecione a espécie
+                            </option>
+
+                            <option value="cachorro">
+                                🐶 Cachorro
+                            </option>
+
+                            <option value="gato">
+                                🐱 Gato
+                            </option>
+
+                            <option value="outro">
+                                🐾 Outro
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- RAÇA -->
+
+                    <div class="campo">
+
+                        <label for="inputRaca">
+                            Raça
+                        </label>
+
+                        <input type="text" name="raca" id="inputRaca" placeholder="Ex.: SRD, Golden Retriever..."
+                            required>
+
+                    </div>
+
+
+                    <!-- SEXO -->
+
+                    <div class="campo">
+
+                        <label for="inputSexo">
+                            Sexo
+                        </label>
+
+                        <select name="sexo" id="inputSexo" required>
+
+                            <option value="">
+                                Selecione
+                            </option>
+
+                            <option value="macho">
+                                ♂ Macho
+                            </option>
+
+                            <option value="fêmea">
+                                ♀ Fêmea
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- PORTE -->
+
+                    <div class="campo">
+
+                        <label for="inputPorte">
+                            Porte
+                        </label>
+
+                        <select name="porte" id="inputPorte" required>
+
+                            <option value="">
+                                Selecione o porte
+                            </option>
+
+                            <option value="pequeno">
+                                Pequeno
+                            </option>
+
+                            <option value="medio">
+                                Médio
+                            </option>
+
+                            <option value="grande">
+                                Grande
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- IDADE -->
+
+                    <div class="campo">
+
+                        <label for="inputIdade">
+                            Idade Aproximada
+                        </label>
+
+                        <input type="text" name="idade" id="inputIdade" placeholder="Ex.: 2 anos" required>
+
+                    </div>
+
+
+                    <!-- DESCRIÇÃO -->
+
+                    <div class="campo">
+
+                        <label for="inputDescricao">
+                            Descrição / História
+                        </label>
+
+                        <textarea name="descricao" id="inputDescricao" placeholder="Conte um pouco sobre o animal..."
+                            required></textarea>
+
+                    </div>
+
+
+                    <!-- STATUS -->
+
+                    <div class="campo">
+
+                        <label for="selectStatus">
+                            Status Atual
+                        </label>
+
+                        <select name="status" id="selectStatus" required>
+
+                            <option value="">
+                                Selecione o status
+                            </option>
+
+                            <option value="Disponível">
+                                Disponível
+                            </option>
+
+                            <option value="Em Adoção">
+                                Em Processo de Adoção
+                            </option>
+
+                            <option value="Adotado">
+                                Adotado
+                            </option>
+
+                            <option value="Urgente">
+                                🔥 Urgente (Lar Temporário)
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- FOTO -->
+
+                    <div class="campo">
+
+                        <label for="inputFoto">
+                            Alterar Foto
+                        </label>
+
+                        <div class="arquivo-container">
+
+                            <input type="file" id="inputFoto" accept="image/*">
+
+                            <small>
+                                Deixe vazio para manter a foto atual.
+                            </small>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- BOTÕES -->
+
+                    <div class="form-acoes">
+
+                        <button type="submit" class="btn-salvar">
+                            ✓ Salvar Alterações
+                        </button>
+
+                        <a href="animais.html" class="btn-cancelar">
+                            Cancelar
+                        </a>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ================= IMAGEM ================= -->
+
+                <div class="conteudo-imagem">
+
+                    <div class="imagem-card">
+
+                        <img src="https://i.pinimg.com/736x/0d/12/22/0d1222299fdca39826941f5f3215bc5c.jpg"
+                            alt="Pet feliz">
+
+                        <div class="imagem-texto">
+
+                            <span>
+                                🐾 Entre Laços
+                            </span>
+
+                            <h3>
+                                Cada animal merece uma nova chance.
+                            </h3>
+
+                            <p>
+                                Mantenha as informações sempre atualizadas
+                                para facilitar a adoção responsável.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </form>
+
+    </main>
+
+
+    <!-- ================= RODAPÉ ================= -->
+
+    <footer class="fim">
+
+        <div class="fim-container">
+
+            <div class="fim-sobre">
+
+                <div class="fim-logo">
+
+                    <img src="logo.png" alt="logo" height="40">
+
+                    <h3>
+                        Entre Laços
+                    </h3>
+
+                </div>
+
+                <p>
+                    Conectando corações e transformando vidas.
+                    Nossa missão é encontrar lares amorosos para
+                    animais resgatados e promover a posse responsável.
+                </p>
+
+            </div>
+
+
+            <div class="fim-contato">
+
+                <h4>
+                    Contato
+                </h4>
+
+                <span>
+                    Email: contato@entrelacos.org
+                </span>
+
+                <span>
+                    Telefone: (00) 00000-0000
+                </span>
+
+                <span>
+                    Facebook: entrelaços.consulta
+                </span>
+
+                <span>
+                    Instagram: entrelaços.consulta
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="fim-copy">
+
+            © 2026 Entre Laços. Todos os direitos reservados.
+
+        </div>
+
+    </footer>
+
+
+    <!-- ================= JAVASCRIPT ================= -->
+
+    <script>
+
+        const formAtualizar =
+            document.getElementById("formAtualizar");
+
+        const urlParams =
+            new URLSearchParams(window.location.search);
+
+        const idAnimal =
+            urlParams.get("id");
+
+
+        /* ================= CARREGAR DADOS ================= */
+
+        document.addEventListener(
+            "DOMContentLoaded",
+            async () => {
+
+                if (!idAnimal) {
+
+                    console.error(
+                        "ID do animal não encontrado na URL."
+                    );
+
+                    return;
+                }
+
+
+                try {
+
+                    const token =
+                        localStorage.getItem("token");
+
+
+                    const res =
+                        await fetch(
+                            `http://localhost:3000/animal/${idAnimal}`,
+                            {
+                                headers: {
+                                    "Authorization":
+                                        `Bearer ${token}`
+                                }
+                            }
+                        );
+
+
+                    if (res.ok) {
+
+                        const pet =
+                            await res.json();
+
+
+                        if (formAtualizar.nome)
+                            formAtualizar.nome.value =
+                                pet.nome || "";
+
+
+                        if (formAtualizar.especie)
+                            formAtualizar.especie.value =
+                                pet.especie || "cachorro";
+
+
+                        if (formAtualizar.raca)
+                            formAtualizar.raca.value =
+                                pet.raca || "";
+
+
+                        if (formAtualizar.sexo)
+                            formAtualizar.sexo.value =
+                                pet.sexo || "macho";
+
+
+                        if (formAtualizar.porte)
+                            formAtualizar.porte.value =
+                                pet.porte || "medio";
+
+
+                        if (formAtualizar.idade)
+                            formAtualizar.idade.value =
+                                pet.idade || "";
+
+
+                        if (formAtualizar.descricao)
+                            formAtualizar.descricao.value =
+                                pet.descricao || "";
+
+
+                        if (formAtualizar.status)
+                            formAtualizar.status.value =
+                                pet.status || "";
+
+                    }
+
+                } catch (err) {
+
+                    console.error(
+                        "Erro na requisição GET:",
+                        err
+                    );
+
+                }
+
+            }
+        );
+
+
+        /* ================= BASE64 ================= */
+
+        const converterParaBase64 =
+            (file) => {
+
+                return new Promise(
+                    (resolve, reject) => {
+
+                        const reader =
+                            new FileReader();
+
+                        reader.readAsDataURL(file);
+
+                        reader.onload =
+                            () => resolve(reader.result);
+
+                        reader.onerror =
+                            (error) => reject(error);
+
+                    }
+                );
+
+            };
+
+
+        /* ================= ATUALIZAR ================= */
+
+        formAtualizar.addEventListener(
+            "submit",
+            async function (e) {
+
+                e.preventDefault();
+
+
+                const token =
+                    localStorage.getItem("token");
+
+
+                const inputFoto =
+                    document.getElementById(
+                        "inputFoto"
+                    );
+
+
+                const fotoArquivo =
+                    inputFoto.files[0];
+
+
+                let fotoBase64 = "";
+
+
+                if (fotoArquivo) {
+
+                    fotoBase64 =
+                        await converterParaBase64(
+                            fotoArquivo
+                        );
+
+                }
+
+
+                const formData =
+                    new FormData(this);
+
+
+                const dadosAtualizados = {
+
+                    nome:
+                        formData.get("nome"),
+
+                    especie:
+                        formData.get("especie"),
+
+                    raca:
+                        formData.get("raca"),
+
+                    porte:
+                        formData.get("porte"),
+
+                    idade:
+                        formData.get("idade"),
+
+                    sexo:
+                        formData.get("sexo"),
+
+                    descricao:
+                        formData.get("descricao"),
+
+                    status:
+                        formData.get("status"),
+
+                    imagem:
+                        fotoBase64
+
+                };
+
+
+                try {
+
+                    const resposta =
+                        await fetch(
+                            `http://localhost:3000/atualizarAnimal/${idAnimal}`,
+                            {
+
+                                method: "PUT",
+
+                                headers: {
+
+                                    "Content-Type":
+                                        "application/json",
+
+                                    "Authorization":
+                                        `Bearer ${token}`
+
+                                },
+
+                                body:
+                                    JSON.stringify(
+                                        dadosAtualizados
+                                    )
+
+                            }
+                        );
+
+
+                    const resultado =
+                        await resposta.json();
+
+
+                    if (resposta.ok) {
+
+                        alert(
+                            "Animal atualizado com sucesso!"
+                        );
+
+                        window.location.href =
+                            "animais.html";
+
+                    } else {
+
+                        alert(
+                            "Erro: " +
+                            (
+                                resultado.erro ||
+                                "Falha ao atualizar"
+                            )
+                        );
+
+                    }
+
+
+                } catch (err) {
+
+                    console.error(
+                        "ERRO NO SUBMIT:",
+                        err
+                    );
+
+                    alert(
+                        "Erro de conexão com o servidor."
+                    );
+
+                }
+
+            }
+        );
+
+    </script>
+
+</body>
+
+</html>
