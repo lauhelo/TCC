@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Entrar - Entre laços</title>
+  <link rel="stylesheet" href="acesso.css">
+  <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+  <header class="cabecalho">
+    <div class="cabecalho-conteudo">
+      <div class="logo">
+        <img src="logo.png" alt="logo" height="40">
+        <span>Entre laços</span>
+      </div>
+
+      <nav class="menu-links">
+        <a href="index.html">Início</a>
+        <a href="animais.html">Animais</a>
+        <a href="doar.html">Doar</a>
+        <a href="eventos.html">Eventos</a>
+        <a href="historias.html">Histórias</a>
+        <a href="dicas.html">Dicas</a>
+      </nav>
+
+      <div class="perfil-topo">
+        <a class="botao-voltar" href="index.html">Voltar ao Início</a>
+      </div>
+
+    </div>
+  </header>
+  <section class="secao-acesso">
+    <div class="container-acesso">
+      <div class="conteudo-imagem">
+        <img src="https://www.petlove.com.br/images/breeds/193070/profile/original/dalmata-p.jpg?1532538995" alt="Pet feliz">
+      </div>
+
+      <div class="card-acesso">
+        <h2>Criar Nova Senha</h2>
+        <p>Confirme seus dados para validar a alteração.</p>
+
+        <form id="formRedefinir">
+          <input id="ref_email" type="email" placeholder="Seu e-mail cadastrado" required>
+          
+          <input id="ref_senha" type="password" placeholder="Nova Senha" required>
+          <input id="ref_confirmar" type="password" placeholder="Confirmar Nova Senha" required>
+
+          <input id="ref_palavra_chave" type="text" placeholder="Sua palavra-chave de segurança" required 
+                 style="border: 2px solid #ffbf88;">
+
+          <button type="submit" class="botao-principal">Atualizar Senha</button>
+        </form>
+
+        <span class="link-alternar"> Voltar para o <a href="acesso.html">Login</a></span>
+      </div>
+    </div>
+  </section>
+  <script>
+    document.getElementById("formRedefinir").addEventListener("submit", async function (e) {
+      e.preventDefault();
+  
+      const email = document.getElementById("ref_email").value;
+      const palavra_chave = document.getElementById("ref_palavra_chave").value;
+      const senha = document.getElementById("ref_senha").value;
+      const confirmar_senha = document.getElementById("ref_confirmar").value;
+  
+      if (senha !== confirmar_senha) {
+        alert("As senhas não coincidem!");
+        return;
+      }
+  
+      try {
+        const resposta = await fetch("http://localhost:3000/recuperar-senha", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: email,
+            palavra_chave: palavra_chave,
+            senha: senha,
+            confirmar_senha: confirmar_senha 
+          })
+        });
+  
+        const resultado = await resposta.json();
+  
+        if (resposta.ok) {
+          alert("Senha alterada com sucesso!");
+          window.location.href = "acesso.html";
+        } else {
+
+          alert(resultado.erro || "Erro ao atualizar senha.");
+        }
+      } catch (erro) {
+        console.error("Erro na conexão:", erro);
+        alert("Erro ao conectar com o servidor.");
+      }
+    });
+  </script>
+</body>
+</html>
