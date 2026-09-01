@@ -1,0 +1,25 @@
+paginas que já estão totalmente prontas 
+
+index-
+doar - certo 
+animais- certo mas arrumas as cores e botões
+historias - certo mas arrumas as cores e botões
+eventos- 
+dicas- certo mas arrumas as cores e botões
+ong- certo
+
+DEIXAR AS PAGINAS PADRAO 
+
+colocar editar perfil
+
+colocar a opção de chat bot para duvidas
+
+uma parte de como usar o site 
+
+arrumar os botões para deixar padrao
+
+p ver se a cidade, numero, CNPJ, etc já existem
+ter mínimo de caracteres nos campos de cadastros
+padronizar o css
+
+ARRUMAR AS COISAS DO INDEX 
