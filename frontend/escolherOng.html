@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Escolha de ONGs - Entre Laços</title>
+
+    <link rel="stylesheet" href="escolherOng.css">
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600;700&display=swap"
+        rel="stylesheet">
+</head>
+
+<body onload="carregarOngs()">
+
+    <!-- =====================================================
+         CABEÇALHO
+    ====================================================== -->
+
+    <header class="cabecalho">
+
+        <div class="cabecalho-conteudo">
+
+            <div class="logo">
+
+                <img
+                    src="logo.png"
+                    alt="Logo Entre Laços">
+
+                <span>Entre laços</span>
+
+            </div>
+
+
+            <nav class="menu-links">
+
+                <a
+                    href="index.html"
+                    onclick="return verificarNavegacao(event)">
+                    Início
+                </a>
+
+                <a
+                    href="animais.html"
+                    onclick="return verificarNavegacao(event)">
+                    Animais
+                </a>
+
+                <a
+                    href="doar.html"
+                    onclick="return verificarNavegacao(event)">
+                    Doar
+                </a>
+
+                <a
+                    href="eventos.html"
+                    onclick="return verificarNavegacao(event)">
+                    Eventos
+                </a>
+
+                <a
+                    href="historias.html"
+                    onclick="return verificarNavegacao(event)">
+                    Histórias
+                </a>
+
+                <a
+                    href="dicas.html"
+                    onclick="return verificarNavegacao(event)">
+                    Dicas
+                </a>
+
+            </nav>
+
+
+            <div class="perfil-topo">
+
+                <a
+                    class="botao-principal"
+                    href="index.html">
+
+                    Voltar ao Início
+
+                </a>
+
+            </div>
+
+        </div>
+
+    </header>
+
+
+    <!-- =====================================================
+         CONTEÚDO PRINCIPAL
+    ====================================================== -->
+
+    <main class="container-escolha">
+
+        <div class="titulo-principal">
+
+            <h1>Suas Instituições</h1>
+
+            <p>
+                Você precisa selecionar uma ONG para gerenciar
+                antes de continuar.
+            </p>
+
+        </div>
+
+
+        <!-- LISTA DAS ONGS -->
+
+        <div id="listaOngs" class="lista-ongs">
+
+            <p class="carregando">
+                Buscando suas ONGs...
+            </p>
+
+        </div>
+
+
+        <!-- CADASTRAR NOVA ONG -->
+
+        <button
+            class="btn-novo"
+            onclick="window.location.href='ong.html'">
+
+            <span>+</span>
+            Cadastrar Nova ONG
+
+        </button>
+
+    </main>
+
+
+    <!-- =====================================================
+         MODAL DE EDIÇÃO
+    ====================================================== -->
+
+    <div
+        id="modalEdicao"
+        class="modal-overlay">
+
+        <div class="modal-container">
+
+
+            <!-- IMAGEM DO MODAL -->
+
+            <div class="modal-imagem">
+
+                <img
+                    src="https://i.pinimg.com/736x/2a/a7/1d/2aa71d842b5f08aed5867fa5f56ece31.jpg"
+                    alt="Animal feliz">
+
+            </div>
+
+
+            <!-- CONTEÚDO DO MODAL -->
+
+            <div class="modal-conteudo">
+
+                <div class="modal-titulo">
+
+                    <h2>
+                        Editar Informações
+                    </h2>
+
+                    <p>
+                        Atualize os dados da sua ONG para manter
+                        suas informações sempre corretas.
+                    </p>
+
+                </div>
+
+
+                <!-- FORMULÁRIO -->
+
+                <form id="formEdicao">
+
+                    <input
+                        id="editId"
+                        type="hidden">
+
+
+                    <!-- NOME -->
+
+                    <div class="campo-modal">
+
+                        <label for="editNome">
+                            Nome da ONG:
+                        </label>
+
+                        <input
+                            id="editNome"
+                            type="text"
+                            placeholder="Nome da ONG"
+                            required>
+
+                    </div>
+
+
+                    <!-- E-MAIL -->
+
+                    <div class="campo-modal">
+
+                        <label for="editEmail">
+                            E-mail:
+                        </label>
+
+                        <input
+                            id="editEmail"
+                            type="email"
+                            placeholder="E-mail"
+                            required>
+
+                    </div>
+
+
+                    <!-- TELEFONE -->
+
+                    <div class="campo-modal">
+
+                        <label for="editTelefone">
+                            Telefone:
+                        </label>
+
+                        <input
+                            id="editTelefone"
+                            type="text"
+                            placeholder="Telefone"
+                            required>
+
+                    </div>
+
+
+                    <!-- ENDEREÇO -->
+
+                    <div class="campo-modal">
+
+                        <label for="editEndereco">
+                            Endereço:
+                        </label>
+
+                        <input
+                            id="editEndereco"
+                            type="text"
+                            placeholder="Endereço"
+                            required>
+
+                    </div>
+
+
+                    <!-- CIDADE / UF / PIX -->
+
+                    <div class="linha-modal">
+
+                        <div class="campo-modal campo-cidade">
+
+                            <label for="editCidade">
+                                Cidade:
+                            </label>
+
+                            <input
+                                id="editCidade"
+                                type="text"
+                                placeholder="Cidade"
+                                required>
+
+                        </div>
+
+
+                        <div class="campo-modal campo-uf">
+
+                            <label for="editEstado">
+                                UF:
+                            </label>
+
+                            <input
+                                id="editEstado"
+                                type="text"
+                                placeholder="UF"
+                                maxlength="2"
+                                required>
+
+                        </div>
+
+
+                        <div class="campo-modal campo-pix">
+
+                            <label for="editPix">
+                                Chave PIX:
+                            </label>
+
+                            <input
+                                id="editPix"
+                                type="text"
+                                placeholder="Chave PIX">
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- DESCRIÇÃO -->
+
+                    <div class="campo-modal">
+
+                        <label for="editTrabalho">
+                            Descrição:
+                        </label>
+
+                        <textarea
+                            id="editTrabalho"
+                            placeholder="Descrição / Trabalho oferecido"
+                            rows="3"></textarea>
+
+                    </div>
+
+
+                    <!-- BOTÕES -->
+
+                    <div class="botoes-modal">
+
+                        <button
+                            type="button"
+                            class="btn-cancelar"
+                            onclick="fecharModal()">
+
+                            Voltar
+
+                        </button>
+
+
+                        <button
+                            type="submit"
+                            class="btn-salvar">
+
+                            Salvar Alterações
+
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         JAVASCRIPT
+    ====================================================== -->
+
+    <script>
+
+        /* =====================================================
+           VERIFICAR NAVEGAÇÃO
+        ====================================================== */
+
+        function verificarNavegacao(event) {
+
+            const tipoUsuario =
+                localStorage.getItem("tipoUsuario");
+
+            const ongAtiva =
+                localStorage.getItem("idOngAtiva");
+
+
+            if (
+                tipoUsuario === "ong" &&
+                (!ongAtiva || ongAtiva === "null")
+            ) {
+
+                event.preventDefault();
+
+                alert(
+                    "Acesso Bloqueado: Selecione uma ONG na lista abaixo para poder gerenciar o sistema."
+                );
+
+                return false;
+            }
+
+
+            return true;
+        }
+
+
+        /* =====================================================
+           CARREGAR ONGS
+        ====================================================== */
+
+        async function carregarOngs() {
+
+            localStorage.removeItem("idOngAtiva");
+
+            localStorage.removeItem("nomeOngAtiva");
+
+
+            const token =
+                localStorage.getItem("token");
+
+
+            if (!token) {
+
+                alert(
+                    "Sessão expirada. Faça login novamente."
+                );
+
+                window.location.href =
+                    "acesso.html";
+
+                return;
+            }
+
+
+            try {
+
+                const res = await fetch(
+                    "http://localhost:3000/minhas-ongs",
+                    {
+                        method: "GET",
+
+                        headers: {
+                            "Authorization":
+                                "Bearer " + token
+                        }
+                    }
+                );
+
+
+                if (!res.ok) {
+
+                    throw new Error(
+                        "Erro ao carregar as ONGs."
+                    );
+
+                }
+
+
+                const ongs =
+                    await res.json();
+
+
+                const container =
+                    document.getElementById(
+                        "listaOngs"
+                    );
+
+
+                /* =================================================
+                   NENHUMA ONG
+                ================================================== */
+
+                if (ongs.length === 0) {
+
+                    container.innerHTML = `
+
+                        <div class="sem-ongs">
+
+                            <div class="icone-sem-ongs">
+                                ♡
+                            </div>
+
+                            <h3>
+                                Nenhuma ONG cadastrada
+                            </h3>
+
+                            <p>
+                                Clique no botão abaixo para
+                                cadastrar sua primeira instituição.
+                            </p>
+
+                        </div>
+
+                    `;
+
+                    return;
+                }
+
+
+                /* =================================================
+                   MONTAR CARDS
+                ================================================== */
+
+                container.innerHTML = ongs.map(
+                    ong => `
+
+                    <div class="card-ong">
+
+                        <div class="info-ong">
+
+                            <h3>
+                                ${ong.nome}
+                            </h3>
+
+
+                            <p class="localizacao">
+                                📍
+                                ${ong.cidade || "Cidade"}
+                                -
+                                ${ong.estado || "UF"}
+                            </p>
+
+
+                            <p class="cnpj">
+                                CNPJ:
+                                ${ong.cnpj || "Não informado"}
+                            </p>
+
+
+                            <div class="acoes-admin">
+
+                                <button
+                                    class="btn-editar"
+                                    onclick='abrirModalEdicao(${JSON.stringify(ong)})'>
+
+                                    ✏️ Editar
+
+                                </button>
+
+
+                                <button
+                                    class="btn-excluir"
+                                    onclick="deletarOng('${ong.id_ong}')">
+
+                                    🗑️ Excluir
+
+                                </button>
+
+                            </div>
+
+                        </div>
+
+
+                        <button
+                            class="btn-selecionar"
+                            onclick="selecionarOng('${ong.id_ong}', '${ong.nome.replace(/'/g, "\\'")}')">
+
+                            Gerenciar
+
+                        </button>
+
+                    </div>
+
+                `
+                ).join("");
+
+            }
+
+            catch (err) {
+
+                console.error(err);
+
+                document.getElementById(
+                    "listaOngs"
+                ).innerHTML = `
+
+                    <div class="erro-ongs">
+
+                        <p>
+                            Erro ao conectar com o servidor.
+                        </p>
+
+                        <span>
+                            Tente novamente mais tarde.
+                        </span>
+
+                    </div>
+
+                `;
+
+            }
+
+        }
+
+
+        /* =====================================================
+           SELECIONAR ONG
+        ====================================================== */
+
+        function selecionarOng(id, nome) {
+
+            localStorage.setItem(
+                "idOngAtiva",
+                id
+            );
+
+
+            localStorage.setItem(
+                "nomeOngAtiva",
+                nome
+            );
+
+
+            window.location.href =
+                "index.html";
+        }
+
+
+        /* =====================================================
+           ABRIR MODAL DE EDIÇÃO
+        ====================================================== */
+
+        function abrirModalEdicao(ong) {
+
+            document.getElementById(
+                "editId"
+            ).value =
+                ong.id_ong;
+
+
+            document.getElementById(
+                "editNome"
+            ).value =
+                ong.nome || "";
+
+
+            document.getElementById(
+                "editEmail"
+            ).value =
+                ong.email || "";
+
+
+            document.getElementById(
+                "editTelefone"
+            ).value =
+                ong.telefone || "";
+
+
+            document.getElementById(
+                "editEndereco"
+            ).value =
+                ong.endereco || "";
+
+
+            document.getElementById(
+                "editCidade"
+            ).value =
+                ong.cidade || "";
+
+
+            document.getElementById(
+                "editEstado"
+            ).value =
+                ong.estado || "";
+
+
+            document.getElementById(
+                "editPix"
+            ).value =
+                ong.pix || "";
+
+
+            document.getElementById(
+                "editTrabalho"
+            ).value =
+                ong.trabalho_ofe || "";
+
+
+            document.getElementById(
+                "modalEdicao"
+            ).style.display = "flex";
+
+
+            document.body.classList.add(
+                "modal-aberto"
+            );
+
+        }
+
+
+        /* =====================================================
+           FECHAR MODAL
+        ====================================================== */
+
+        function fecharModal() {
+
+            document.getElementById(
+                "modalEdicao"
+            ).style.display = "none";
+
+
+            document.body.classList.remove(
+                "modal-aberto"
+            );
+
+        }
+
+
+        /* =====================================================
+           FECHAR CLICANDO NO FUNDO
+        ====================================================== */
+
+        document
+            .getElementById("modalEdicao")
+            .addEventListener(
+                "click",
+                function (event) {
+
+                    if (
+                        event.target ===
+                        this
+                    ) {
+
+                        fecharModal();
+
+                    }
+
+                }
+            );
+
+
+        /* =====================================================
+           TECLA ESC
+        ====================================================== */
+
+        document.addEventListener(
+            "keydown",
+            function (event) {
+
+                if (
+                    event.key === "Escape"
+                ) {
+
+                    fecharModal();
+
+                }
+
+            }
+        );
+
+
+        /* =====================================================
+           ENVIAR EDIÇÃO
+        ====================================================== */
+
+        document
+            .getElementById("formEdicao")
+            .addEventListener(
+                "submit",
+                async function (e) {
+
+                    e.preventDefault();
+
+
+                    const idOng =
+                        document.getElementById(
+                            "editId"
+                        ).value;
+
+
+                    const token =
+                        localStorage.getItem(
+                            "token"
+                        );
+
+
+                    const dados = {
+
+                        nome:
+                            document.getElementById(
+                                "editNome"
+                            ).value,
+
+                        email:
+                            document.getElementById(
+                                "editEmail"
+                            ).value,
+
+                        telefone:
+                            document.getElementById(
+                                "editTelefone"
+                            ).value,
+
+                        endereco:
+                            document.getElementById(
+                                "editEndereco"
+                            ).value,
+
+                        cidade:
+                            document.getElementById(
+                                "editCidade"
+                            ).value,
+
+                        estado:
+                            document.getElementById(
+                                "editEstado"
+                            ).value
+                            .toUpperCase(),
+
+                        pix:
+                            document.getElementById(
+                                "editPix"
+                            ).value,
+
+                        trabalho_ofe:
+                            document.getElementById(
+                                "editTrabalho"
+                            ).value
+
+                    };
+
+
+                    try {
+
+                        const res =
+                            await fetch(
+                                `http://localhost:3000/atualizarOng/${idOng}`,
+                                {
+                                    method: "PUT",
+
+                                    headers: {
+
+                                        "Content-Type":
+                                            "application/json",
+
+                                        "Authorization":
+                                            `Bearer ${token}`
+
+                                    },
+
+                                    body:
+                                        JSON.stringify(
+                                            dados
+                                        )
+
+                                }
+                            );
+
+
+                        if (res.ok) {
+
+                            alert(
+                                "ONG atualizada com sucesso!"
+                            );
+
+
+                            fecharModal();
+
+
+                            carregarOngs();
+
+                        }
+
+                        else {
+
+                            const erro =
+                                await res.json()
+                                    .catch(
+                                        () => ({})
+                                    );
+
+
+                            alert(
+                                erro.erro ||
+                                "Erro ao atualizar a instituição."
+                            );
+
+                        }
+
+                    }
+
+                    catch (err) {
+
+                        console.error(err);
+
+                        alert(
+                            "Erro de conexão ao salvar."
+                        );
+
+                    }
+
+                }
+            );
+
+
+        /* =====================================================
+           EXCLUIR ONG
+        ====================================================== */
+
+        async function deletarOng(id) {
+
+            const confirmar =
+                confirm(
+                    "Tem certeza que deseja excluir esta ONG permanentemente?"
+                );
+
+
+            if (!confirmar) {
+                return;
+            }
+
+
+            const token =
+                localStorage.getItem(
+                    "token"
+                );
+
+
+            try {
+
+                const res =
+                    await fetch(
+                        `http://localhost:3000/deletarOng/${id}`,
+                        {
+                            method: "DELETE",
+
+                            headers: {
+                                "Authorization":
+                                    `Bearer ${token}`
+                            }
+                        }
+                    );
+
+
+                if (res.ok) {
+
+                    alert(
+                        "ONG removida com sucesso!"
+                    );
+
+
+                    carregarOngs();
+
+                }
+
+                else {
+
+                    const erro =
+                        await res.json()
+                            .catch(
+                                () => ({})
+                            );
+
+
+                    alert(
+                        erro.erro ||
+                        "Erro ao excluir a instituição."
+                    );
+
+                }
+
+            }
+
+            catch (err) {
+
+                console.error(err);
+
+                alert(
+                    "Erro de conexão."
+                );
+
+            }
+
+        }
+
+    </script>
+
+</body>
+
+</html>

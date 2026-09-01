@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Entre Laços</title>
+  <link rel="stylesheet" href="index.css">
+  <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<header class="cabecalho">
+  <div class="cabecalho-conteudo">
+    <div class="logo">
+      <img src="logo.png" alt="Logo Entre Laços">
+      <span>Entre Laços</span>
+    </div>
+
+    <nav class="menu-links">
+      <a class="ativo" href="index.html">Início</a>
+      <a href="animais.html">Animais</a>
+      <a href="doar.html">Doar</a>
+      <a href="eventos.html">Eventos</a>
+      <a href="historias.html">Histórias</a>
+      <a href="dicas.html">Dicas</a>
+    </nav>
+
+    <div class="perfil-topo">
+      <a id="link-entrar" class="nome-usuario" href="acesso.html">Cadastrar / Entrar</a>
+      <a id="link-sair" class="nome-usuario sair" href="#" style="display:none;">Sair da sua conta</a>
+    </div>
+  </div>
+</header>
+
+<section class="inicio">
+  <div class="inicio-texto">
+    <h1>Encontre o seu novo melhor amigo!</h1>
+    <p>
+      Adotar é permitir que o amor encontre um lar, criando laços que duram para sempre.<br>
+      Adote um animal resgatado e faça parte dessa história de amor e cuidado.
+    </p>
+
+    <div class="inicio-botoes">
+      <a class="botao-principal" href="animais.html">Quero adotar</a>
+      <a class="botao-secundario" href="doar.html">Fazer doação</a>
+      <a href="eventos.html" class="botao-principal botao-campanhas">Campanhas e eventos</a>
+    </div>
+  </div>
+
+  <div class="inicio-imagem">
+    <img src="https://i.pinimg.com/1200x/37/6f/00/376f002fee8437ce9569d1534af4b708.jpg" alt="Cachorro para adoção">
+
+    <div class="badge carddireito">
+      <span class="icon">❤</span>
+      <div>
+        <strong>Adoção Responsável</strong>
+        <p>Amor para sempre</p>
+      </div>
+    </div>
+
+    <div class="badge cardesquerdo">
+      <span class="icon">★</span>
+      <div>
+        <strong id="contador-animais">+0</strong>
+        <p>Animais cadastrados</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="secao-pets">
+  <div class="cabecalho-secao">
+    <div>
+      <h2>Esperando por você</h2>
+      <p>Conheça os animais disponíveis para adoção e encontre seu novo companheiro</p>
+    </div>
+    <a href="animais.html" class="ver-todos">Ver todos →</a>
+  </div>
+
+  <div class="grade-pets" id="lista-animais-inicio">
+    <div class="carregando-animais">
+      <p>Carregando animais...</p>
+    </div>
+  </div>
+</section>
+
+<section class="eventos" id="secao-eventos">
+  <div class="eventos-container">
+    <div class="eventos-topo">
+      <div>
+        <h2>Próximos Eventos</h2>
+        <p>Participe de campanhas e feiras de adoção.</p>
+      </div>
+      <a href="eventos.html" class="ver-todos">Ver todos →</a>
+    </div>
+
+    <div class="cards-eventos" id="lista-eventos">
+      <div class="carregando-eventos">
+        <p>Carregando eventos...</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="necessidades">
+  <div class="locais-ne">
+    <h2>Necessidades Urgentes</h2>
+    <span>Esses animais precisam de ajuda imediata</span>
+
+    <a href="doar.html" class="ver-todos">Ver todos →</a>
+
+    <p class="texto-necessidades">
+      Na página Doar, você encontra as necessidades cadastradas pelas ONGs e pode escolher como ajudar.
+    </p>
+
+    <div class="card-nece-container" id="necessidadesUrgentes">
+      <div class="nenhuma-necessidade">
+        <div class="emoji-necessidade">🐾</div>
+        <h3>Carregando necessidades...</h3>
+        <p>Buscando necessidades cadastradas pelas ONGs.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="fim">
+  <div class="fim-container">
+    <div class="fim-sobre">
+      <div class="fim-logo">
+        <img src="logo.png" alt="Logo Entre Laços">
+        <h3>Entre Laços</h3>
+      </div>
+
+      <p>
+        Conectando corações e transformando vidas. Nossa missão é encontrar
+        lares amorosos para animais resgatados e promover a posse responsável.
+      </p>
+    </div>
+
+    <div class="fim-contato">
+      <h4>Contato</h4>
+      <span>Email: contato@entrelacos.org</span>
+      <span>Telefone: (00) 00000-0000</span>
+      <span>Facebook: entrelaços.consulta</span>
+      <span>Instagram: entrelaços.consulta</span>
+    </div>
+  </div>
+
+  <div class="fim-copy">© 2026 Entre Laços. Todos os direitos reservados.</div>
+</section>
+
+<script>
+const API = "http://localhost:3000";
+
+const linkEntrar = document.getElementById("link-entrar");
+const linkSair = document.getElementById("link-sair");
+const perfilContainer = document.querySelector(".perfil-topo");
+
+function usuarioEstaLogado() {
+  return !!(
+    localStorage.getItem("token") ||
+    sessionStorage.getItem("token")
+  );
+}
+
+function obterToken() {
+  return localStorage.getItem("token") ||
+    sessionStorage.getItem("token") ||
+    "";
+}
+
+function escaparHTML(texto) {
+  const div = document.createElement("div");
+  div.textContent = texto ?? "";
+  return div.innerHTML;
+}
+
+function normalizar(texto) {
+  return String(texto ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+}
+
+function extrairLista(dados) {
+  if (Array.isArray(dados)) {
+    return dados;
+  }
+
+  if (Array.isArray(dados?.animais)) {
+    return dados.animais;
+  }
+
+  if (Array.isArray(dados?.necessidades)) {
+    return dados.necessidades;
+  }
+
+  if (Array.isArray(dados?.resultado)) {
+    return dados.resultado;
+  }
+
+  if (Array.isArray(dados?.dados)) {
+    return dados.dados;
+  }
+
+  if (Array.isArray(dados?.rows)) {
+    return dados.rows;
+  }
+
+  if (Array.isArray(dados?.result)) {
+    return dados.result;
+  }
+
+  return [];
+}
+
+function atualizarInterface() {
+  const nomeOng = localStorage.getItem("nomeOngAtiva");
+  const tipoUsuario = localStorage.getItem("tipoUsuario");
+  const nomeUsuario =
+    sessionStorage.getItem("nome") ||
+    localStorage.getItem("nomeUsuario") ||
+    localStorage.getItem("nome") ||
+    "Usuário";
+
+  perfilContainer.querySelectorAll(".info-dinamica").forEach(elemento => {
+    elemento.remove();
+  });
+
+  if (usuarioEstaLogado()) {
+    linkEntrar.style.display = "none";
+    linkSair.style.display = "inline";
+
+    const infoUser = document.createElement("span");
+    infoUser.className = "info-dinamica";
+
+    if (normalizar(tipoUsuario) === "ong" && nomeOng) {
+      infoUser.innerHTML = `<strong>ONG: ${escaparHTML(nomeOng)}</strong>`;
+      linkSair.textContent = "Sair / Trocar ONG";
+    } else {
+      infoUser.textContent = `Olá, ${nomeUsuario}`;
+      linkSair.textContent = "Sair da conta";
+    }
+
+    perfilContainer.insertBefore(infoUser, linkSair);
+  } else {
+    linkEntrar.style.display = "inline";
+    linkSair.style.display = "none";
+  }
+}
+
+function obterImagemAnimal(animal) {
+  return animal?.imagem ||
+    animal?.foto ||
+    animal?.foto_animal ||
+    animal?.imagem_animal ||
+    animal?.fotoAnimal ||
+    animal?.url_imagem ||
+    "https://i.pinimg.com/1200x/37/6f/00/376f002fee8437ce9569d1534af4b708.jpg";
+}
+
+function obterNomeAnimal(animal) {
+  return animal?.nome ||
+    animal?.nome_animal ||
+    animal?.nomeAnimal ||
+    "Animal";
+}
+
+function obterEspecieAnimal(animal) {
+  return animal?.especie ||
+    animal?.tipo ||
+    animal?.tipo_animal ||
+    "Animal";
+}
+
+function obterSexoAnimal(animal) {
+  return animal?.sexo ||
+    animal?.genero ||
+    "Não informado";
+}
+
+function obterPorteAnimal(animal) {
+  return animal?.porte ||
+    animal?.tamanho ||
+    "Não informado";
+}
+
+function obterLocalAnimal(animal) {
+  if (animal?.cidade && animal?.estado) {
+    return `${animal.cidade} - ${animal.estado}`;
+  }
+
+  return animal?.cidade ||
+    animal?.localizacao ||
+    animal?.endereco ||
+    "Local não informado";
+}
+
+function obterIdAnimal(animal) {
+  return animal?.id_animal ||
+    animal?.idAnimal ||
+    animal?.id ||
+    animal?.ID ||
+    "";
+}
+
+function obterIdadeAnimal(animal) {
+  if (
+    animal?.idade !== undefined &&
+    animal?.idade !== null &&
+    String(animal.idade).trim() !== ""
+  ) {
+    return String(animal.idade);
+  }
+
+  return "Idade não informada";
+}
+
+async function buscarAnimais() {
+  const token = obterToken();
+  const headers = {};
+
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  try {
+    const resposta = await fetch(`${API}/animais`, {
+      method: "GET",
+      headers
+    });
+
+    if (resposta.ok) {
+      const dados = await resposta.json();
+      const animais = extrairLista(dados);
+
+      if (animais.length > 0) {
+        return animais;
+      }
+    }
+  } catch (erro) {
+    console.warn("Erro na rota /animais:", erro);
+  }
+
+  try {
+    const resposta = await fetch(`${API}/mostrarAnimal`, {
+      method: "GET",
+      headers
+    });
+
+    if (!resposta.ok) {
+      throw new Error(`Erro HTTP ${resposta.status}`);
+    }
+
+    const dados = await resposta.json();
+    return extrairLista(dados);
+  } catch (erro) {
+    console.error("Erro ao buscar animais:", erro);
+    throw erro;
+  }
+}
+
+async function carregarAnimaisDoBanco() {
+  const container = document.getElementById("lista-animais-inicio");
+
+  if (!container) {
+    return;
+  }
+
+  try {
+    const animais = await buscarAnimais();
+
+    console.log("Animais recebidos:", animais);
+
+    const animaisValidos = animais.filter(animal => {
+      return animal && typeof animal === "object";
+    });
+
+    const disponiveis = animaisValidos.filter(animal => {
+      const status = normalizar(
+        animal?.status ||
+        animal?.situacao ||
+        animal?.disponibilidade ||
+        "Disponível"
+      );
+
+      return status !== "adotado" &&
+        status !== "indisponivel" &&
+        status !== "em processo de adocao" &&
+        status !== "reservado";
+    });
+
+    const animaisExibir = disponiveis.slice(0, 3);
+    const contador = document.getElementById("contador-animais");
+
+    if (contador) {
+      contador.textContent = `+${animaisValidos.length}`;
+    }
+
+    container.innerHTML = "";
+
+    if (animaisExibir.length === 0) {
+      container.innerHTML = `
+        <div class="nenhum-animal">
+          <div class="icone-vazio">🐾</div>
+          <h3>Nenhum animal disponível no momento</h3>
+          <p>Quando um animal for cadastrado, ele aparecerá aqui.</p>
+        </div>
+      `;
+      return;
+    }
+
+    animaisExibir.forEach(animal => {
+      const nome = obterNomeAnimal(animal);
+      const especie = obterEspecieAnimal(animal);
+      const sexo = obterSexoAnimal(animal);
+      const porte = obterPorteAnimal(animal);
+      const idade = obterIdadeAnimal(animal);
+      const local = obterLocalAnimal(animal);
+      const imagem = obterImagemAnimal(animal);
+      const idAnimal = obterIdAnimal(animal);
+
+      const card = document.createElement("div");
+      card.className = "card-pet";
+
+      const linkAnimal = idAnimal
+        ? `animais.html?id=${encodeURIComponent(idAnimal)}`
+        : "animais.html";
+
+      card.innerHTML = `
+        <div class="imagem-pet">
+          <span class="status">Disponível</span>
+          <img src="${escaparHTML(imagem)}" alt="${escaparHTML(nome)}">
+        </div>
+
+        <div class="info-pet">
+          <h3>${escaparHTML(nome)}</h3>
+          <span class="tipo-pet">${escaparHTML(especie)}</span>
+
+          <div class="tags-pet">
+            <span>${escaparHTML(idade)}</span>
+            <span>Porte ${escaparHTML(porte)}</span>
+            <span>${escaparHTML(sexo)}</span>
+          </div>
+
+          <div class="rodape-pet">
+            <span>${escaparHTML(local)}</span>
+            <a class="botaoconhecer" href="${linkAnimal}">Conhecer</a>
+          </div>
+        </div>
+      `;
+
+      const imagemElement = card.querySelector("img");
+
+      imagemElement.addEventListener("error", function() {
+        this.src = "https://i.pinimg.com/1200x/37/6f/00/376f002fee8437ce9569d1534af4b708.jpg";
+      });
+
+      container.appendChild(card);
+    });
+  } catch (erro) {
+    console.error("Erro ao carregar animais:", erro);
+
+    container.innerHTML = `
+      <div class="nenhum-animal">
+        <div class="icone-vazio">⚠️</div>
+        <h3>Não foi possível carregar os animais</h3>
+        <p>Verifique se o servidor está funcionando.</p>
+        <button onclick="carregarAnimaisDoBanco()" class="btn-tentar">
+          Tentar novamente
+        </button>
+      </div>
+    `;
+  }
+}
+
+function obterNecessidadesSalvas() {
+  const dadosSalvos = localStorage.getItem("necessidadesDoacoes");
+
+  if (!dadosSalvos) {
+    return [];
+  }
+
+  try {
+    const dados = JSON.parse(dadosSalvos);
+
+    if (Array.isArray(dados)) {
+      return dados;
+    }
+
+    if (Array.isArray(dados.necessidades)) {
+      return dados.necessidades;
+    }
+
+    if (Array.isArray(dados.dados)) {
+      return dados.dados;
+    }
+
+    if (Array.isArray(dados.resultado)) {
+      return dados.resultado;
+    }
+
+    return [];
+  } catch (erro) {
+    console.error("Erro ao ler necessidades:", erro);
+    return [];
+  }
+}
+
+function obterNomeNecessidade(item) {
+  return item?.item ||
+    item?.nome ||
+    item?.nome_item ||
+    item?.necessidade ||
+    item?.titulo ||
+    "Necessidade";
+}
+
+function obterDescricaoNecessidade(item) {
+  return item?.descricao ||
+    item?.descricao_necessidade ||
+    item?.detalhes ||
+    "Essa necessidade precisa de ajuda.";
+}
+
+function obterCategoriaNecessidade(item) {
+  return item?.categoria ||
+    item?.tipo ||
+    "Doação";
+}
+
+function obterOngNecessidade(item) {
+  return item?.ong ||
+    item?.nomeOng ||
+    item?.nome_ong ||
+    item?.ong_nome ||
+    "ONG não informada";
+}
+
+function obterCidadeNecessidade(item) {
+  if (item?.cidade && item?.estado) {
+    return `${item.cidade} - ${item.estado}`;
+  }
+
+  return item?.cidade ||
+    item?.localizacao ||
+    item?.endereco ||
+    "Local não informado";
+}
+
+function necessidadeEhUrgente(item) {
+  const classificacao = normalizar(
+    item?.classificacao ||
+    item?.prioridade ||
+    item?.urgencia ||
+    item?.nivel ||
+    ""
+  );
+
+  return classificacao === "urgente";
+}
+
+function carregarNecessidadesUrgentes() {
+  const container = document.getElementById("necessidadesUrgentes");
+
+  if (!container) {
+    return;
+  }
+
+  const necessidades = obterNecessidadesSalvas();
+
+  console.log("Necessidades cadastradas:", necessidades);
+
+  const urgentes = necessidades
+    .filter(item => item && typeof item === "object")
+    .filter(item => necessidadeEhUrgente(item))
+    .slice(0, 3);
+
+  container.innerHTML = "";
+
+  if (urgentes.length === 0) {
+    container.innerHTML = `
+      <div class="nenhuma-necessidade">
+        <div class="emoji-necessidade">🐾</div>
+        <h3>Nenhuma necessidade urgente no momento</h3>
+        <p>Quando uma ONG cadastrar uma necessidade urgente, ela aparecerá aqui automaticamente.</p>
+      </div>
+    `;
+    return;
+  }
+
+  urgentes.forEach(item => {
+    const card = document.createElement("div");
+    card.className = "card-nece";
+
+    const categoria = obterCategoriaNecessidade(item);
+    const nome = obterNomeNecessidade(item);
+    const descricao = obterDescricaoNecessidade(item);
+    const ong = obterOngNecessidade(item);
+    const cidade = obterCidadeNecessidade(item);
+
+    card.innerHTML = `
+      <div class="card-topo">
+        <span class="tag-urgente">URGENTE</span>
+        <span class="categoria">${escaparHTML(categoria)}</span>
+      </div>
+
+      <h3>${escaparHTML(nome)}</h3>
+
+      <p>${escaparHTML(descricao)}</p>
+
+      <div class="info-necessidade">
+        <strong>${escaparHTML(ong)}</strong>
+        <span>📍 ${escaparHTML(cidade)}</span>
+      </div>
+
+      <button class="btn-ajudar" type="button">
+        ♡ Ajudar Agora
+      </button>
+    `;
+
+    card.querySelector(".btn-ajudar").addEventListener("click", () => {
+      if (!usuarioEstaLogado()) {
+        alert("Faça login para continuar.");
+        window.location.href = "acesso.html";
+        return;
+      }
+
+      window.location.href = "doar.html";
+    });
+
+    container.appendChild(card);
+  });
+}
+
+function formatarDataEvento(data) {
+  if (!data) {
+    return {
+      dia: "--",
+      mes: "---",
+      completa: "Data não informada"
+    };
+  }
+
+  const dataFormatada = new Date(data);
+
+  if (isNaN(dataFormatada.getTime())) {
+    return {
+      dia: "--",
+      mes: "---",
+      completa: "Data não informada"
+    };
+  }
+
+  return {
+    dia: dataFormatada.getUTCDate(),
+    mes: dataFormatada.toLocaleDateString("pt-BR", {
+      month: "short",
+      timeZone: "UTC"
+    }).replace(".", "").toUpperCase(),
+    completa: dataFormatada.toLocaleDateString("pt-BR", {
+      timeZone: "UTC"
+    })
+  };
+}
+
+function obterImagemEvento(evento) {
+  return evento?.imagem ||
+    evento?.foto ||
+    evento?.foto_evento ||
+    "https://i.pinimg.com/1200x/13/90/a6/1390a6067dce486d5a6948e1e60e0eae.jpg";
+}
+
+async function carregarEventosDoBanco() {
+  const container = document.getElementById("lista-eventos");
+
+  if (!container) {
+    return;
+  }
+
+  try {
+    const resposta = await fetch(`${API}/mostrarEventos`);
+
+    if (!resposta.ok) {
+      throw new Error(`Erro HTTP ${resposta.status}`);
+    }
+
+    const dados = await resposta.json();
+    let eventos = [];
+
+    if (Array.isArray(dados)) {
+      eventos = dados;
+    } else if (Array.isArray(dados.eventos)) {
+      eventos = dados.eventos;
+    } else if (Array.isArray(dados.resultado)) {
+      eventos = dados.resultado;
+    } else if (Array.isArray(dados.dados)) {
+      eventos = dados.dados;
+    } else if (Array.isArray(dados.rows)) {
+      eventos = dados.rows;
+    }
+
+    eventos.sort((a, b) => {
+      const dataA = new Date(`${a.data || ""}T${a.hora || "00:00"}`);
+      const dataB = new Date(`${b.data || ""}T${b.hora || "00:00"}`);
+      return dataA - dataB;
+    });
+
+    const eventosExibir = eventos.slice(0, 3);
+
+    container.innerHTML = "";
+
+    if (eventosExibir.length === 0) {
+      container.innerHTML = `
+        <div class="nenhum-evento">
+          <p>🐾 Nenhum evento cadastrado no momento.</p>
+        </div>
+      `;
+      return;
+    }
+
+    eventosExibir.forEach(evento => {
+      const data = formatarDataEvento(evento.data);
+      const imagem = obterImagemEvento(evento);
+
+      const nome = evento.nome_evento ||
+        evento.nome ||
+        evento.titulo ||
+        "Evento";
+
+      const categoria = evento.categoria || "Evento";
+
+      const horario = evento.hora
+        ? String(evento.hora).substring(0, 5)
+        : "--:--";
+
+      const local = evento.localizacao ||
+        evento.endereco ||
+        "Local não informado";
+
+      const card = document.createElement("div");
+      card.className = "card-evento";
+
+      card.innerHTML = `
+        <div class="card-imagem">
+          <span class="data-card">
+            <strong>${escaparHTML(data.dia)}</strong>
+            <small>${escaparHTML(data.mes)}</small>
+          </span>
+          <img src="${escaparHTML(imagem)}" alt="${escaparHTML(nome)}">
+        </div>
+
+        <div class="card-conteudo">
+          <span class="categoria">${escaparHTML(categoria)}</span>
+          <h3>${escaparHTML(nome)}</h3>
+          <span class="horario">🕒 ${escaparHTML(horario)}</span>
+          <span class="horario">📅 ${escaparHTML(data.completa)}</span>
+          <span class="horario">📍 ${escaparHTML(local)}</span>
+        </div>
+      `;
+
+      container.appendChild(card);
+    });
+  } catch (erro) {
+    console.error("Erro ao carregar eventos:", erro);
+
+    container.innerHTML = `
+      <div class="nenhum-evento">
+        <p>Não foi possível carregar os eventos.</p>
+      </div>
+    `;
+  }
+}
+
+linkSair.addEventListener("click", function(event) {
+  event.preventDefault();
+
+  if (!confirm("Deseja realmente sair da sua conta?")) {
+    return;
+  }
+
+  localStorage.clear();
+  sessionStorage.clear();
+  window.location.href = "index.html";
+});
+
+window.addEventListener("DOMContentLoaded", () => {
+  atualizarInterface();
+  carregarAnimaisDoBanco();
+  carregarEventosDoBanco();
+  carregarNecessidadesUrgentes();
+});
+
+window.addEventListener("storage", event => {
+  if (event.key === "necessidadesDoacoes") {
+    carregarNecessidadesUrgentes();
+  }
+});
+
+window.addEventListener("focus", () => {
+  carregarNecessidadesUrgentes();
+});
+</script>
+
+</body>
+</html>
