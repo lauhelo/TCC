@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Entrar - Entre Laços</title>
+  <link rel="stylesheet" href="acesso.css">
+  <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    .campo-erro {
+      border: 2px solid #ef8b84 !important;
+    }
+
+    .campo-sucesso {
+      border: 2px solid #8bcf91 !important;
+    }
+
+    .mensagem-campo {
+      display: block;
+      width: 100%;
+      margin: -8px 0 10px 4px;
+      color: #ef746d;
+      font-size: 13px;
+      text-align: left;
+      line-height: 1.2;
+    }
+
+    .mensagem-sucesso {
+      display: block;
+      width: 100%;
+      margin: -8px 0 10px 4px;
+      color: #62a96b;
+      font-size: 13px;
+      text-align: left;
+      line-height: 1.2;
+    }
+  </style>
+</head>
+
+<body>
+
+  <header class="cabecalho">
+
+    <div class="cabecalho-conteudo">
+
+      <div class="logo">
+        <img src="logo.png" alt="logo" height="40">
+        <span>Entre Laços</span>
+      </div>
+
+      <nav class="menu-links">
+        <a href="index.html">Início</a>
+        <a href="animais.html">Animais</a>
+        <a href="doar.html">Doar</a>
+        <a href="eventos.html">Eventos</a>
+        <a href="historias.html">Histórias</a>
+        <a href="dicas.html">Dicas</a>
+      </nav>
+
+      <div class="perfil-topo">
+        <a class="botao-voltar" href="index.html">Voltar ao Início</a>
+      </div>
+
+    </div>
+
+  </header>
+
+  <section class="secao-acesso">
+
+    <div class="container-acesso">
+
+      <div class="conteudo-imagem">
+        <img
+          src="https://www.petlove.com.br/images/breeds/193070/profile/original/dalmata-p.jpg?1532538995"
+          alt="Pet feliz">
+      </div>
+
+      <div class="card-acesso">
+
+        <h2>Criar Nova Senha</h2>
+
+        <p>Confirme seus dados para validar a alteração.</p>
+
+        <form id="formRedefinir" novalidate>
+
+          <input
+            id="ref_email"
+            type="email"
+            placeholder="Seu e-mail cadastrado"
+            required
+          >
+
+          <span id="erro_email" class="mensagem-campo"></span>
+
+          <input
+            id="ref_senha"
+            type="password"
+            placeholder="Nova Senha"
+            required
+          >
+
+          <span id="erro_senha" class="mensagem-campo"></span>
+
+          <input
+            id="ref_confirmar"
+            type="password"
+            placeholder="Confirmar Nova Senha"
+            required
+          >
+
+          <span id="erro_confirmar" class="mensagem-campo"></span>
+
+          <input
+            id="ref_palavra_chave"
+            type="text"
+            placeholder="Sua palavra-chave de segurança"
+            required
+            style="border: 2px solid #ffbf88;"
+          >
+
+          <span id="erro_palavra_chave" class="mensagem-campo"></span>
+
+          <button
+            type="submit"
+            class="botao-principal"
+          >
+            Atualizar Senha
+          </button>
+
+        </form>
+
+        <span class="link-alternar">
+          Voltar para o <a href="acesso.html">Login</a>
+        </span>
+
+      </div>
+
+    </div>
+
+  </section>
+
+  <script>
+    const formRedefinir = document.getElementById("formRedefinir");
+
+    const emailInput = document.getElementById("ref_email");
+    const senhaInput = document.getElementById("ref_senha");
+    const confirmarInput = document.getElementById("ref_confirmar");
+    const palavraChaveInput = document.getElementById("ref_palavra_chave");
+
+    const erroEmail = document.getElementById("erro_email");
+    const erroSenha = document.getElementById("erro_senha");
+    const erroConfirmar = document.getElementById("erro_confirmar");
+    const erroPalavraChave = document.getElementById("erro_palavra_chave");
+
+    function mostrarErro(campo, elementoErro, mensagem) {
+      campo.classList.remove("campo-sucesso");
+      campo.classList.add("campo-erro");
+      elementoErro.className = "mensagem-campo";
+      elementoErro.textContent = mensagem;
+    }
+
+    function mostrarSucesso(campo, elementoErro) {
+      campo.classList.remove("campo-erro");
+      campo.classList.add("campo-sucesso");
+      elementoErro.textContent = "";
+    }
+
+    function limparValidacao(campo, elementoErro) {
+      campo.classList.remove("campo-erro");
+      campo.classList.remove("campo-sucesso");
+      elementoErro.textContent = "";
+    }
+
+    function validarEmail() {
+      const email = emailInput.value.trim();
+
+      if (email === "") {
+        mostrarErro(
+          emailInput,
+          erroEmail,
+          "Digite seu e-mail."
+        );
+        return false;
+      }
+
+      const formatoEmail =
+        /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+      if (!formatoEmail.test(email)) {
+        mostrarErro(
+          emailInput,
+          erroEmail,
+          "Digite um e-mail válido (ex: nome@dominio.com)."
+        );
+        return false;
+      }
+
+      mostrarSucesso(emailInput, erroEmail);
+      return true;
+    }
+
+    function validarSenha() {
+      const senha = senhaInput.value;
+
+      if (senha === "") {
+        mostrarErro(
+          senhaInput,
+          erroSenha,
+          "Digite uma nova senha."
+        );
+        return false;
+      }
+
+      if (!/[A-Za-z]/.test(senha)) {
+        mostrarErro(
+          senhaInput,
+          erroSenha,
+          "A senha deve conter pelo menos uma letra."
+        );
+        return false;
+      }
+
+      if (!/[0-9]/.test(senha)) {
+        mostrarErro(
+          senhaInput,
+          erroSenha,
+          "A senha deve conter pelo menos um número."
+        );
+        return false;
+      }
+
+      mostrarSucesso(senhaInput, erroSenha);
+      return true;
+    }
+
+    function validarConfirmacao() {
+      const senha = senhaInput.value;
+      const confirmar = confirmarInput.value;
+
+      if (confirmar === "") {
+        mostrarErro(
+          confirmarInput,
+          erroConfirmar,
+          "Confirme sua nova senha."
+        );
+        return false;
+      }
+
+      if (senha !== confirmar) {
+        mostrarErro(
+          confirmarInput,
+          erroConfirmar,
+          "As senhas não coincidem."
+        );
+        return false;
+      }
+
+      mostrarSucesso(confirmarInput, erroConfirmar);
+      return true;
+    }
+
+    function validarPalavraChave() {
+      const palavraChave =
+        palavraChaveInput.value.trim();
+
+      if (palavraChave === "") {
+        mostrarErro(
+          palavraChaveInput,
+          erroPalavraChave,
+          "Digite sua palavra-chave de segurança."
+        );
+        return false;
+      }
+
+      limparValidacao(
+        palavraChaveInput,
+        erroPalavraChave
+      );
+
+      return true;
+    }
+
+    emailInput.addEventListener("input", function() {
+      validarEmail();
+    });
+
+    senhaInput.addEventListener("input", function() {
+      validarSenha();
+
+      if (confirmarInput.value !== "") {
+        validarConfirmacao();
+      }
+    });
+
+    confirmarInput.addEventListener("input", function() {
+      validarConfirmacao();
+    });
+
+    palavraChaveInput.addEventListener("input", function() {
+      if (palavraChaveInput.value.trim() !== "") {
+        limparValidacao(
+          palavraChaveInput,
+          erroPalavraChave
+        );
+      }
+    });
+
+    formRedefinir.addEventListener("submit", async function(e) {
+
+      e.preventDefault();
+
+      const emailValido = validarEmail();
+      const senhaValida = validarSenha();
+      const confirmacaoValida = validarConfirmacao();
+      const palavraChaveValida = validarPalavraChave();
+
+      if (
+        !emailValido ||
+        !senhaValida ||
+        !confirmacaoValida ||
+        !palavraChaveValida
+      ) {
+        return;
+      }
+
+      const email = emailInput.value.trim();
+      const senha = senhaInput.value;
+      const confirmarSenha = confirmarInput.value;
+      const palavraChave = palavraChaveInput.value.trim();
+
+      try {
+
+        const resposta = await fetch(
+          "http://localhost:3000/recuperar-senha",
+          {
+            method: "PUT",
+
+            headers: {
+              "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify({
+              email: email,
+              palavra_chave: palavraChave,
+              senha: senha,
+              confirmar_senha: confirmarSenha
+            })
+          }
+        );
+
+        const resultado = await resposta.json();
+
+        if (resposta.ok) {
+
+          alert("Senha alterada com sucesso!");
+
+          window.location.href = "acesso.html";
+
+        } else {
+
+          /*
+            Se o backend verificar que a nova senha
+            é igual à senha anterior, a mensagem
+            aparecerá no campo da nova senha.
+          */
+
+          if (
+            resultado.erro &&
+            resultado.erro.toLowerCase().includes("anterior")
+          ) {
+
+            mostrarErro(
+              senhaInput,
+              erroSenha,
+              resultado.erro
+            );
+
+            senhaInput.focus();
+
+          } else {
+
+            mostrarErro(
+              emailInput,
+              erroEmail,
+              resultado.erro ||
+              "Erro ao atualizar senha."
+            );
+          }
+        }
+
+      } catch (erro) {
+
+        console.error(
+          "Erro na conexão:",
+          erro
+        );
+
+        mostrarErro(
+          emailInput,
+          erroEmail,
+          "Erro ao conectar com o servidor."
+        );
+      }
+
+    });
+  </script>
+<script src="chatbot.js"></script>
+</body>
+
+</html>

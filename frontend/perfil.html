@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Editar Perfil - Entre Laços</title>
+  <link rel="stylesheet" href="perfil.css">
+</head>
+
+<body>
+
+  <header class="cabecalho">
+    <div class="cabecalho-conteudo">
+
+      <a href="index.html" class="logo">
+        <img src="logo.png" alt="Logo Entre Laços">
+        <span>Entre Laços</span>
+      </a>
+
+      <nav class="menu-links">
+        <a href="index.html">Início</a>
+        <a href="animais.html">Animais</a>
+        <a href="doar.html">Doar</a>
+        <a href="eventos.html">Eventos</a>
+        <a href="historias.html">Histórias</a>
+        <a href="dicas.html">Dicas</a>
+      </nav>
+
+      <div class="area-usuario">
+
+        <a href="perfil.html" class="foto-header-link" title="Meu perfil">
+          <img id="fotoPerfilHeader" class="foto-header" alt="Foto de perfil">
+        </a>
+
+        <button id="btnVoltar" class="btn-voltar" type="button">
+          Voltar
+        </button>
+
+      </div>
+
+    </div>
+  </header>
+
+  <main class="pagina-perfil">
+
+    <section class="perfil-container">
+
+      <div class="titulo-perfil">
+        <span class="titulo-icone">✎</span>
+
+        <div>
+          <h1>Editar perfil</h1>
+          <p>Atualize suas informações no Entre Laços.</p>
+        </div>
+      </div>
+
+      <div class="perfil-card">
+
+        <div class="foto-area">
+
+          <div class="foto-wrapper">
+
+            <img id="fotoPerfil" class="foto-perfil" alt="Foto de perfil">
+
+            <span id="iconePerfil" class="icone-perfil">👤</span>
+
+            <label for="inputFoto" class="botao-camera" title="Alterar foto">
+              📷
+            </label>
+
+          </div>
+
+          <h2 id="nomeFoto">Meu perfil</h2>
+
+          <p class="texto-foto">
+            Escolha uma foto para aparecer no seu perfil.
+          </p>
+
+          <input
+            type="file"
+            id="inputFoto"
+            accept="image/png,image/jpeg,image/webp"
+            hidden>
+
+          <button type="button" id="btnAlterarFoto" class="btn-foto">
+            Alterar foto
+          </button>
+
+          <button type="button" id="btnRemoverFoto" class="btn-remover-foto">
+            Remover foto
+          </button>
+
+        </div>
+
+        <div class="divisor"></div>
+
+        <form id="formPerfil">
+
+          <div class="campo">
+            <label for="nome">Nome completo</label>
+
+            <input
+              type="text"
+              id="nome"
+              name="nome"
+              placeholder="Digite seu nome"
+              autocomplete="name"
+              required>
+          </div>
+
+          <div class="campo">
+            <label for="email">E-mail</label>
+
+            <input
+              type="email"
+              id="email"
+              name="email"
+              placeholder="Digite seu e-mail"
+              autocomplete="email"
+              required>
+
+            <small>
+              Seu e-mail é usado para identificar sua conta.
+            </small>
+          </div>
+
+          <div class="campo">
+            <label for="telefone">Telefone</label>
+
+            <input
+              type="tel"
+              id="telefone"
+              name="telefone"
+              placeholder="(00) 00000-0000"
+              autocomplete="tel">
+          </div>
+
+          <div class="campo">
+            <label for="tipoUsuario">Tipo de usuário</label>
+
+            <select id="tipoUsuario" name="tipoUsuario">
+              <option value="adotante">Usuário</option>
+              <option value="ong">ONG / Instituição</option>
+              <option value="voluntario">Voluntário</option>
+            </select>
+          </div>
+
+          <div id="mensagem" class="mensagem"></div>
+
+          <div class="botoes">
+
+            <button
+              type="button"
+              id="btnCancelar"
+              class="btn-secundario">
+              Cancelar
+            </button>
+
+            <button
+              type="submit"
+              class="btn-principal">
+              Salvar alterações
+            </button>
+
+          </div>
+
+        </form>
+
+      </div>
+
+    </section>
+
+  </main>
+
+  <div class="espaco-rodape"></div>
+
+  <footer class="fim">
+
+    <div class="fim-container">
+
+      <div class="fim-sobre">
+
+        <div class="fim-logo">
+          <img src="logo.png" alt="Logo Entre Laços">
+          <h3>Entre Laços</h3>
+        </div>
+
+        <p>
+          Conectando corações e transformando vidas.
+          Nossa missão é encontrar lares amorosos para
+          animais resgatados e promover a posse responsável.
+        </p>
+
+      </div>
+
+      <div class="fim-contato">
+
+        <h4>Contato</h4>
+
+        <span>Email: contato@entrelacos.org</span>
+        <span>Telefone: (00) 00000-0000</span>
+        <span>Facebook: entrelaços.consulta</span>
+        <span>Instagram: entrelaços.consulta</span>
+
+      </div>
+
+    </div>
+
+    <div class="fim-copy">
+      © 2026 Entre Laços. Todos os direitos reservados.
+    </div>
+
+  </footer>
+
+  <script src="editar-perfil.js"></script>
+
+</body>
+</html>

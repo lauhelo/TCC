@@ -1,0 +1,1698 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Cadastro - Entre Laços</title>
+    <link rel="stylesheet" href="acesso.css">
+    <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        .msg-erro {
+            color: #db8c83;
+            font-size: 12px;
+            margin-top: -10px;
+            display: block;
+            font-weight: 600;
+            text-align: left;
+            min-height: 15px;
+        }
+
+        .campo-invalido {
+            border: 2px solid #df9c95 !important;
+        }
+
+        .campo-valido {
+            border: 2px solid #8fd1aa !important;
+        }
+
+        .status-email {
+            display: none;
+            font-size: 12px;
+            font-weight: 600;
+            text-align: left;
+            margin-top: -10px;
+            margin-bottom: 10px;
+            min-height: 15px;
+        }
+
+        .status-email.verificando {
+            display: block;
+            color: #999;
+        }
+
+        .status-email.disponivel {
+            display: block;
+            color: #6caf86;
+        }
+
+        .status-email.existente {
+            display: block;
+            color: #db8c83;
+        }
+
+        .status-email.erro {
+            display: block;
+            color: #db8c83;
+        }
+
+        .etapa {
+            display: none;
+            animation: aparecerEtapa .3s ease;
+        }
+
+        .etapa.ativa {
+            display: block;
+        }
+
+        @keyframes aparecerEtapa {
+            from {
+                opacity: 0;
+                transform: translateX(15px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .indicador-etapas {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            margin: 0 0 20px;
+        }
+
+        .indicador-etapas span {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: #e6c2a8;
+            transition: .3s;
+        }
+
+        .indicador-etapas span.ativa {
+            width: 25px;
+            border-radius: 10px;
+            background: #e67e22;
+        }
+
+        .passo-texto {
+            text-align: center;
+            font-size: 12px !important;
+            color: #999 !important;
+            margin: -5px 0 18px !important;
+        }
+
+        .botoes-etapa {
+            display: flex;
+            gap: 10px;
+            margin-top: 8px;
+        }
+
+        .botao-secundario {
+            width: 35%;
+            padding: 14px;
+            border-radius: 999px;
+            background: #fff1e9;
+            border: 1px solid #ffa3bf;
+            color: #e67e22;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 600;
+            transition: .3s;
+        }
+
+        .botao-secundario:hover {
+            background: #ffe1d2;
+        }
+
+        .botoes-etapa .botao-principal {
+            flex: 1;
+        }
+
+        #campos-ong {
+            width: 100%;
+        }
+
+        #campos-ong p {
+            font-size: 12px !important;
+            color: #e67e22 !important;
+            margin-bottom: 10px !important;
+        }
+
+        .campo-palavra-chave {
+            background-color: #faf6f0;
+            border: 1px solid #f0e6d8;
+            border-radius: 12px;
+            padding: 12px 14px;
+            margin-bottom: 15px;
+            text-align: left;
+        }
+
+        .campo-palavra-chave label {
+            display: block;
+            font-size: 13px;
+            font-weight: 700;
+            color: #5c4b43;
+            margin-bottom: 4px;
+        }
+
+        .campo-palavra-chave .descricao-ajuda {
+            display: block;
+            font-size: 11px;
+            color: #8c7a6b;
+            margin-bottom: 8px;
+            line-height: 1.3;
+        }
+
+
+        .campo-foto-perfil {
+            background: #faf6f0;
+            border: 1px solid #f0e6d8;
+            border-radius: 14px;
+            padding: 14px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .campo-foto-perfil label {
+            display: block;
+            font-size: 13px;
+            font-weight: 700;
+            color: #5c4b43;
+            margin-bottom: 10px;
+            text-align: left;
+        }
+
+        .preview-foto-perfil {
+            width: 96px;
+            height: 96px;
+            border-radius: 50%;
+            object-fit: cover;
+            display: block;
+            margin: 0 auto 10px;
+            border: 3px solid #e6c2a8;
+            background: #fff;
+        }
+
+        .input-foto-perfil {
+            width: 100%;
+            font-size: 12px;
+        }
+
+        .ajuda-foto-perfil {
+            display: block;
+            font-size: 11px;
+            color: #8c7a6b;
+            margin-top: 7px;
+            line-height: 1.3;
+        }
+
+        @media(max-width:600px) {
+            .botoes-etapa {
+                flex-direction: column;
+            }
+
+            .botao-secundario {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header class="cabecalho">
+        <div class="cabecalho-conteudo">
+
+            <div class="logo">
+                <img src="logo.png" height="40" alt="Logo Entre Laços">
+                <span>Entre Laços</span>
+            </div>
+
+            <nav class="menu-links">
+                <a href="index.html">Início</a>
+                <a href="animais.html">Animais</a>
+                <a href="doar.html">Doar</a>
+                <a href="eventos.html">Eventos</a>
+                <a href="historias.html">Histórias</a>
+                <a href="dicas.html">Dicas</a>
+            </nav>
+
+            <div class="perfil-topo">
+                <a class="botao-voltar" href="index.html">Voltar ao Início</a>
+            </div>
+
+        </div>
+    </header>
+
+    <section class="secao-acesso">
+
+        <div class="container-acesso">
+
+            <div class="card-acesso">
+
+                <h2>Criar conta</h2>
+                <p>Faça parte da nossa rede de proteção animal</p>
+
+                <form id="formCadastro" novalidate>
+
+                    <div class="indicador-etapas">
+                        <span id="indicador1" class="ativa"></span>
+                        <span id="indicador2"></span>
+                    </div>
+
+                    <div id="etapa1" class="etapa ativa">
+
+                        <p class="passo-texto">Etapa 1 de 2 • Dados pessoais</p>
+
+
+                        <div class="campo-foto-perfil">
+                            <label for="foto_perfil">Foto de perfil (opcional)</label>
+                            <img id="previewFotoPerfil" class="preview-foto-perfil"
+                                src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='96' viewBox='0 0 96 96'%3E%3Ccircle cx='48' cy='48' r='48' fill='%23f3e7dc'/%3E%3Ccircle cx='48' cy='38' r='16' fill='%23c9b5a5'/%3E%3Cpath d='M20 82c5-17 16-25 28-25s23 8 28 25' fill='%23c9b5a5'/%3E%3C/svg%3E"
+                                alt="Prévia da foto de perfil">
+                            <input id="foto_perfil" class="input-foto-perfil" type="file"
+                                accept="image/jpeg,image/png,image/webp">
+                            <span class="ajuda-foto-perfil">Escolha uma imagem JPG, PNG ou WEBP de até 2 MB.</span>
+                            <span id="erro-foto_perfil" class="msg-erro"></span>
+                        </div>
+
+
+                        <input id="nome" type="text" placeholder="Nome completo" maxlength="100" required>
+
+                        <span id="erro-nome" class="msg-erro"></span>
+
+                        <input id="email" type="email" placeholder="E-mail" maxlength="50" required>
+
+                        <span id="statusEmail" class="status-email"></span>
+
+                        <select id="tipo_usuario" required onchange="toggleCamposOng()">
+                            <option value="" disabled selected>Você é Usuário ou ONG?</option>
+                            <option value="usuario">Quero Adotar (Usuário)</option>
+                            <option value="ong">Sou uma ONG / Protetor</option>
+                        </select>
+
+                        <span id="erro-tipo_usuario" class="msg-erro"></span>
+
+                        <div id="campos-ong" style="display:none">
+
+                            <input id="cnpj" type="text" placeholder="CNPJ da ONG (opcional)" maxlength="18">
+
+                            <span id="erro-cnpj" class="msg-erro"></span>
+
+                            <p>* Como ONG, após este cadastro você completará o perfil da instituição.</p>
+
+                        </div>
+
+                        <input id="cep" type="text" placeholder="CEP" maxlength="9" required>
+
+                        <span id="erro-cep" class="msg-erro"></span>
+
+                        <input id="cpf" type="text" placeholder="CPF" maxlength="14" required>
+
+                        <span id="erro-cpf" class="msg-erro"></span>
+
+                        <div class="botoes-etapa">
+
+                            <button type="button" class="botao-principal" id="btnContinuar" onclick="continuarEtapa1()">
+                                Continuar →
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                    <div id="etapa2" class="etapa">
+
+                        <p class="passo-texto">Etapa 2 de 2 • Segurança e contato</p>
+
+                        <input id="telefone" type="text" placeholder="Telefone" maxlength="15" required>
+
+                        <span id="erro-telefone" class="msg-erro"></span>
+
+                        <input id="data_nascimento" type="date" required>
+
+                        <span id="erro-data_nascimento" class="msg-erro"></span>
+
+                        <input id="senha" type="password" placeholder="Senha" maxlength="100" required>
+
+                        <span id="erro-senha" class="msg-erro"></span>
+
+                        <div class="campo-palavra-chave">
+
+                            <label for="palavra_chave">🔑 Palavra de Segurança</label>
+
+                            <span class="descricao-ajuda">
+                                💡 Usada para recuperar o seu acesso caso você esqueça a sua senha.
+                            </span>
+
+                            <input id="palavra_chave" type="text" placeholder="Ex: Nome do meu primeiro pet"
+                                maxlength="50" required>
+
+                            <span id="erro-palavra_chave" class="msg-erro"></span>
+
+                        </div>
+
+                        <span id="erro-geral" class="msg-erro"></span>
+
+                        <div class="botoes-etapa">
+
+                            <button type="button" class="botao-secundario" onclick="voltarEtapa1()">
+                                ← Voltar
+                            </button>
+
+                            <button type="submit" class="botao-principal" id="btnFinalizar">
+                                Finalizar Cadastro
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </form>
+
+                <span class="link-alternar">
+                    Já tem conta? <a href="acesso.html">Entrar</a>
+                </span>
+
+            </div>
+
+            <div class="conteudo-imagem">
+                <img src="https://images.unsplash.com/photo-1517849845537-4d257902454a" alt="Cachorro">
+            </div>
+
+        </div>
+
+    </section>
+
+    <script>
+        const hoje = new Date();
+
+        const dataLimite18 = new Date(
+            hoje.getFullYear() - 18,
+            hoje.getMonth(),
+            hoje.getDate()
+        );
+
+        document.getElementById("data_nascimento").max =
+            dataLimite18.toISOString().split("T")[0];
+
+
+        let fotoPerfilBase64 = null;
+
+        document.getElementById("foto_perfil").addEventListener("change", function (e) {
+            const arquivo = e.target.files[0];
+            const preview = document.getElementById("previewFotoPerfil");
+
+            limparErro("foto_perfil");
+
+            if (!arquivo) {
+                fotoPerfilBase64 = null;
+                return;
+            }
+
+            const tiposPermitidos = ["image/jpeg", "image/png", "image/webp"];
+
+            if (!tiposPermitidos.includes(arquivo.type)) {
+                setStatusCampo("foto_perfil", false, "Escolha uma imagem JPG, PNG ou WEBP.");
+                e.target.value = "";
+                fotoPerfilBase64 = null;
+                return;
+            }
+
+            if (arquivo.size > 2 * 1024 * 1024) {
+                setStatusCampo("foto_perfil", false, "A foto deve ter no máximo 2 MB.");
+                e.target.value = "";
+                fotoPerfilBase64 = null;
+                return;
+            }
+
+            const leitor = new FileReader();
+
+            leitor.onload = function (evento) {
+                fotoPerfilBase64 = evento.target.result;
+                preview.src = fotoPerfilBase64;
+            };
+
+            leitor.onerror = function () {
+                setStatusCampo("foto_perfil", false, "Não foi possível ler a imagem.");
+                fotoPerfilBase64 = null;
+            };
+
+            leitor.readAsDataURL(arquivo);
+        });
+
+        let emailExiste = false;
+        let emailVerificado = "";
+        let temporizadorEmail = null;
+        let numeroVerificacaoEmail = 0;
+
+        function mostrarStatusEmail(tipo, mensagem) {
+            const status = document.getElementById("statusEmail");
+
+            status.className = "status-email " + tipo;
+            status.textContent = mensagem;
+        }
+
+        function limparStatusEmail() {
+            const status = document.getElementById("statusEmail");
+
+            status.className = "status-email";
+            status.textContent = "";
+        }
+
+        function toggleCamposOng() {
+            const tipo = document.getElementById("tipo_usuario").value;
+            const campos = document.getElementById("campos-ong");
+            const cnpj = document.getElementById("cnpj");
+
+            if (tipo === "ong") {
+                campos.style.display = "block";
+            } else {
+                campos.style.display = "none";
+                cnpj.value = "";
+                limparErro("cnpj");
+            }
+
+            limparErro("tipo_usuario");
+        }
+
+        document.getElementById("email").addEventListener("input", function () {
+
+            const email = this.value.trim().toLowerCase();
+
+            clearTimeout(temporizadorEmail);
+
+            numeroVerificacaoEmail++;
+
+            emailExiste = false;
+            emailVerificado = "";
+
+            limparStatusEmail();
+
+            this.classList.remove(
+                "campo-valido",
+                "campo-invalido"
+            );
+
+            const regexEmail =
+                /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+            if (!regexEmail.test(email)) {
+                return;
+            }
+
+            mostrarStatusEmail(
+                "verificando",
+                "Verificando e-mail..."
+            );
+
+            const numeroAtual = numeroVerificacaoEmail;
+
+            temporizadorEmail = setTimeout(function () {
+                verificarEmailExistente(email, numeroAtual);
+            }, 500);
+
+        });
+
+        async function verificarEmailExistente(email, numeroAtual) {
+
+            const inputEmail = document.getElementById("email");
+
+            if (numeroAtual !== numeroVerificacaoEmail) {
+                return null;
+            }
+
+            try {
+
+                const resposta = await fetch(
+                    "http://localhost:3000/verificar-email?email=" +
+                    encodeURIComponent(email),
+                    {
+                        method: "GET",
+                        cache: "no-store",
+                        headers: {
+                            "Accept": "application/json"
+                        }
+                    }
+                );
+
+                let resultado = {};
+
+                try {
+                    resultado = await resposta.json();
+                } catch {
+                    resultado = {};
+                }
+
+                const emailAtual =
+                    inputEmail.value.trim().toLowerCase();
+
+                if (
+                    emailAtual !== email ||
+                    numeroAtual !== numeroVerificacaoEmail
+                ) {
+                    return null;
+                }
+
+                if (!resposta.ok) {
+                    throw new Error(
+                        resultado.erro ||
+                        resultado.mensagem ||
+                        "Erro HTTP " + resposta.status
+                    );
+                }
+
+                if (resultado.existe === true) {
+
+                    emailExiste = true;
+                    emailVerificado = email;
+
+                    inputEmail.classList.remove("campo-valido");
+                    inputEmail.classList.add("campo-invalido");
+
+                    mostrarStatusEmail(
+                        "existente",
+                        "Este e-mail já está cadastrado."
+                    );
+
+                    return true;
+                }
+
+                emailExiste = false;
+                emailVerificado = email;
+
+                inputEmail.classList.remove("campo-invalido");
+                inputEmail.classList.add("campo-valido");
+
+                mostrarStatusEmail(
+                    "disponivel",
+                    "✓ E-mail disponível."
+                );
+
+                return false;
+
+            } catch (error) {
+
+                console.error(
+                    "Erro ao verificar e-mail:",
+                    error
+                );
+
+                if (
+                    inputEmail.value.trim().toLowerCase() === email &&
+                    numeroAtual === numeroVerificacaoEmail
+                ) {
+
+                    emailExiste = false;
+                    emailVerificado = "";
+
+                    inputEmail.classList.remove(
+                        "campo-valido",
+                        "campo-invalido"
+                    );
+
+                    mostrarStatusEmail(
+                        "erro",
+                        "Não foi possível verificar o e-mail."
+                    );
+                }
+
+                return null;
+            }
+        }
+
+        document.getElementById("nome").addEventListener(
+            "input",
+            function () {
+                limparErro("nome");
+            }
+        );
+
+        document.getElementById("cpf").addEventListener(
+            "input",
+            function (e) {
+
+                let v = e.target.value.replace(/\D/g, "");
+
+                v = v.replace(
+                    /(\d{3})(\d)/,
+                    "$1.$2"
+                );
+
+                v = v.replace(
+                    /(\d{3})(\d)/,
+                    "$1.$2"
+                );
+
+                v = v.replace(
+                    /(\d{3})(\d{1,2})$/,
+                    "$1-$2"
+                );
+
+                e.target.value = v;
+
+                limparErro("cpf");
+            }
+        );
+
+        document.getElementById("telefone").addEventListener(
+            "input",
+            function (e) {
+
+                let v = e.target.value.replace(/\D/g, "");
+
+                v = v.replace(
+                    /^(\d{2})(\d)/,
+                    "($1) $2"
+                );
+
+                v = v.replace(
+                    /(\d{5})(\d)/,
+                    "$1-$2"
+                );
+
+                e.target.value = v;
+
+                limparErro("telefone");
+            }
+        );
+
+        document.getElementById("cep").addEventListener(
+            "input",
+            function (e) {
+
+                let v = e.target.value.replace(/\D/g, "");
+
+                v = v.replace(
+                    /(\d{5})(\d)/,
+                    "$1-$2"
+                );
+
+                e.target.value = v;
+
+                limparErro("cep");
+            }
+        );
+
+        document.getElementById("cnpj").addEventListener(
+            "input",
+            function (e) {
+
+                let v = e.target.value.replace(/\D/g, "");
+
+                v = v.replace(
+                    /^(\d{2})(\d)/,
+                    "$1.$2"
+                );
+
+                v = v.replace(
+                    /^(\d{2})\.(\d{3})(\d)/,
+                    "$1.$2.$3"
+                );
+
+                v = v.replace(
+                    /\.(\d{3})(\d)/,
+                    ".$1/$2"
+                );
+
+                v = v.replace(
+                    /(\d{4})(\d)/,
+                    "$1-$2"
+                );
+
+                e.target.value = v;
+
+                limparErro("cnpj");
+            }
+        );
+
+        document.getElementById("senha").addEventListener(
+            "input",
+            function () {
+                limparErro("senha");
+            }
+        );
+
+        document.getElementById("data_nascimento").addEventListener(
+            "change",
+            function () {
+                limparErro("data_nascimento");
+            }
+        );
+
+        document.getElementById("palavra_chave").addEventListener(
+            "input",
+            function () {
+                limparErro("palavra_chave");
+            }
+        );
+
+        function setStatusCampo(idCampo, valido, mensagem = "") {
+
+            const campo = document.getElementById(idCampo);
+            const erro = document.getElementById(
+                "erro-" + idCampo
+            );
+
+            if (!campo) {
+                return false;
+            }
+
+            if (valido) {
+
+                campo.classList.remove("campo-invalido");
+                campo.classList.add("campo-valido");
+
+                if (erro) {
+                    erro.textContent = "";
+                }
+
+                return true;
+
+            }
+
+            campo.classList.remove("campo-valido");
+            campo.classList.add("campo-invalido");
+
+            if (erro) {
+                erro.textContent = mensagem;
+            }
+
+            return false;
+        }
+
+        function limparErro(idCampo) {
+
+            const campo = document.getElementById(idCampo);
+            const erro = document.getElementById(
+                "erro-" + idCampo
+            );
+
+            if (campo) {
+                campo.classList.remove(
+                    "campo-invalido",
+                    "campo-valido"
+                );
+            }
+
+            if (erro) {
+                erro.textContent = "";
+            }
+        }
+
+        function validarNome() {
+
+            const nome =
+                document.getElementById("nome").value.trim();
+
+            const partes = nome.split(/\s+/);
+
+            if (!nome) {
+
+                return setStatusCampo(
+                    "nome",
+                    false,
+                    "Por favor, preencha seu nome completo."
+                );
+            }
+
+            if (
+                partes.length < 2 ||
+                partes[1].length < 2
+            ) {
+
+                return setStatusCampo(
+                    "nome",
+                    false,
+                    "Informe seu nome e sobrenome completo."
+                );
+            }
+
+            return setStatusCampo(
+                "nome",
+                true
+            );
+        }
+
+        function validarEmail() {
+
+            const email =
+                document.getElementById("email")
+                    .value
+                    .trim()
+                    .toLowerCase();
+
+            const regexEmail =
+                /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+            if (!email) {
+
+                return setStatusCampo(
+                    "email",
+                    false,
+                    "O campo E-mail é obrigatório."
+                );
+            }
+
+            if (!regexEmail.test(email)) {
+
+                return setStatusCampo(
+                    "email",
+                    false,
+                    "Digite um e-mail válido."
+                );
+            }
+
+            if (
+                emailExiste &&
+                emailVerificado === email
+            ) {
+
+                return setStatusCampo(
+                    "email",
+                    false,
+                    "Este e-mail já está cadastrado."
+                );
+            }
+
+            return true;
+        }
+
+        function validarCPFMatematico(cpf) {
+
+            cpf = cpf.replace(/\D/g, "");
+
+            if (
+                cpf.length !== 11 ||
+                /^(\d)\1{10}$/.test(cpf)
+            ) {
+                return false;
+            }
+
+            let soma = 0;
+
+            for (let i = 0; i < 9; i++) {
+                soma +=
+                    parseInt(cpf.charAt(i)) *
+                    (10 - i);
+            }
+
+            let resto = (soma * 10) % 11;
+
+            if (resto === 10) {
+                resto = 0;
+            }
+
+            if (
+                resto !== parseInt(cpf.charAt(9))
+            ) {
+                return false;
+            }
+
+            soma = 0;
+
+            for (let i = 0; i < 10; i++) {
+
+                soma +=
+                    parseInt(cpf.charAt(i)) *
+                    (11 - i);
+            }
+
+            resto = (soma * 10) % 11;
+
+            if (resto === 10) {
+                resto = 0;
+            }
+
+            if (
+                resto !== parseInt(cpf.charAt(10))
+            ) {
+                return false;
+            }
+
+            return true;
+        }
+
+        function validarCPF() {
+
+            const cpf =
+                document.getElementById("cpf")
+                    .value
+                    .replace(/\D/g, "");
+
+            if (!cpf) {
+
+                return setStatusCampo(
+                    "cpf",
+                    false,
+                    "O campo CPF é obrigatório."
+                );
+            }
+
+            if (!validarCPFMatematico(cpf)) {
+
+                return setStatusCampo(
+                    "cpf",
+                    false,
+                    "CPF inválido. Verifique os números."
+                );
+            }
+
+            return setStatusCampo(
+                "cpf",
+                true
+            );
+        }
+
+        function validarCNPJMatematico(cnpj) {
+
+            cnpj = cnpj.replace(/\D/g, "");
+
+            if (
+                cnpj.length !== 14 ||
+                /^(\d)\1{13}$/.test(cnpj)
+            ) {
+                return false;
+            }
+
+            let tamanho = 12;
+            let numeros = cnpj.substring(0, tamanho);
+            let digitos = cnpj.substring(tamanho);
+            let soma = 0;
+            let pos = 5;
+
+            for (let i = 0; i < tamanho; i++) {
+
+                soma +=
+                    parseInt(numeros.charAt(i)) *
+                    pos;
+
+                pos--;
+
+                if (pos < 2) {
+                    pos = 9;
+                }
+            }
+
+            let resultado =
+                soma % 11 < 2
+                    ? 0
+                    : 11 - (soma % 11);
+
+            if (
+                resultado !==
+                parseInt(digitos.charAt(0))
+            ) {
+                return false;
+            }
+
+            tamanho = 13;
+            numeros = cnpj.substring(0, tamanho);
+            soma = 0;
+            pos = 6;
+
+            for (let i = 0; i < tamanho; i++) {
+
+                soma +=
+                    parseInt(numeros.charAt(i)) *
+                    pos;
+
+                pos--;
+
+                if (pos < 2) {
+                    pos = 9;
+                }
+            }
+
+            resultado =
+                soma % 11 < 2
+                    ? 0
+                    : 11 - (soma % 11);
+
+            if (
+                resultado !==
+                parseInt(digitos.charAt(1))
+            ) {
+                return false;
+            }
+
+            return true;
+        }
+
+        function validarCNPJ() {
+
+            const tipo =
+                document.getElementById("tipo_usuario")
+                    .value;
+
+            const cnpj =
+                document.getElementById("cnpj")
+                    .value
+                    .replace(/\D/g, "");
+
+            if (tipo !== "ong" || !cnpj) {
+                return true;
+            }
+
+            if (!validarCNPJMatematico(cnpj)) {
+
+                return setStatusCampo(
+                    "cnpj",
+                    false,
+                    "CNPJ inválido."
+                );
+            }
+
+            return setStatusCampo(
+                "cnpj",
+                true
+            );
+        }
+
+        function validarCEP() {
+
+            const cep =
+                document.getElementById("cep")
+                    .value
+                    .replace(/\D/g, "");
+
+            if (!cep) {
+
+                return setStatusCampo(
+                    "cep",
+                    false,
+                    "O campo CEP é obrigatório."
+                );
+            }
+
+            if (cep.length !== 8) {
+
+                return setStatusCampo(
+                    "cep",
+                    false,
+                    "O CEP deve conter 8 dígitos."
+                );
+            }
+
+            return setStatusCampo(
+                "cep",
+                true
+            );
+        }
+
+        function validarTelefone() {
+
+            const telefone =
+                document.getElementById("telefone")
+                    .value
+                    .replace(/\D/g, "");
+
+            if (!telefone) {
+
+                return setStatusCampo(
+                    "telefone",
+                    false,
+                    "O campo Telefone é obrigatório."
+                );
+            }
+
+            if (
+                telefone.length < 10 ||
+                telefone.length > 11
+            ) {
+
+                return setStatusCampo(
+                    "telefone",
+                    false,
+                    "Telefone inválido."
+                );
+            }
+
+            return setStatusCampo(
+                "telefone",
+                true
+            );
+        }
+
+        function validarData() {
+
+            const data =
+                document.getElementById("data_nascimento")
+                    .value;
+
+            if (!data) {
+
+                return setStatusCampo(
+                    "data_nascimento",
+                    false,
+                    "Selecione sua data de nascimento."
+                );
+            }
+
+            const nascimento = new Date(data + "T00:00:00");
+            const hojeAtual = new Date();
+
+            let idade =
+                hojeAtual.getFullYear() -
+                nascimento.getFullYear();
+
+            const mes =
+                hojeAtual.getMonth() -
+                nascimento.getMonth();
+
+            if (
+                mes < 0 ||
+                (
+                    mes === 0 &&
+                    hojeAtual.getDate() <
+                    nascimento.getDate()
+                )
+            ) {
+                idade--;
+            }
+
+            if (idade < 18) {
+
+                return setStatusCampo(
+                    "data_nascimento",
+                    false,
+                    "É necessário ter pelo menos 18 anos."
+                );
+            }
+
+            return setStatusCampo(
+                "data_nascimento",
+                true
+            );
+        }
+
+        function validarSenha() {
+
+            const senha =
+                document.getElementById("senha").value;
+
+            if (!senha) {
+
+                return setStatusCampo(
+                    "senha",
+                    false,
+                    "O campo Senha é obrigatório."
+                );
+            }
+
+            if (senha.length < 6) {
+
+                return setStatusCampo(
+                    "senha",
+                    false,
+                    "A senha deve ter no mínimo 6 caracteres."
+                );
+            }
+
+            if (
+                !/[a-zA-Z]/.test(senha) ||
+                !/[0-9]/.test(senha)
+            ) {
+
+                return setStatusCampo(
+                    "senha",
+                    false,
+                    "A senha deve conter letras e números."
+                );
+            }
+
+            return setStatusCampo(
+                "senha",
+                true
+            );
+        }
+
+        function validarPalavraChave() {
+
+            const palavra =
+                document.getElementById("palavra_chave")
+                    .value
+                    .trim();
+
+            if (!palavra) {
+
+                return setStatusCampo(
+                    "palavra_chave",
+                    false,
+                    "Digite sua palavra de segurança."
+                );
+            }
+
+            return setStatusCampo(
+                "palavra_chave",
+                true
+            );
+        }
+
+        async function continuarEtapa1() {
+
+            const nomeValido = validarNome();
+            const emailValido = validarEmail();
+
+            const tipo =
+                document.getElementById("tipo_usuario")
+                    .value;
+
+            const tipoValido = !!tipo;
+
+            if (!tipoValido) {
+
+                setStatusCampo(
+                    "tipo_usuario",
+                    false,
+                    "Selecione uma opção."
+                );
+
+            } else {
+
+                limparErro("tipo_usuario");
+            }
+
+            const cnpjValido = validarCNPJ();
+            const cepValido = validarCEP();
+            const cpfValido = validarCPF();
+
+            if (
+                !nomeValido ||
+                !emailValido ||
+                !tipoValido ||
+                !cnpjValido ||
+                !cepValido ||
+                !cpfValido
+            ) {
+                return;
+            }
+
+            const email =
+                document.getElementById("email")
+                    .value
+                    .trim()
+                    .toLowerCase();
+
+            if (emailVerificado !== email) {
+
+                clearTimeout(temporizadorEmail);
+
+                mostrarStatusEmail(
+                    "verificando",
+                    "Verificando e-mail..."
+                );
+
+                const numeroAtual =
+                    ++numeroVerificacaoEmail;
+
+                const resultado =
+                    await verificarEmailExistente(
+                        email,
+                        numeroAtual
+                    );
+
+                if (resultado === true) {
+
+                    document.getElementById("email").focus();
+                    return;
+                }
+
+                if (resultado === null) {
+
+                    document.getElementById("email").focus();
+                    return;
+                }
+            }
+
+            if (
+                emailVerificado !== email ||
+                emailExiste
+            ) {
+
+                mostrarStatusEmail(
+                    "existente",
+                    "Este e-mail já está cadastrado."
+                );
+
+                document.getElementById("email").focus();
+
+                return;
+            }
+
+            document.getElementById("etapa1")
+                .classList.remove("ativa");
+
+            document.getElementById("etapa2")
+                .classList.add("ativa");
+
+            document.getElementById("indicador1")
+                .classList.remove("ativa");
+
+            document.getElementById("indicador2")
+                .classList.add("ativa");
+
+            window.scrollTo({
+                top: 0,
+                behavior: "smooth"
+            });
+        }
+
+        function voltarEtapa1() {
+
+            document.getElementById("etapa2")
+                .classList.remove("ativa");
+
+            document.getElementById("etapa1")
+                .classList.add("ativa");
+
+            document.getElementById("indicador2")
+                .classList.remove("ativa");
+
+            document.getElementById("indicador1")
+                .classList.add("ativa");
+
+            window.scrollTo({
+                top: 0,
+                behavior: "smooth"
+            });
+        }
+
+        document.getElementById("formCadastro")
+            .addEventListener(
+                "submit",
+                async function (e) {
+
+                    e.preventDefault();
+
+                    const telefoneValido = validarTelefone();
+                    const dataValida = validarData();
+                    const senhaValida = validarSenha();
+                    const palavraValida = validarPalavraChave();
+
+                    const erroGeral =
+                        document.getElementById("erro-geral");
+
+                    erroGeral.textContent = "";
+
+                    if (
+                        !telefoneValido ||
+                        !dataValida ||
+                        !senhaValida ||
+                        !palavraValida
+                    ) {
+
+                        erroGeral.textContent =
+                            "Preencha todos os campos obrigatórios corretamente.";
+
+                        return;
+                    }
+
+                    const email =
+                        document.getElementById("email")
+                            .value
+                            .trim()
+                            .toLowerCase();
+
+                    if (
+                        emailExiste ||
+                        emailVerificado !== email
+                    ) {
+
+                        voltarEtapa1();
+
+                        mostrarStatusEmail(
+                            "verificando",
+                            "Verificando e-mail..."
+                        );
+
+                        const numeroAtual =
+                            ++numeroVerificacaoEmail;
+
+                        const resultado =
+                            await verificarEmailExistente(
+                                email,
+                                numeroAtual
+                            );
+
+                        if (resultado !== false) {
+
+                            document.getElementById("email").focus();
+
+                            return;
+                        }
+                    }
+
+                    const tipo =
+                        document.getElementById("tipo_usuario")
+                            .value;
+
+                    const dados = {
+                        foto_perfil: fotoPerfilBase64,
+                        nome:
+                            document.getElementById("nome")
+                                .value
+                                .trim(),
+
+                        email: email,
+
+                        tipo: tipo,
+
+                        cep:
+                            document.getElementById("cep")
+                                .value
+                                .replace(/\D/g, ""),
+
+                        cpf:
+                            document.getElementById("cpf")
+                                .value
+                                .replace(/\D/g, ""),
+
+                        telefone:
+                            document.getElementById("telefone")
+                                .value
+                                .replace(/\D/g, ""),
+
+                        data_nascimento:
+                            document.getElementById("data_nascimento")
+                                .value,
+
+                        senha:
+                            document.getElementById("senha")
+                                .value,
+
+                        palavra_chave:
+                            document.getElementById("palavra_chave")
+                                .value
+                                .trim(),
+
+                        cnpj:
+                            tipo === "ong"
+                                ? document.getElementById("cnpj")
+                                    .value
+                                    .replace(/\D/g, "")
+                                : null
+                    };
+
+                    const botaoFinalizar =
+                        document.getElementById("btnFinalizar");
+
+                    botaoFinalizar.disabled = true;
+                    botaoFinalizar.textContent = "Cadastrando...";
+
+                    try {
+
+                        const resposta = await fetch(
+                            "http://localhost:3000/inserir",
+                            {
+                                method: "POST",
+                                headers: {
+                                    "Content-Type": "application/json",
+                                    "Accept": "application/json"
+                                },
+                                body: JSON.stringify(dados)
+                            }
+                        );
+
+                        let resultado = {};
+
+                        try {
+                            resultado = await resposta.json();
+                        } catch {
+                            resultado = {};
+                        }
+
+                        if (!resposta.ok) {
+
+                            const mensagem =
+                                resultado.erro ||
+                                resultado.mensagem ||
+                                "Não foi possível realizar o cadastro.";
+
+                            const texto = mensagem.toLowerCase();
+
+                            if (
+                                texto.includes("email") ||
+                                texto.includes("e-mail")
+                            ) {
+
+                                emailExiste = true;
+                                emailVerificado = email;
+
+                                const inputEmail =
+                                    document.getElementById("email");
+
+                                inputEmail.classList.remove(
+                                    "campo-valido"
+                                );
+
+                                inputEmail.classList.add(
+                                    "campo-invalido"
+                                );
+
+                                mostrarStatusEmail(
+                                    "existente",
+                                    "Este e-mail já está cadastrado."
+                                );
+
+                                voltarEtapa1();
+
+                                inputEmail.focus();
+
+                                return;
+                            }
+
+                            if (
+                                texto.includes("cpf") &&
+                                (
+                                    texto.includes("cadastrado") ||
+                                    texto.includes("existe") ||
+                                    texto.includes("duplicate")
+                                )
+                            ) {
+
+                                voltarEtapa1();
+
+                                setStatusCampo(
+                                    "cpf",
+                                    false,
+                                    "Este CPF já está cadastrado."
+                                );
+
+                                document.getElementById("cpf").focus();
+
+                                return;
+                            }
+
+                            if (
+                                texto.includes("telefone") &&
+                                (
+                                    texto.includes("cadastrado") ||
+                                    texto.includes("existe") ||
+                                    texto.includes("duplicate")
+                                )
+                            ) {
+
+                                setStatusCampo(
+                                    "telefone",
+                                    false,
+                                    "Este telefone já está cadastrado."
+                                );
+
+                                document.getElementById("telefone").focus();
+
+                                return;
+                            }
+
+                            if (
+                                texto.includes("cnpj") &&
+                                (
+                                    texto.includes("cadastrado") ||
+                                    texto.includes("existe") ||
+                                    texto.includes("duplicate")
+                                )
+                            ) {
+
+                                voltarEtapa1();
+
+                                setStatusCampo(
+                                    "cnpj",
+                                    false,
+                                    "Este CNPJ já está cadastrado."
+                                );
+
+                                document.getElementById("cnpj").focus();
+
+                                return;
+                            }
+
+                            erroGeral.textContent = mensagem;
+
+                            return;
+                        }
+
+                        sessionStorage.setItem(
+                            "nome",
+                            dados.nome
+                        );
+
+                        localStorage.setItem(
+                            "tipoUsuario",
+                            tipo
+                        );
+
+                        if (tipo === "ong") {
+
+                            if (resultado.token) {
+
+                                localStorage.setItem(
+                                    "token",
+                                    resultado.token
+                                );
+                            }
+
+                            alert(
+                                "Dados pessoais salvos! Agora, complete o perfil da sua instituição."
+                            );
+
+                            window.location.href = "ong.html";
+
+                            return;
+                        }
+
+                        alert(
+                            "Cadastro realizado com sucesso! Faça login para continuar."
+                        );
+
+                        window.location.href = "acesso.html";
+
+                    } catch (error) {
+
+                        console.error(
+                            "Erro ao realizar cadastro:",
+                            error
+                        );
+
+                        erroGeral.textContent =
+                            "Erro ao conectar com o servidor. Verifique se o servidor Node está ativo.";
+
+                    } finally {
+
+                        botaoFinalizar.disabled = false;
+                        botaoFinalizar.textContent =
+                            "Finalizar Cadastro";
+                    }
+
+                }
+            );
+    </script>
+    <script src="chatbot.js"></script>
+</body>
+
+</html>
