@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chatbot de Ajuda</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
+    
+    /* Botão Flutuante para Abrir o Chat */
+    .chat-toggle-btn {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 60px;
+      height: 60px;
+      background: #4f46e5;
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      cursor: pointer;
+      font-size: 1.5rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      transition: transform 0.2s ease;
+    }
+    .chat-toggle-btn:hover { transform: scale(1.05); background: #4338ca; }
+
+    /* Janela do Chat Flutuante */
+    .chat-container {
+      position: fixed;
+      bottom: 90px;
+      right: 20px;
+      width: 350px;
+      height: 500px;
+      max-width: calc(100vw - 40px);
+      max-height: calc(100vh - 110px);
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 5px 25px rgba(0,0,0,0.2);
+      display: none; /* Inicia oculto */
+      flex-direction: column;
+      overflow: hidden;
+      z-index: 9999;
+    }
+
+    /* Cabeçalho com Botão de Minimizar */
+    .chat-header {
+      background: #4f46e5;
+      color: #fff;
+      padding: 12px 16px;
+      font-size: 1rem;
+      font-weight: bold;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .chat-header .close-btn {
+      background: transparent;
+      border: none;
+      color: #fff;
+      font-size: 1.2rem;
+      cursor: pointer;
+      line-height: 1;
+    }
+
+    /* Corpo de Mensagens */
+    .chat-box {
+      flex: 1;
+      padding: 14px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      background: #f9fafb;
+    }
+    .message {
+      max-width: 80%;
+      padding: 8px 12px;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      line-height: 1.4;
+      word-wrap: break-word;
+    }
+    .message.user { align-self: flex-end; background: #4f46e5; color: #fff; border-bottom-right-radius: 2px; }
+    .message.bot { align-self: flex-start; background: #e5e7eb; color: #1f2937; border-bottom-left-radius: 2px; }
+
+    .typing-indicator {
+      align-self: flex-start;
+      font-size: 0.8rem;
+      color: #6b7280;
+      font-style: italic;
+      display: none;
+      padding: 0 14px 6px;
+      background: #f9fafb;
+    }
+
+    /* Entrada de Texto */
+    .chat-input-area { display: flex; padding: 10px; border-top: 1px solid #e5e7eb; background: #fff; }
+    .chat-input-area input { flex: 1; padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 6px; outline: none; font-size: 0.9rem; }
+    .chat-input-area button { margin-left: 6px; padding: 8px 12px; background: #4f46e5; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 0.9rem; }
+    .chat-input-area button:hover { background: #4338ca; }
+  </style>
+</head>
+<body>
+
+<!-- Botão Flutuante -->
+<button class="chat-toggle-btn" id="toggleBtn" title="Abrir Chat">💬</button>
+
+<!-- Widget do Chatbot -->
+<div class="chat-container" id="chatContainer">
+  <div class="chat-header">
+    <span>Atendimento Virtual</span>
+    <button class="close-btn" id="closeBtn" title="Minimizar">✕</button>
+  </div>
+  <div class="chat-box" id="chatBox">
+    <div class="message bot">Olá! Como posso te ajudar hoje?</div>
+  </div>
+  <div class="typing-indicator" id="typing">Digitando...</div>
+  <form class="chat-input-area" id="chatForm">
+    <input type="text" id="userInput" placeholder="Digite sua mensagem..." required autocomplete="off">
+    <button type="submit">Enviar</button>
+  </form>
+</div>
+
+<script>
+  const toggleBtn = document.getElementById('toggleBtn');
+  const closeBtn = document.getElementById('closeBtn');
+  const chatContainer = document.getElementById('chatContainer');
+  const chatBox = document.getElementById('chatBox');
+  const chatForm = document.getElementById('chatForm');
+  const userInput = document.getElementById('userInput');
+  const typing = document.getElementById('typing');
+
+  // Alternar visibilidade (Abrir/Minimizar)
+  function toggleChat() {
+    const isHidden = chatContainer.style.display === 'none' || chatContainer.style.display === '';
+    chatContainer.style.display = isHidden ? 'flex' : 'none';
+    if (isHidden) userInput.focus();
+  }
+
+  toggleBtn.addEventListener('click', toggleChat);
+  closeBtn.addEventListener('click', toggleChat);
+
+  // Adicionar mensagem na tela
+  function appendMessage(sender, text) {
+    const msgDiv = document.createElement('div');
+    msgDiv.classList.add('message', sender);
+    msgDiv.textContent = text;
+    chatBox.appendChild(msgDiv);
+    chatBox.scrollTop = chatBox.scrollHeight;
+  }
+
+  // Envio de mensagem para a API
+  chatForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const text = userInput.value.trim();
+    if (!text) return;
+
+    appendMessage('user', text);
+    userInput.value = '';
+    typing.style.display = 'block';
+
+    try {
+      const response = await fetch('/api/chatbot', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: text })
+      });
+      
+      const data = await response.json();
+      typing.style.display = 'none';
+      appendMessage('bot', data.reply || 'Não consegui entender, pode repetir?');
+    } catch (err) {
+      typing.style.display = 'none';
+      appendMessage('bot', 'Desculpe, ocorreu um erro ao conectar ao servidor.');
+    }
+  });
+</script>
+
+</body>
+</html>
