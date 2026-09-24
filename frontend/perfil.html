@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Editar Perfil - Entre Laços</title>
+  <link rel="stylesheet" href="perfil.css">
+</head>
+
+<body>
+
+  <header class="cabecalho">
+    <!-- Container da Logo + Texto à Esquerda -->
+    <div class="logo">
+      <a href="index.html">
+        <img src="logo.png" alt="Logo Entre Laços">
+        <span class="logo-texto">Entre Laços</span>
+      </a>
+    </div>
+
+    <!-- Navegação Central -->
+    <nav class="menu">
+      <a href="index.html">Início</a>
+      <a href="animais.html" class="active">Animais</a>
+      <a href="doar.html">Doar</a>
+      <a href="eventos.html">Eventos</a>
+      <a href="historias.html">Histórias</a>
+      <a href="dicas.html">Dicas</a>
+    </nav>
+
+    <!-- Container da Foto de Perfil + Botão à Direita -->
+    <div class="header-direita">
+      <div class="foto-perfil-header-container">
+        <img id="fotoPerfilHeader" src="logo.png" alt="Foto de perfil">
+      </div>
+      <a href="index.html" class="btn-voltar">Voltar ao início</a>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <section class="perfil-card">
+
+      <!-- LADO ESQUERDO: Foto e Ação de Excluir -->
+      <aside class="coluna-esquerda">
+        <div class="foto-area">
+          <div class="foto-container">
+            <img id="fotoPerfil" src="logo.png" alt="Foto de perfil">
+          </div>
+
+          <div class="foto-botoes">
+            <label for="fotoInput" class="btn-foto">Escolher foto</label>
+            <input type="file" id="fotoInput" accept="image/jpeg,image/png,image/webp" hidden>
+            <button type="button" id="btnRemoverFoto" class="btn-remover">Remover foto</button>
+          </div>
+
+          <p id="nomeArquivo"></p>
+        </div>
+
+        <section class="excluir-area">
+          <button type="button" id="btnExcluirConta" class="btn-excluir">Excluir minha conta</button>
+        </section>
+      </aside>
+
+      <!-- LADO DIREITO: Todos os textos e formulários -->
+      <div class="coluna-direita">
+
+        <div class="perfil-cabecalho">
+          <h1>Meu Perfil</h1>
+          <p class="subtitulo">Confira e altere suas informações pessoais.</p>
+        </div>
+
+        <form id="formPerfil">
+
+          <div class="campo">
+            <label for="nome">Nome</label>
+            <input type="text" id="nome" name="nome" required autocomplete="name">
+          </div>
+
+          <div class="campo">
+            <label for="email">E-mail</label>
+            <input type="email" id="email" name="email" required autocomplete="email">
+          </div>
+
+          <div class="campo">
+            <label for="telefone">Telefone</label>
+            <input type="tel" id="telefone" name="telefone" autocomplete="tel" maxlength="15">
+          </div>
+
+          <div class="campo">
+            <label for="tipoUsuario">Tipo de usuário</label>
+            <select id="tipoUsuario" name="tipoUsuario" disabled>
+              <option value="usuario">Usuário</option>
+              <option value="ong">ONG / Instituição</option>
+              <option value="adotante">Adotante</option>
+            </select>
+            <small>O tipo de usuário não pode ser alterado depois do cadastro.</small>
+          </div>
+
+          <button type="submit" id="btnSalvar" class="btn-salvar">Salvar alterações</button>
+
+        </form>
+
+        <!-- Alteração de Senha no lado direito -->
+        <section class="secao-senha">
+          <h3>Alterar senha</h3>
+          <p>Se quiser alterar sua senha, preencha os três campos abaixo. Caso contrário, deixe-os vazios.</p>
+
+          <div class="grid-senha">
+            <div class="campo">
+              <label for="senhaAtual">Senha atual</label>
+              <input type="password" id="senhaAtual" autocomplete="current-password">
+            </div>
+
+            <div class="campo">
+              <label for="novaSenha">Nova senha</label>
+              <input type="password" id="novaSenha" autocomplete="new-password">
+            </div>
+
+            <div class="campo">
+              <label for="confirmarNovaSenha">Confirmar senha</label>
+              <input type="password" id="confirmarNovaSenha" autocomplete="new-password">
+            </div>
+          </div>
+
+          <button type="button" id="btnAlterarSenha" class="btn-senha">Alterar senha</button>
+        </section>
+
+      </div>
+
+    </section>
+
+  </main>
+
+  <footer class="rodape">
+    <p>© 2026 Entre Laços - Todos os direitos reservados.</p>
+  </footer>
+
+  <script>
+    const API_URL = "http://localhost:3000";
+
+    const token =
+      localStorage.getItem("token") ||
+      sessionStorage.getItem("token");
+
+    let usuarioAtual = null;
+    let fotoAtual = null;
+
+    const formPerfil = document.getElementById("formPerfil");
+    const nome = document.getElementById("nome");
+    const email = document.getElementById("email");
+    const telefone = document.getElementById("telefone");
+    const tipoUsuario = document.getElementById("tipoUsuario");
+
+    const fotoPerfil = document.getElementById("fotoPerfil");
+    const fotoPerfilHeader = document.getElementById("fotoPerfilHeader");
+    const fotoInput = document.getElementById("fotoInput");
+    const btnRemoverFoto = document.getElementById("btnRemoverFoto");
+    const nomeArquivo = document.getElementById("nomeArquivo");
+
+    const senhaAtual = document.getElementById("senhaAtual");
+    const novaSenha = document.getElementById("novaSenha");
+    const confirmarNovaSenha = document.getElementById("confirmarNovaSenha");
+
+    const btnAlterarSenha = document.getElementById("btnAlterarSenha");
+    const btnExcluirConta = document.getElementById("btnExcluirConta");
+    const btnSalvar = document.getElementById("btnSalvar");
+
+    if (!token) {
+      alert("Sua sessão expirou. Faça login novamente.");
+      window.location.href = "acesso.html";
+    }
+
+    function headersJSON() {
+      return {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + token
+      };
+    }
+
+    function headersAuth() {
+      return {
+        "Authorization": "Bearer " + token
+      };
+    }
+
+    function colocarFoto(foto) {
+      if (foto && String(foto).trim() !== "") {
+        fotoAtual = foto;
+
+        fotoPerfil.src = foto;
+        fotoPerfilHeader.src = foto;
+
+        fotoPerfil.onerror = function () {
+          fotoPerfil.src = "logo.png";
+        };
+
+        fotoPerfilHeader.onerror = function () {
+          fotoPerfilHeader.src = "logo.png";
+        };
+      } else {
+        fotoAtual = null;
+        fotoPerfil.src = "logo.png";
+        fotoPerfilHeader.src = "logo.png";
+      }
+    }
+
+    function formatarTelefone(valor) {
+      if (!valor) return "";
+
+      let numero = String(valor).replace(/\D/g, "");
+
+      if (numero.length > 11) {
+        numero = numero.substring(0, 11);
+      }
+
+      if (numero.length <= 10) {
+        numero = numero.replace(
+          /^(\d{2})(\d{4})(\d{0,4}).*/,
+          "($1) $2-$3"
+        );
+      } else {
+        numero = numero.replace(
+          /^(\d{2})(\d{5})(\d{0,4}).*/,
+          "($1) $2-$3"
+        );
+      }
+
+      return numero;
+    }
+
+    telefone.addEventListener("input", function () {
+      telefone.value = formatarTelefone(telefone.value);
+    });
+
+    function preencherTipo(tipo) {
+      if (!tipo) return;
+
+      const tipoNormalizado = String(tipo).toLowerCase().trim();
+
+      if (
+        tipoNormalizado === "ong" ||
+        tipoNormalizado === "instituicao" ||
+        tipoNormalizado === "instituição"
+      ) {
+        tipoUsuario.value = "ong";
+        return;
+      }
+
+      if (
+        tipoNormalizado === "adotante"
+      ) {
+        tipoUsuario.value = "adotante";
+        return;
+      }
+
+      tipoUsuario.value = "usuario";
+    }
+
+    async function carregarPerfil() {
+      try {
+        const resposta = await fetch(`${API_URL}/perfil`, {
+          method: "GET",
+          headers: headersAuth()
+        });
+
+        const dados = await resposta.json();
+
+        if (resposta.status === 401) {
+          localStorage.removeItem("token");
+          sessionStorage.removeItem("token");
+
+          alert("Sua sessão expirou. Faça login novamente.");
+          window.location.href = "acesso.html";
+          return;
+        }
+
+        if (!resposta.ok) {
+          throw new Error(
+            dados.erro ||
+            dados.message ||
+            "Não foi possível carregar o perfil."
+          );
+        }
+
+        usuarioAtual = dados.usuario;
+
+        nome.value = usuarioAtual.nome || "";
+        email.value = usuarioAtual.email || "";
+        telefone.value = formatarTelefone(usuarioAtual.telefone || "");
+
+        preencherTipo(usuarioAtual.tipo);
+
+        colocarFoto(usuarioAtual.foto_perfil);
+
+        localStorage.setItem(
+          "usuario",
+          JSON.stringify(usuarioAtual)
+        );
+
+        if (usuarioAtual.nome) {
+          sessionStorage.setItem(
+            "nome",
+            usuarioAtual.nome
+          );
+        }
+
+      } catch (erro) {
+        console.error("Erro ao carregar perfil:", erro);
+
+        alert(
+          erro.message ||
+          "Erro ao carregar os dados do perfil."
+        );
+      }
+    }
+
+    fotoInput.addEventListener("change", function () {
+
+      const arquivo = fotoInput.files[0];
+
+      if (!arquivo) {
+        return;
+      }
+
+      if (!arquivo.type.match(/^image\/(jpeg|png|webp)$/)) {
+        alert("Escolha uma imagem JPG, PNG ou WEBP.");
+        fotoInput.value = "";
+        return;
+      }
+
+      if (arquivo.size > 2 * 1024 * 1024) {
+        alert("A imagem deve ter no máximo 2 MB.");
+        fotoInput.value = "";
+        return;
+      }
+
+      const leitor = new FileReader();
+
+      leitor.onload = function (evento) {
+
+        fotoAtual = evento.target.result;
+
+        fotoPerfil.src = fotoAtual;
+        fotoPerfilHeader.src = fotoAtual;
+
+        nomeArquivo.textContent = arquivo.name;
+      };
+
+      leitor.onerror = function () {
+        alert("Não foi possível carregar a imagem.");
+      };
+
+      leitor.readAsDataURL(arquivo);
+    });
+
+    btnRemoverFoto.addEventListener("click", function () {
+
+      const confirmar = confirm(
+        "Deseja realmente remover sua foto de perfil?"
+      );
+
+      if (!confirmar) {
+        return;
+      }
+
+      fotoAtual = null;
+
+      fotoPerfil.src = "logo.png";
+      fotoPerfilHeader.src = "logo.png";
+
+      fotoInput.value = "";
+      nomeArquivo.textContent = "";
+    });
+
+    formPerfil.addEventListener("submit", async function (evento) {
+
+      evento.preventDefault();
+
+      if (!usuarioAtual) {
+        alert("Os dados do perfil ainda não foram carregados.");
+        return;
+      }
+
+      const nomeFinal = nome.value.trim();
+      const emailFinal = email.value.trim().toLowerCase();
+      const telefoneFinal = telefone.value.trim();
+
+      if (!nomeFinal) {
+        alert("Informe seu nome.");
+        nome.focus();
+        return;
+      }
+
+      if (!emailFinal) {
+        alert("Informe seu e-mail.");
+        email.focus();
+        return;
+      }
+
+      const emailValido =
+        /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+      if (!emailValido.test(emailFinal)) {
+        alert("Informe um e-mail válido.");
+        email.focus();
+        return;
+      }
+
+      btnSalvar.disabled = true;
+      btnSalvar.textContent = "Salvando...";
+
+      try {
+
+        const resposta = await fetch(`${API_URL}/perfil`, {
+          method: "PUT",
+          headers: headersJSON(),
+          body: JSON.stringify({
+            nome: nomeFinal,
+            email: emailFinal,
+            telefone: telefoneFinal,
+            foto_perfil: fotoAtual
+          })
+        });
+
+        const dados = await resposta.json();
+
+        if (resposta.status === 401) {
+          localStorage.removeItem("token");
+          sessionStorage.removeItem("token");
+
+          alert("Sua sessão expirou. Faça login novamente.");
+          window.location.href = "acesso.html";
+          return;
+        }
+
+        if (!resposta.ok) {
+          throw new Error(
+            dados.erro ||
+            dados.message ||
+            "Não foi possível salvar as alterações."
+          );
+        }
+
+        usuarioAtual = dados.usuario;
+
+        localStorage.setItem(
+          "usuario",
+          JSON.stringify(usuarioAtual)
+        );
+
+        sessionStorage.setItem(
+          "nome",
+          usuarioAtual.nome
+        );
+
+        nome.value = usuarioAtual.nome || "";
+        email.value = usuarioAtual.email || "";
+        telefone.value = formatarTelefone(
+          usuarioAtual.telefone || ""
+        );
+
+        preencherTipo(usuarioAtual.tipo);
+        colocarFoto(usuarioAtual.foto_perfil);
+
+        fotoInput.value = "";
+
+        alert("Perfil atualizado com sucesso!");
+
+      } catch (erro) {
+
+        console.error("Erro ao atualizar perfil:", erro);
+
+        alert(
+          erro.message ||
+          "Erro ao salvar as alterações."
+        );
+
+      } finally {
+
+        btnSalvar.disabled = false;
+        btnSalvar.textContent = "Salvar alterações";
+      }
+    });
+
+    btnAlterarSenha.addEventListener("click", async function () {
+
+      const senhaAtualValor = senhaAtual.value.trim();
+      const novaSenhaValor = novaSenha.value.trim();
+      const confirmarNovaSenhaValor =
+        confirmarNovaSenha.value.trim();
+
+      if (
+        !senhaAtualValor &&
+        !novaSenhaValor &&
+        !confirmarNovaSenhaValor
+      ) {
+        alert("Preencha os campos para alterar sua senha.");
+        return;
+      }
+
+      if (
+        !senhaAtualValor ||
+        !novaSenhaValor ||
+        !confirmarNovaSenhaValor
+      ) {
+        alert("Preencha todos os campos de senha.");
+        return;
+      }
+
+      if (novaSenhaValor.length < 6) {
+        alert("A nova senha deve ter pelo menos 6 caracteres.");
+        return;
+      }
+
+      if (novaSenhaValor !== confirmarNovaSenhaValor) {
+        alert("A nova senha e a confirmação não coincidem.");
+        return;
+      }
+
+      if (senhaAtualValor === novaSenhaValor) {
+        alert("A nova senha deve ser diferente da senha atual.");
+        return;
+      }
+
+      btnAlterarSenha.disabled = true;
+      btnAlterarSenha.textContent = "Alterando...";
+
+      try {
+
+        const resposta = await fetch(
+          `${API_URL}/perfil/alterar-senha`,
+          {
+            method: "PUT",
+            headers: headersJSON(),
+            body: JSON.stringify({
+              senhaAtual: senhaAtualValor,
+              novaSenha: novaSenhaValor,
+              confirmarNovaSenha: confirmarNovaSenhaValor
+            })
+          }
+        );
+
+        const dados = await resposta.json();
+
+        if (resposta.status === 401) {
+          alert(
+            dados.erro ||
+            "A senha atual está incorreta."
+          );
+          return;
+        }
+
+        if (!resposta.ok) {
+          throw new Error(
+            dados.erro ||
+            dados.message ||
+            "Não foi possível alterar a senha."
+          );
+        }
+
+        senhaAtual.value = "";
+        novaSenha.value = "";
+        confirmarNovaSenha.value = "";
+
+        alert("Senha alterada com sucesso!");
+
+      } catch (erro) {
+
+        console.error("Erro ao alterar senha:", erro);
+
+        alert(
+          erro.message ||
+          "Erro ao alterar a senha."
+        );
+
+      } finally {
+
+        btnAlterarSenha.disabled = false;
+        btnAlterarSenha.textContent = "Alterar senha";
+      }
+    });
+
+    btnExcluirConta.addEventListener("click", async function () {
+
+      const primeiraConfirmacao = confirm(
+        "Tem certeza que deseja excluir sua conta?"
+      );
+
+      if (!primeiraConfirmacao) {
+        return;
+      }
+
+      const segundaConfirmacao = confirm(
+        "Essa ação excluirá definitivamente sua conta. Deseja continuar?"
+      );
+
+      if (!segundaConfirmacao) {
+        return;
+      }
+
+      btnExcluirConta.disabled = true;
+      btnExcluirConta.textContent = "Excluindo...";
+
+      try {
+
+        const resposta = await fetch(
+          `${API_URL}/perfil`,
+          {
+            method: "DELETE",
+            headers: headersAuth()
+          }
+        );
+
+        const dados = await resposta.json();
+
+        if (!resposta.ok) {
+          throw new Error(
+            dados.erro ||
+            dados.message ||
+            "Não foi possível excluir a conta."
+          );
+        }
+
+        localStorage.removeItem("token");
+        localStorage.removeItem("usuario");
+        localStorage.removeItem("tipoUsuario");
+
+        sessionStorage.removeItem("token");
+        sessionStorage.removeItem("usuario");
+        sessionStorage.removeItem("nome");
+        sessionStorage.removeItem("tipoUsuario");
+
+        alert("Conta excluída com sucesso.");
+
+        window.location.href = "acesso.html";
+
+      } catch (erro) {
+
+        console.error("Erro ao excluir conta:", erro);
+
+        alert(
+          erro.message ||
+          "Erro ao excluir a conta."
+        );
+
+        btnExcluirConta.disabled = false;
+        btnExcluirConta.textContent = "Excluir minha conta";
+      }
+    });
+
+    carregarPerfil();
+  </script>
+
+</body>
+
+</html>
