@@ -1,0 +1,1590 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animais - Entre Laços</title>
+    <link rel="stylesheet" href="animais.css">
+    <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+    <header class="cabecalho">
+        <div class="cabecalho-conteudo">
+            <div class="logo">
+                <a href="index.html">
+                    <img src="logo.png" alt="Logo Entre Laços">
+                </a>
+                <span>Entre Laços</span>
+            </div>
+
+            <nav class="menu-links">
+                <a href="index.html">Início</a>
+                <a href="animais.html" class="ativo">Animais</a>
+                <a href="doar.html">Doar</a>
+                <a href="eventos.html">Eventos</a>
+                <a href="historias.html">Histórias</a>
+                <a href="dicas.html">Dicas</a>
+            </nav>
+
+            <div class="perfil-topo">
+                <a href="perfil.html" class="foto-header-link" title="Meu perfil">
+                    <img id="fotoPerfilHeader" class="foto-header" src="logo.png" alt="Foto de perfil">
+                </a>
+                <a href="index.html" class="botao-voltar">
+                    Voltar ao Início
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main class="principal">
+        <div class="topo-secao">
+            <div class="titulo-secao">
+                <h2>Encontre seu novo amiguinho!</h2>
+                <p>Filtre por espécie, porte ou sexo para encontrar o pet ideal para você.</p>
+            </div>
+
+            <div class="area-admin-ong">
+                <button type="button" id="btnCadastrarAnimal" class="botao-principal-admin"
+                    onclick="abrirCadastroAnimal()">
+                    ➕ Cadastrar Animal
+                </button>
+            </div>
+        </div>
+
+        <div class="card-ajuda">
+            <div class="icone-ajuda">🐾</div>
+            <div class="texto-ajuda">
+                <h3>Adote um novo melhor amigo!</h3>
+                <p>Adote um amigo, transforme uma vida e descubra um amor para toda a vida.</p>
+            </div>
+        </div>
+
+        <div class="container-adocao">
+            <aside class="filtros-lateral">
+                <div class="titulo-filtros">
+                    <div class="icone-filtro">🔎</div>
+                    <div>
+                        <h3>Filtros</h3>
+                        <span>Encontre o pet ideal</span>
+                    </div>
+                </div>
+
+                <div class="secao-filtro">
+                    <p>Espécie</p>
+                    <div class="tags-filtro">
+                        <button type="button" class="btn-filtro active" onclick="setFiltro(this,'especie','')">
+                            🐾 Todos
+                        </button>
+                        <button type="button" class="btn-filtro" onclick="setFiltro(this,'especie','Cachorro')">
+                            🐶 Cães
+                        </button>
+                        <button type="button" class="btn-filtro" onclick="setFiltro(this,'especie','Gato')">
+                            🐱 Gatos
+                        </button>
+                    </div>
+                </div>
+
+                <div class="secao-filtro">
+                    <p>Porte</p>
+                    <select id="filtroPorte" onchange="carregarAnimais()">
+                        <option value="">Todos os tamanhos</option>
+                        <option value="Pequeno">Pequeno</option>
+                        <option value="Médio">Médio</option>
+                        <option value="Grande">Grande</option>
+                    </select>
+                </div>
+
+                <div class="secao-filtro">
+                    <p>Sexo</p>
+                    <div class="tags-filtro">
+                        <button type="button" class="btn-filtro active" onclick="setFiltro(this,'sexo','')">
+                            Todos
+                        </button>
+                        <button type="button" class="btn-filtro" onclick="setFiltro(this,'sexo','Fêmea')">
+                            ♀ Fêmeas
+                        </button>
+                        <button type="button" class="btn-filtro" onclick="setFiltro(this,'sexo','Macho')">
+                            ♂ Machos
+                        </button>
+                    </div>
+                </div>
+
+                <button type="button" class="btn-limpar" onclick="limparFiltros()">
+                    ↺ Limpar filtros
+                </button>
+            </aside>
+
+            <section id="lista-pets" class="grid-pets">
+                <div class="carregando">
+                    <div class="spinner"></div>
+                    <p>Carregando animais...</p>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer class="fim">
+        <div class="fim-container">
+            <div class="fim-sobre">
+                <div class="fim-logo">
+                    <img src="logo.png" alt="Logo Entre Laços" height="40">
+                    <h3>Entre Laços</h3>
+                </div>
+                <p>
+                    Conectando corações e transformando vidas.
+                    Nossa missão é encontrar lares amorosos para animais
+                    resgatados e promover a posse responsável.
+                </p>
+            </div>
+
+            <div class="fim-contato">
+                <h4>Contato</h4>
+                <span>Email: contato@entrelacos.org</span>
+                <span>Telefone: (00) 00000-0000</span>
+                <span>Facebook: entrelaços.consulta</span>
+                <span>Instagram: entrelaços.consulta</span>
+            </div>
+        </div>
+
+        <div class="fim-copy">
+            © 2026 Entre Laços. Todos os direitos reservados.
+        </div>
+    </footer>
+
+    <!-- MODAL CADASTRO / EDIÇÃO -->
+    <div id="modalCadastroAnimal" class="modal-overlay">
+        <div class="modal-cadastro">
+            <div class="cadastro-imagem">
+                <img src="https://i.pinimg.com/736x/a1/6e/d8/a16ed8973b828d157f89e360bd23f5e9.jpg"
+                    alt="Animal para adoção">
+            </div>
+
+            <div class="cadastro-formulario">
+                <div class="modal-header">
+                    <div>
+                        <h2 id="tituloModalAnimal">Cadastrar novo animal</h2>
+                        <p id="subtitulo-passo">
+                            Informe os dados do animal para colocá-lo para adoção.
+                        </p>
+                    </div>
+
+                    <button type="button" class="btn-fechar-modal" onclick="fecharCadastroAnimal()">
+                        ×
+                    </button>
+                </div>
+
+                <form id="formAnimal" novalidate>
+
+                    <div class="etapa-cadastro" id="etapa1">
+                        <div class="titulo-form">
+                            <span class="icone-form">🐾</span>
+                            <h3>Informações básicas</h3>
+                        </div>
+
+                        <div class="grid-form">
+                            <div class="campo-form campo-completo">
+                                <label for="campoNome">Nome do animal *</label>
+                                <input type="text" name="nome" id="campoNome" placeholder="Ex.: Bob" required>
+                            </div>
+
+                            <div class="campo-form">
+                                <label for="campoEspecie">Espécie *</label>
+                                <select name="especie" id="campoEspecie" required>
+                                    <option value="">Selecione</option>
+                                    <option value="Cachorro">Cachorro</option>
+                                    <option value="Gato">Gato</option>
+                                    <option value="Outro">Outro</option>
+                                </select>
+                            </div>
+
+                            <div class="campo-form">
+                                <label for="campoRaca">Raça *</label>
+                                <input type="text" name="raca" id="campoRaca" placeholder="Ex.: Poodle" required>
+                            </div>
+
+                            <div class="campo-form">
+                                <label for="campoSexo">Sexo *</label>
+                                <select name="sexo" id="campoSexo" required>
+                                    <option value="">Selecione</option>
+                                    <option value="Macho">Macho</option>
+                                    <option value="Fêmea">Fêmea</option>
+                                </select>
+                            </div>
+
+                            <div class="campo-form">
+                                <label for="campoPorte">Porte *</label>
+                                <select name="porte" id="campoPorte" required>
+                                    <option value="">Selecione</option>
+                                    <option value="Pequeno">Pequeno</option>
+                                    <option value="Médio">Médio</option>
+                                    <option value="Grande">Grande</option>
+                                </select>
+                            </div>
+
+                            <div class="campo-form">
+                                <label for="campoIdade">Idade aproximada *</label>
+                                <input type="text" name="idade" id="campoIdade" placeholder="Ex.: 6 meses ou 2 anos"
+                                    required>
+                            </div>
+                        </div>
+
+                        <div class="modal-acoes">
+                            <button type="button" class="btn-voltar-form" onclick="fecharCadastroAnimal()">
+                                ← Voltar
+                            </button>
+
+                            <button type="button" class="btn-continuar" onclick="irParaEtapa2()">
+                                Continuar →
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="etapa-cadastro" id="etapa2" style="display:none;">
+                        <div class="titulo-form">
+                            <span class="icone-form">📍</span>
+                            <h3>Detalhes e localização</h3>
+                        </div>
+
+                        <div class="grid-form">
+                            <div class="campo-form campo-completo">
+                                <label for="campoDescricao">Descrição / História *</label>
+                                <textarea name="descricao" id="campoDescricao"
+                                    placeholder="Conte um pouco sobre a personalidade, história e características do animal..."
+                                    required></textarea>
+                            </div>
+
+                            <div class="campo-form">
+                                <label for="selectStatus">Status atual *</label>
+                                <select name="status" id="selectStatus" required>
+                                    <option value="">Selecione</option>
+                                    <option value="Disponível">Disponível</option>
+                                    <option value="Em Adoção">Em Processo de Adoção</option>
+                                    <option value="Adotado">Adotado</option>
+                                    <option value="Urgente">Urgente - Lar Temporário</option>
+                                </select>
+                            </div>
+
+                            <div class="campo-form">
+                                <label for="inputFoto">
+                                    Foto do animal
+                                    <span id="textoFotoObrigatoria">*</span>
+                                </label>
+
+                                <input type="file" id="inputFoto" name="foto" accept="image/*" required>
+
+                                <small id="avisoFotoEdicao" style="display:none;">
+                                    Deixe vazio para manter a foto atual.
+                                </small>
+                            </div>
+
+                            <div class="campo-form">
+                                <label for="campoOng">Nome da ONG responsável *</label>
+                                <input type="text" name="ong" id="campoOng" placeholder="Nome da ONG" readonly required>
+                            </div>
+
+                            <div class="campo-form">
+                                <label for="campoCidade">Cidade *</label>
+                                <input type="text" name="cidade" id="campoCidade" placeholder="Cidade" readonly
+                                    required>
+                            </div>
+
+                            <div class="campo-form">
+                                <label for="campoEstado">Estado *</label>
+                                <input type="text" name="estado" id="campoEstado" placeholder="Ex.: SP" readonly
+                                    required>
+                            </div>
+                        </div>
+
+                        <div class="modal-acoes">
+                            <button type="button" class="btn-voltar-form" onclick="voltarEtapa1()">
+                                ← Voltar
+                            </button>
+
+                            <button type="submit" class="btn-continuar" id="btnSalvarAnimal">
+                                ✓ Cadastrar animal
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL CONHECER -->
+    <div id="modalConhecerAnimal" class="modal-overlay">
+        <div class="modal-detalhes-animal">
+            <div class="modal-header">
+                <div>
+                    <h2>Conheça esse amiguinho 🐾</h2>
+                    <p>Confira as informações e a história desse animal.</p>
+                </div>
+
+                <button type="button" class="btn-fechar-modal" onclick="fecharConhecerAnimal()">
+                    ×
+                </button>
+            </div>
+
+            <div class="detalhes-conteudo">
+                <div class="detalhes-foto">
+                    <img id="detalheFoto" src="placeholder.jpg" alt="Foto do animal">
+                    <span id="detalheStatus" class="detalhe-status"></span>
+                </div>
+
+                <div class="detalhes-info">
+                    <h1 id="detalheNome"></h1>
+                    <span id="detalheEspecie" class="detalhe-especie"></span>
+
+                    <div class="detalhes-tags">
+                        <span>🎂 <b id="detalheIdade"></b></span>
+                        <span>📏 <b id="detalhePorte"></b></span>
+                        <span>🐾 <b id="detalheSexo"></b></span>
+                        <span>🧬 <b id="detalheRaca"></b></span>
+                    </div>
+
+                    <div class="detalhe-local">
+                        📍 <span id="detalheLocal"></span>
+                    </div>
+
+                    <div class="detalhe-historia">
+                        <h3>Minha história</h3>
+                        <p id="detalheDescricao"></p>
+                    </div>
+
+                    <div class="detalhe-ong">
+                        <h3>Instituição responsável</h3>
+
+                        <p>
+                            <strong>Nome:</strong>
+                            <span id="detalheOngNome"></span>
+                        </p>
+
+                        <p>
+                            <strong>📍 Endereço:</strong>
+                            <span id="detalheOngEndereco"></span>
+                        </p>
+
+                        <p>
+                            <strong>📞 Telefone:</strong>
+                            <span id="detalheOngTelefone"></span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (() => {
+            "use strict";
+
+            const API_URL = "http://localhost:3000";
+            const MIN_CARACTERES = 2;
+            const TAMANHO_MAX_FOTO = 2 * 1024 * 1024;
+            const PLACEHOLDER = "placeholder.jpg";
+
+            const SUBTITULOS = {
+                cadastro: {
+                    1: "Informe os dados do animal para colocá-lo para adoção.",
+                    2: "Passo 2: Detalhes finais e localização."
+                },
+                edicao: {
+                    1: "Passo 1: Atualize os dados básicos do animal.",
+                    2: "Passo 2: Atualize os detalhes do animal."
+                }
+            };
+
+            const STATUS = {
+                disponivel: { badge: "disponivel", detalhe: "disponivel", campo: "status-disponivel" },
+                "em-adocao": { badge: "em-adocao", detalhe: "adocao", campo: "status-adocao" },
+                adotado: { badge: "adotado", detalhe: "adotado", campo: "status-adotado" },
+                urgente: { badge: "urgente", detalhe: "urgente", campo: "status-urgente" }
+            };
+
+            const estado = {
+                filtros: { especie: "", sexo: "", porte: "" },
+                modoEdicao: false,
+                idAnimalEdicao: null,
+                imagemAtual: "",
+                salvando: false,
+                requisicaoLista: 0,
+                requisicaoDetalhe: 0
+            };
+
+            const $ = (id) => document.getElementById(id);
+
+            function setTexto(id, texto) {
+                const el = $(id);
+                if (el) el.textContent = texto;
+            }
+
+            function setValor(id, valor) {
+                const el = $(id);
+                if (el) el.value = valor ?? "";
+            }
+
+            function getValor(id) {
+                const el = $(id);
+                return el ? el.value.trim() : "";
+            }
+
+            function setDisplay(id, display) {
+                const el = $(id);
+                if (el) el.style.display = display;
+            }
+
+            function preencher(mapa) {
+                Object.entries(mapa).forEach(([id, valor]) => setValor(id, valor));
+            }
+
+            const parseInteiro = (valor) => Number.parseInt(valor, 10);
+
+            const limpo = (valor, fallback = "") =>
+                valor === null ||
+                    valor === undefined ||
+                    valor === "" ||
+                    valor === "null" ||
+                    valor === "undefined"
+                    ? fallback
+                    : valor;
+
+            const escapeHtml = (valor) =>
+                String(valor ?? "").replace(/[&<>"']/g, (c) => ({
+                    "&": "&amp;",
+                    "<": "&lt;",
+                    ">": "&gt;",
+                    '"': "&quot;",
+                    "'": "&#39;"
+                }[c]));
+
+            const slug = (texto) =>
+                String(texto || "")
+                    .toLowerCase()
+                    .normalize("NFD")
+                    .replace(/[\u0300-\u036f]/g, "")
+                    .trim()
+                    .replace(/\s+/g, "-");
+
+            function infoStatus(status) {
+                const s = slug(status || "Disponível");
+
+                if (s.includes("dispon")) return STATUS.disponivel;
+                if (s.includes("urgente")) return STATUS.urgente;
+                if (s.includes("adocao") || s.includes("processo")) return STATUS["em-adocao"];
+
+                return STATUS.adotado;
+            }
+
+            function formatarIdade(idade) {
+                const texto = String(idade ?? "").trim();
+                return texto || "Idade não informada";
+            }
+
+            function getToken() {
+                return localStorage.getItem("token") || sessionStorage.getItem("token");
+            }
+
+            /* ==========================================================
+               FOTO DO PERFIL
+               Busca diretamente no banco através da rota /perfil
+               ========================================================== */
+            async function carregarFotoPerfilHeader() {
+                const foto = document.getElementById("fotoPerfilHeader");
+
+                if (!foto) return;
+
+                const token = getToken();
+
+                if (!token) {
+                    foto.src = "logo.png";
+                    return;
+                }
+
+                try {
+                    const resposta = await fetch(`${API_URL}/perfil?atualizacao=${Date.now()}`, {
+                        method: "GET",
+                        headers: {
+                            "Authorization": `Bearer ${token}`
+                        },
+                        cache: "no-store"
+                    });
+
+                    if (!resposta.ok) {
+                        console.error("Erro ao buscar foto do perfil:", resposta.status);
+                        foto.src = "logo.png";
+                        return;
+                    }
+
+                    const dados = await resposta.json();
+
+                    console.log("PERFIL RECEBIDO EM ANIMAIS:", dados);
+
+                    const fotoBanco = dados?.usuario?.foto_perfil;
+
+                    if (fotoBanco && String(fotoBanco).trim() !== "") {
+                        foto.src = fotoBanco;
+                        console.log("FOTO DE PERFIL ATUALIZADA EM ANIMAIS");
+                    } else {
+                        foto.src = "logo.png";
+                        console.log("USUÁRIO SEM FOTO DE PERFIL");
+                    }
+
+                    foto.onerror = function () {
+                        this.onerror = null;
+                        this.src = "logo.png";
+                    };
+
+                } catch (erro) {
+                    console.error("Erro ao carregar foto de perfil:", erro);
+                    foto.src = "logo.png";
+                }
+            }
+
+            function getIdOng() {
+                const valor = localStorage.getItem("idOngAtiva");
+
+                if (!valor || valor === "null" || valor === "undefined") return null;
+
+                const id = parseInteiro(valor);
+
+                return Number.isNaN(id) ? null : id;
+            }
+
+            function obterUsuarioLogado() {
+                try {
+                    const usuarioStorage =
+                        localStorage.getItem("usuario") ||
+                        sessionStorage.getItem("usuario");
+
+                    return usuarioStorage ? JSON.parse(usuarioStorage) : null;
+                } catch (e) {
+                    return null;
+                }
+            }
+
+            function eUsuarioOng() {
+                const usuario = obterUsuarioLogado();
+
+                if (usuario) {
+                    const tipo = slug(
+                        usuario.tipo ||
+                        usuario.tipo_usuario ||
+                        usuario.funcao ||
+                        ""
+                    );
+
+                    if (tipo === "ong" || usuario.isOng === true || usuario.ehOng === true) {
+                        return true;
+                    }
+                }
+
+                return getIdOng() !== null;
+            }
+
+            function converterParaBase64(arquivo) {
+                return new Promise((resolve, reject) => {
+                    const leitor = new FileReader();
+
+                    leitor.onload = () => resolve(leitor.result);
+                    leitor.onerror = () => reject(new Error("Não foi possível ler a imagem."));
+
+                    leitor.readAsDataURL(arquivo);
+                });
+            }
+
+            class ErroApi extends Error {
+                constructor(mensagem, status = 0) {
+                    super(mensagem);
+                    this.name = "ErroApi";
+                    this.status = status;
+                }
+            }
+
+            async function apiFetch(caminho, { method = "GET", body, query } = {}) {
+                const token = getToken();
+
+                if (!token) {
+                    throw new ErroApi("Sua sessão expirou. Faça login novamente.", 401);
+                }
+
+                const url = new URL(API_URL + caminho);
+
+                if (query) {
+                    Object.entries(query).forEach(([chave, valor]) => {
+                        if (valor) url.searchParams.set(chave, valor);
+                    });
+                }
+
+                const headers = {
+                    Authorization: `Bearer ${token}`
+                };
+
+                const opcoes = {
+                    method,
+                    headers
+                };
+
+                if (body !== undefined) {
+                    headers["Content-Type"] = "application/json";
+                    opcoes.body = JSON.stringify(body);
+                }
+
+                let resposta;
+
+                try {
+                    resposta = await fetch(url, opcoes);
+                } catch {
+                    throw new ErroApi("Erro ao conectar com o servidor.", 0);
+                }
+
+                const dados = await resposta.json().catch(() => null);
+
+                if (!resposta.ok) {
+                    throw new ErroApi(
+                        dados?.detalhe ||
+                        dados?.erro ||
+                        dados?.message ||
+                        "Falha na requisição.",
+                        resposta.status
+                    );
+                }
+
+                return dados;
+            }
+
+            function tratarErro(erro, mensagemPadrao) {
+                console.error(erro);
+
+                if (erro?.status === 401) {
+                    alert("Sua sessão expirou. Faça login novamente.");
+                    window.location.href = "acesso.html";
+                    return;
+                }
+
+                alert(erro?.message || mensagemPadrao);
+            }
+
+            const obterAnimal = (id) => apiFetch("/animais", { query: { id } });
+
+            function abrirModal(id) {
+                $(id)?.classList.add("aberto");
+                document.body.classList.add("modal-aberto");
+            }
+
+            function fecharModal(id) {
+                $(id)?.classList.remove("aberto");
+
+                if (!document.querySelector(".modal-overlay.aberto")) {
+                    document.body.classList.remove("modal-aberto");
+                }
+            }
+
+            function mostrarEtapa(numero) {
+                setDisplay("etapa1", numero === 1 ? "block" : "none");
+                setDisplay("etapa2", numero === 2 ? "block" : "none");
+
+                const modo = estado.modoEdicao ? "edicao" : "cadastro";
+
+                setTexto(
+                    "subtitulo-passo",
+                    SUBTITULOS[modo][numero]
+                );
+
+                const modal = document.querySelector(".modal-cadastro");
+
+                if (modal) modal.scrollTop = 0;
+            }
+
+            function aplicarClasseStatus() {
+                const select = $("selectStatus");
+
+                if (!select) return;
+
+                Object.values(STATUS).forEach((s) => {
+                    select.classList.remove(s.campo);
+                });
+
+                if (select.value) {
+                    select.classList.add(infoStatus(select.value).campo);
+                }
+            }
+
+            function limparFormulario() {
+                $("formAnimal")?.reset();
+
+                document.querySelectorAll("#formAnimal .campo-erro")
+                    .forEach((el) => el.classList.remove("campo-erro"));
+
+                aplicarClasseStatus();
+            }
+
+            function configurarModo(edicao) {
+                estado.modoEdicao = edicao;
+
+                setTexto(
+                    "tituloModalAnimal",
+                    edicao ? "Atualizar animal" : "Cadastrar novo animal"
+                );
+
+                setTexto(
+                    "btnSalvarAnimal",
+                    edicao ? "✓ Atualizar animal" : "✓ Cadastrar animal"
+                );
+
+                const foto = $("inputFoto");
+
+                if (foto) foto.required = !edicao;
+
+                setDisplay(
+                    "textoFotoObrigatoria",
+                    edicao ? "none" : "inline"
+                );
+
+                setDisplay(
+                    "avisoFotoEdicao",
+                    edicao ? "block" : "none"
+                );
+
+                mostrarEtapa(1);
+            }
+
+            function abrirCadastroAnimal() {
+                if (!getToken()) {
+                    alert("Você precisa estar logado para cadastrar um animal.");
+                    window.location.href = "acesso.html";
+                    return;
+                }
+
+                if (!eUsuarioOng()) {
+                    alert("Apenas perfis de ONG podem cadastrar animais.");
+                    return;
+                }
+
+                estado.idAnimalEdicao = null;
+                estado.imagemAtual = "";
+
+                limparFormulario();
+                configurarModo(false);
+
+                abrirModal("modalCadastroAnimal");
+
+                carregarDadosOng();
+            }
+
+            function fecharCadastroAnimal() {
+                fecharModal("modalCadastroAnimal");
+
+                limparFormulario();
+
+                estado.modoEdicao = false;
+                estado.idAnimalEdicao = null;
+                estado.imagemAtual = "";
+
+                mostrarEtapa(1);
+            }
+
+            function validarEtapa(seletor) {
+                const campos = document.querySelectorAll(
+                    `${seletor} input[required],${seletor} select[required],${seletor} textarea[required]`
+                );
+
+                let primeiroInvalido = null;
+
+                campos.forEach((campo) => {
+                    if (campo.type === "file") return;
+
+                    const valor = campo.value.trim();
+
+                    const ehTexto =
+                        campo.tagName === "TEXTAREA" ||
+                        campo.type === "text";
+
+                    const invalido =
+                        !valor ||
+                        (ehTexto && valor.length < MIN_CARACTERES);
+
+                    campo.classList.toggle("campo-erro", invalido);
+
+                    if (invalido && !primeiroInvalido) {
+                        primeiroInvalido = campo;
+                    }
+                });
+
+                return primeiroInvalido;
+            }
+
+            function validarFoto() {
+                const input = $("inputFoto");
+                const arquivo = input?.files?.[0];
+
+                if (!arquivo) {
+                    if (estado.modoEdicao) return true;
+
+                    alert("É obrigatório adicionar uma foto do animal.");
+                    input?.focus();
+
+                    return false;
+                }
+
+                if (!arquivo.type.startsWith("image/")) {
+                    alert("Escolha um arquivo de imagem válido.");
+                    return false;
+                }
+
+                if (arquivo.size > TAMANHO_MAX_FOTO) {
+                    alert("A imagem deve ter no máximo 2 MB.");
+                    return false;
+                }
+
+                return true;
+            }
+
+            function irParaEtapa2() {
+                const invalido = validarEtapa("#etapa1");
+
+                if (invalido) {
+                    invalido.focus();
+
+                    alert(
+                        "Preencha corretamente todos os campos. Os campos de texto devem possuir pelo menos 2 caracteres."
+                    );
+
+                    return;
+                }
+
+                mostrarEtapa(2);
+            }
+
+            function voltarEtapa1() {
+                mostrarEtapa(1);
+            }
+
+            async function carregarDadosOng() {
+                const idOng = getIdOng();
+
+                if (idOng === null || !getToken()) return;
+
+                try {
+                    const ong = await apiFetch(
+                        `/mostrarOng/${encodeURIComponent(idOng)}`
+                    );
+
+                    preencher({
+                        campoOng: ong?.nome,
+                        campoCidade: ong?.cidade,
+                        campoEstado: ong?.estado
+                    });
+                } catch (erro) {
+                    tratarErro(
+                        erro,
+                        "Não foi possível carregar os dados da ONG."
+                    );
+                }
+            }
+
+            async function salvarAnimal(e) {
+                e.preventDefault();
+
+                if (estado.salvando) return;
+
+                const idOng = getIdOng();
+
+                if (!getToken() || idOng === null) {
+                    alert("Sua sessão expirou ou nenhuma ONG foi selecionada.");
+                    return;
+                }
+
+                const invalidoEtapa1 = validarEtapa("#etapa1");
+
+                if (invalidoEtapa1) {
+                    mostrarEtapa(1);
+                    invalidoEtapa1.focus();
+
+                    alert(
+                        "Os campos de texto devem possuir pelo menos 2 caracteres."
+                    );
+
+                    return;
+                }
+
+                const invalidoEtapa2 = validarEtapa("#etapa2");
+
+                if (invalidoEtapa2) {
+                    mostrarEtapa(2);
+                    invalidoEtapa2.focus();
+
+                    alert("Preencha corretamente todos os campos obrigatórios.");
+
+                    return;
+                }
+
+                if (!validarFoto()) return;
+
+                const botao = $("btnSalvarAnimal");
+
+                const textoBotao = botao ? botao.textContent : "";
+
+                const mensagemSucesso = estado.modoEdicao
+                    ? "Animal atualizado com sucesso! 🐾"
+                    : "Animal cadastrado com sucesso! 🐾";
+
+                estado.salvando = true;
+
+                if (botao) {
+                    botao.disabled = true;
+                    botao.textContent = "Salvando...";
+                }
+
+                try {
+                    const arquivo = $("inputFoto")?.files?.[0];
+
+                    const imagem = arquivo
+                        ? await converterParaBase64(arquivo)
+                        : estado.imagemAtual;
+
+                    const animal = {
+                        id_ong: idOng,
+                        nome: getValor("campoNome"),
+                        especie: getValor("campoEspecie"),
+                        raca: getValor("campoRaca"),
+                        porte: getValor("campoPorte"),
+                        idade: getValor("campoIdade"),
+                        sexo: getValor("campoSexo"),
+                        descricao: getValor("campoDescricao"),
+                        status: getValor("selectStatus"),
+                        imagem,
+                        ong: getValor("campoOng"),
+                        cidade: getValor("campoCidade"),
+                        estado: getValor("campoEstado")
+                    };
+
+                    const caminho = estado.modoEdicao
+                        ? `/atualizarAnimal/${encodeURIComponent(estado.idAnimalEdicao)}`
+                        : "/inserirAnimal";
+
+                    await apiFetch(caminho, {
+                        method: estado.modoEdicao ? "PUT" : "POST",
+                        body: animal
+                    });
+
+                    fecharCadastroAnimal();
+
+                    alert(mensagemSucesso);
+
+                    carregarAnimais();
+
+                } catch (erro) {
+                    tratarErro(
+                        erro,
+                        "Não foi possível salvar o animal."
+                    );
+                } finally {
+                    estado.salvando = false;
+
+                    if (botao) {
+                        botao.disabled = false;
+                        botao.textContent = textoBotao;
+                    }
+                }
+            }
+
+            async function editarAnimal(id) {
+                if (!getToken()) {
+                    alert("Sua sessão expirou. Faça login novamente.");
+                    window.location.href = "acesso.html";
+                    return;
+                }
+
+                try {
+                    const animal = await obterAnimal(id);
+
+                    if (
+                        getIdOng() === null ||
+                        parseInteiro(animal?.id_ong) !== getIdOng()
+                    ) {
+                        alert("Você não pode editar este animal.");
+                        return;
+                    }
+
+                    limparFormulario();
+
+                    estado.idAnimalEdicao = id;
+                    estado.imagemAtual = animal.imagem || "";
+
+                    configurarModo(true);
+
+                    preencher({
+                        campoNome: animal.nome,
+                        campoEspecie: animal.especie,
+                        campoRaca: animal.raca,
+                        campoSexo: animal.sexo,
+                        campoPorte: animal.porte,
+                        campoIdade: animal.idade,
+                        campoDescricao: animal.descricao,
+                        selectStatus: animal.status || "Disponível",
+                        campoOng: animal.ong_nome || animal.nome_ong || animal.ong,
+                        campoCidade: animal.cidade,
+                        campoEstado: animal.estado
+                    });
+
+                    aplicarClasseStatus();
+
+                    abrirModal("modalCadastroAnimal");
+
+                    if (
+                        !getValor("campoOng") ||
+                        !getValor("campoCidade") ||
+                        !getValor("campoEstado")
+                    ) {
+                        await carregarDadosOng();
+                    }
+
+                } catch (erro) {
+                    tratarErro(
+                        erro,
+                        "Não foi possível carregar os dados do animal."
+                    );
+                }
+            }
+
+            async function excluirAnimal(id) {
+                if (!confirm("Deseja excluir permanentemente este cadastro?")) return;
+
+                if (!getToken()) {
+                    alert("Sua sessão expirou. Faça login novamente.");
+                    window.location.href = "acesso.html";
+                    return;
+                }
+
+                try {
+                    await apiFetch(
+                        `/excluirAnimal/${encodeURIComponent(id)}`,
+                        { method: "DELETE" }
+                    );
+
+                    alert("Animal removido com sucesso!");
+
+                    carregarAnimais();
+
+                } catch (erro) {
+                    tratarErro(
+                        erro,
+                        "Não foi possível excluir o animal."
+                    );
+                }
+            }
+
+            function setFiltro(botao, tipo, valor) {
+                if (!(tipo in estado.filtros)) return;
+
+                estado.filtros[tipo] = valor;
+
+                botao?.parentElement
+                    ?.querySelectorAll(".btn-filtro")
+                    .forEach((b) => b.classList.remove("active"));
+
+                botao?.classList.add("active");
+
+                carregarAnimais();
+            }
+
+            function limparFiltros() {
+                estado.filtros = {
+                    especie: "",
+                    sexo: "",
+                    porte: ""
+                };
+
+                setValor("filtroPorte", "");
+
+                document.querySelectorAll(".btn-filtro")
+                    .forEach((b) => b.classList.remove("active"));
+
+                document.querySelectorAll(".secao-filtro")
+                    .forEach((secao) => {
+                        secao.querySelector(".btn-filtro")?.classList.add("active");
+                    });
+
+                carregarAnimais();
+            }
+
+            function htmlAviso({
+                icone,
+                titulo,
+                texto,
+                acao,
+                rotulo,
+                erro = false
+            }) {
+                return `
+<div class="aviso-vazio${erro ? " erro" : ""}">
+<div class="icone-vazio">${icone}</div>
+<h3>${titulo}</h3>
+<p>${texto}</p>
+<button type="button" data-acao="${acao}">${rotulo}</button>
+</div>`;
+            }
+
+            function criarCard(pet, idOngLogada) {
+                const statusTexto = limpo(
+                    pet.status,
+                    "Disponível"
+                );
+
+                const info = infoStatus(statusTexto);
+
+                const ehUrgente = [
+                    1,
+                    "1",
+                    "Sim"
+                ].includes(pet.urgente);
+
+                const ehDono =
+                    idOngLogada !== null &&
+                    parseInteiro(pet.id_ong) === idOngLogada;
+
+                const id = Number(pet.id_animal);
+
+                const card = document.createElement("article");
+
+                card.className = "card-pet";
+
+                card.innerHTML = `
+<div class="card-img">
+${ehUrgente ? `<span class="tag-urgente">🔥 URGENTE</span>` : ""}
+<span class="badge-status ${info.badge}">
+${escapeHtml(statusTexto)}
+</span>
+</div>
+
+<div class="card-info">
+<div class="header-card-pet">
+<h3>${escapeHtml(limpo(pet.nome, "Sem Nome"))}</h3>
+<span class="info-especie">
+${escapeHtml(limpo(pet.especie, "Pet"))}
+</span>
+</div>
+
+<div class="mini-tags">
+<span>🎂 ${escapeHtml(formatarIdade(pet.idade))}</span>
+<span>
+📏 Porte ${escapeHtml(String(limpo(pet.porte, "Médio")).toLowerCase())}
+</span>
+<span>${escapeHtml(limpo(pet.sexo, "Macho"))}</span>
+</div>
+
+<p class="localizacao">
+📍 ${escapeHtml(limpo(pet.cidade, "Cidade"))} -
+${escapeHtml(limpo(pet.estado, "SP"))}
+</p>
+
+<div class="acoes-card">
+<button type="button" class="btn-conhecer" data-acao="conhecer" data-id="${id}">
+Conhecer
+</button>
+
+${ehDono ? `
+<div class="acoes-admin-inline">
+<button type="button" class="btn-acao-inline editar" title="Editar animal" data-acao="editar" data-id="${id}">
+✏️
+</button>
+
+<button type="button" class="btn-acao-inline excluir" title="Excluir animal" data-acao="excluir" data-id="${id}">
+🗑️
+</button>
+</div>
+`: ""}
+</div>
+</div>`;
+
+                const imagem = card.querySelector(".card-img");
+
+                if (imagem) {
+                    const fotoPet = limpo(
+                        pet.imagem,
+                        PLACEHOLDER
+                    );
+
+                    imagem.style.backgroundImage =
+                        `url(${JSON.stringify(fotoPet)})`;
+                }
+
+                return card;
+            }
+
+            async function carregarAnimais() {
+                const lista = $("lista-pets");
+
+                if (!lista) return;
+
+                if (!getToken()) {
+                    lista.innerHTML = htmlAviso({
+                        icone: "🔐",
+                        titulo: "Faça login para continuar",
+                        texto: "É necessário estar logado para visualizar os animais.",
+                        acao: "login",
+                        rotulo: "Entrar"
+                    });
+
+                    return;
+                }
+
+                const idRequisicao = ++estado.requisicaoLista;
+
+                lista.innerHTML = `
+<div class="carregando">
+<div class="spinner"></div>
+<p>Procurando amiguinhos...</p>
+</div>`;
+
+                estado.filtros.porte = getValor("filtroPorte");
+
+                try {
+                    const dados = await apiFetch(
+                        "/mostrarAnimal",
+                        {
+                            query: estado.filtros
+                        }
+                    );
+
+                    if (idRequisicao !== estado.requisicaoLista) return;
+
+                    if (!Array.isArray(dados) || dados.length === 0) {
+                        lista.innerHTML = htmlAviso({
+                            icone: "🐾",
+                            titulo: "Nenhum pet encontrado",
+                            texto: "Não encontramos animais com esses filtros.",
+                            acao: "limpar-filtros",
+                            rotulo: "Limpar filtros"
+                        });
+
+                        return;
+                    }
+
+                    const idOngLogada = getIdOng();
+
+                    const fragmento = document.createDocumentFragment();
+
+                    dados.forEach((pet) => {
+                        fragmento.appendChild(
+                            criarCard(pet, idOngLogada)
+                        );
+                    });
+
+                    lista.innerHTML = "";
+                    lista.appendChild(fragmento);
+
+                } catch (erro) {
+                    if (idRequisicao !== estado.requisicaoLista) return;
+
+                    console.error("Erro:", erro);
+
+                    lista.innerHTML = htmlAviso({
+                        icone: "⚠️",
+                        titulo: "Não foi possível carregar os animais",
+                        texto: "Verifique se o servidor está funcionando e tente novamente.",
+                        acao: "recarregar",
+                        rotulo: "Tentar novamente",
+                        erro: true
+                    });
+                }
+            }
+
+            async function ver(id) {
+                const idRequisicao = ++estado.requisicaoDetalhe;
+
+                const foto = $("detalheFoto");
+
+                abrirModal("modalConhecerAnimal");
+
+                setTexto(
+                    "detalheNome",
+                    "Carregando..."
+                );
+
+                setTexto(
+                    "detalheDescricao",
+                    "Carregando informações..."
+                );
+
+                if (foto) foto.src = PLACEHOLDER;
+
+                try {
+                    const animal = await obterAnimal(id);
+
+                    if (idRequisicao !== estado.requisicaoDetalhe) return;
+
+                    if (foto) {
+                        foto.src = animal.imagem || PLACEHOLDER;
+
+                        foto.onerror = function () {
+                            this.onerror = null;
+                            this.src = PLACEHOLDER;
+                        };
+                    }
+
+                    setTexto(
+                        "detalheNome",
+                        animal.nome || "Sem nome"
+                    );
+
+                    setTexto(
+                        "detalheEspecie",
+                        animal.especie || "Pet"
+                    );
+
+                    setTexto(
+                        "detalheIdade",
+                        formatarIdade(animal.idade)
+                    );
+
+                    setTexto(
+                        "detalhePorte",
+                        animal.porte || "Não informado"
+                    );
+
+                    setTexto(
+                        "detalheSexo",
+                        animal.sexo || "Não informado"
+                    );
+
+                    setTexto(
+                        "detalheRaca",
+                        animal.raca || "SRD"
+                    );
+
+                    setTexto(
+                        "detalheLocal",
+                        `${animal.cidade || "Cidade"} - ${animal.estado || "SP"}`
+                    );
+
+                    setTexto(
+                        "detalheDescricao",
+                        animal.descricao ||
+                        "Esse amiguinho ainda não possui uma história cadastrada."
+                    );
+
+                    setTexto(
+                        "detalheOngNome",
+                        animal.ong_nome ||
+                        animal.nome_ong ||
+                        animal.ong ||
+                        "ONG Parceira"
+                    );
+
+                    setTexto(
+                        "detalheOngEndereco",
+                        animal.ong_endereco ||
+                        animal.endereco ||
+                        "Endereço não informado"
+                    );
+
+                    setTexto(
+                        "detalheOngTelefone",
+                        animal.ong_telefone ||
+                        animal.telefone ||
+                        "Telefone não informado"
+                    );
+
+                    const status = $("detalheStatus");
+
+                    if (status) {
+                        status.textContent =
+                            animal.status || "Disponível";
+
+                        status.className =
+                            `detalhe-status ${infoStatus(animal.status).detalhe}`;
+                    }
+
+                } catch (erro) {
+                    if (idRequisicao !== estado.requisicaoDetalhe) return;
+
+                    console.error(erro);
+
+                    setTexto(
+                        "detalheNome",
+                        "Erro ao carregar"
+                    );
+
+                    setTexto(
+                        "detalheDescricao",
+                        "Não foi possível carregar as informações deste animal."
+                    );
+                }
+            }
+
+            function fecharConhecerAnimal() {
+                estado.requisicaoDetalhe++;
+                fecharModal("modalConhecerAnimal");
+            }
+
+            function aoClicarNaLista(e) {
+                const alvo = e.target.closest("[data-acao]");
+
+                if (!alvo) return;
+
+                const { acao, id } = alvo.dataset;
+
+                switch (acao) {
+                    case "conhecer":
+                        ver(id);
+                        break;
+
+                    case "editar":
+                        editarAnimal(id);
+                        break;
+
+                    case "excluir":
+                        excluirAnimal(id);
+                        break;
+
+                    case "limpar-filtros":
+                        limparFiltros();
+                        break;
+
+                    case "recarregar":
+                        carregarAnimais();
+                        break;
+
+                    case "login":
+                        window.location.href = "acesso.html";
+                        break;
+                }
+            }
+
+            function aoPressionarTeclaNoForm(e) {
+                if (
+                    e.key !== "Enter" ||
+                    e.target.tagName !== "INPUT"
+                ) return;
+
+                e.preventDefault();
+
+                if ($("etapa1")?.style.display !== "none") {
+                    irParaEtapa2();
+                } else {
+                    $("formAnimal")?.requestSubmit();
+                }
+            }
+
+            function aoPressionarEsc(e) {
+                if (e.key !== "Escape") return;
+
+                if (
+                    $("modalConhecerAnimal")
+                        ?.classList.contains("aberto")
+                ) {
+                    fecharConhecerAnimal();
+                }
+
+                if (
+                    $("modalCadastroAnimal")
+                        ?.classList.contains("aberto")
+                ) {
+                    fecharCadastroAnimal();
+                }
+            }
+
+            function iniciar() {
+                const form = $("formAnimal");
+
+                if (form) {
+                    form.noValidate = true;
+
+                    form.addEventListener(
+                        "submit",
+                        salvarAnimal
+                    );
+
+                    form.addEventListener(
+                        "keydown",
+                        aoPressionarTeclaNoForm
+                    );
+
+                    form.addEventListener(
+                        "input",
+                        (e) => {
+                            if (e.target.classList?.contains("campo-erro")) {
+                                e.target.classList.remove("campo-erro");
+                            }
+                        }
+                    );
+                }
+
+                const btnCadastrar = $("btnCadastrarAnimal");
+
+                if (btnCadastrar) {
+                    btnCadastrar.style.display =
+                        eUsuarioOng()
+                            ? "inline-block"
+                            : "none";
+                }
+
+                $("selectStatus")?.addEventListener(
+                    "change",
+                    aplicarClasseStatus
+                );
+
+                $("lista-pets")?.addEventListener(
+                    "click",
+                    aoClicarNaLista
+                );
+
+                $("modalCadastroAnimal")?.addEventListener(
+                    "click",
+                    (e) => {
+                        if (e.target === e.currentTarget) {
+                            fecharCadastroAnimal();
+                        }
+                    }
+                );
+
+                $("modalConhecerAnimal")?.addEventListener(
+                    "click",
+                    (e) => {
+                        if (e.target === e.currentTarget) {
+                            fecharConhecerAnimal();
+                        }
+                    }
+                );
+
+                document.addEventListener(
+                    "keydown",
+                    aoPressionarEsc
+                );
+
+                /* CARREGA A FOTO DO PERFIL */
+                carregarFotoPerfilHeader();
+
+                carregarAnimais();
+            }
+
+            if (document.readyState === "loading") {
+                document.addEventListener(
+                    "DOMContentLoaded",
+                    iniciar
+                );
+            } else {
+                iniciar();
+            }
+
+            Object.assign(window, {
+                abrirCadastroAnimal,
+                fecharCadastroAnimal,
+                irParaEtapa2,
+                voltarEtapa1,
+                setFiltro,
+                limparFiltros,
+                carregarAnimais,
+                fecharConhecerAnimal
+            });
+
+        })();
+    </script>
+
+</body>
+
+</html>
