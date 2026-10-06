@@ -1,0 +1,2556 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Entre Laços - API",
+    "version": "1.0.0",
+    "description": "Documentação completa da API do sistema Entre Laços."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000",
+      "description": "Servidor local"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Autenticação",
+      "description": "Cadastro, login e recuperação de senha"
+    },
+    {
+      "name": "Usuários",
+      "description": "Gerenciamento de usuários"
+    },
+    {
+      "name": "Perfil",
+      "description": "Gerenciamento do perfil do usuário"
+    },
+    {
+      "name": "Animais",
+      "description": "Cadastro, consulta, atualização e exclusão de animais"
+    },
+    {
+      "name": "ONGs",
+      "description": "Gerenciamento das ONGs"
+    },
+    {
+      "name": "Dicas",
+      "description": "Gerenciamento de dicas"
+    },
+    {
+      "name": "Doações",
+      "description": "Gerenciamento de necessidades e doações"
+    },
+    {
+      "name": "Eventos",
+      "description": "Gerenciamento de eventos"
+    },
+    {
+      "name": "Histórias",
+      "description": "Gerenciamento de histórias e homenagens"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Token JWT retornado pelo login."
+      }
+    },
+    "schemas": {
+      "Erro": {
+        "type": "object",
+        "properties": {
+          "erro": {
+            "type": "string",
+            "example": "Erro ao processar a solicitação."
+          }
+        }
+      },
+      "Usuario": {
+        "type": "object",
+        "properties": {
+          "id_usuario": {
+            "type": "integer",
+            "example": 1
+          },
+          "nome": {
+            "type": "string",
+            "example": "Maria Silva"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "maria@email.com"
+          },
+          "telefone": {
+            "type": "string",
+            "example": "(18) 99999-9999"
+          },
+          "cep": {
+            "type": "string",
+            "example": "19000-000"
+          },
+          "cpf": {
+            "type": "string",
+            "example": "123.456.789-00"
+          },
+          "data_nascimento": {
+            "type": "string",
+            "example": "2008-05-15"
+          },
+          "tipo": {
+            "type": "string",
+            "example": "usuario"
+          },
+          "foto_perfil": {
+            "type": "string",
+            "nullable": true,
+            "example": "data:image/png;base64,..."
+          }
+        }
+      },
+      "Animal": {
+        "type": "object",
+        "properties": {
+          "id_animal": {
+            "type": "integer",
+            "example": 1
+          },
+          "id_ong": {
+            "type": "integer",
+            "example": 1
+          },
+          "nome": {
+            "type": "string",
+            "example": "Mel"
+          },
+          "especie": {
+            "type": "string",
+            "example": "Cachorro"
+          },
+          "raca": {
+            "type": "string",
+            "example": "SRD"
+          },
+          "porte": {
+            "type": "string",
+            "example": "Médio"
+          },
+          "idade": {
+            "type": "string",
+            "example": "2 anos"
+          },
+          "sexo": {
+            "type": "string",
+            "example": "Fêmea"
+          },
+          "descricao": {
+            "type": "string",
+            "example": "Cachorra dócil e brincalhona."
+          },
+          "status": {
+            "type": "string",
+            "example": "Disponível"
+          },
+          "imagem": {
+            "type": "string",
+            "nullable": true,
+            "example": "data:image/jpeg;base64,..."
+          },
+          "ong": {
+            "type": "string",
+            "example": "Entre Laços"
+          },
+          "cidade": {
+            "type": "string",
+            "example": "Presidente Prudente"
+          },
+          "estado": {
+            "type": "string",
+            "example": "SP"
+          }
+        }
+      },
+      "ONG": {
+        "type": "object",
+        "properties": {
+          "id_ong": {
+            "type": "integer",
+            "example": 1
+          },
+          "nome": {
+            "type": "string",
+            "example": "ONG Entre Laços"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "contato@entrelacos.org"
+          },
+          "telefone": {
+            "type": "string",
+            "example": "(18) 99999-9999"
+          },
+          "endereco": {
+            "type": "string",
+            "example": "Rua das Flores, 100"
+          },
+          "cidade": {
+            "type": "string",
+            "example": "Presidente Prudente"
+          },
+          "estado": {
+            "type": "string",
+            "example": "SP"
+          },
+          "cnpj": {
+            "type": "string",
+            "example": "12.345.678/0001-00"
+          },
+          "pix": {
+            "type": "string",
+            "nullable": true,
+            "example": "contato@entrelacos.org"
+          },
+          "trabalho_ofe": {
+            "type": "string",
+            "nullable": true,
+            "example": "Resgate e adoção de animais"
+          }
+        }
+      },
+      "Dica": {
+        "type": "object",
+        "properties": {
+          "id_dica": {
+            "type": "integer",
+            "example": 1
+          },
+          "id_usuario": {
+            "type": "integer",
+            "example": 1
+          },
+          "titulo": {
+            "type": "string",
+            "example": "Como cuidar de um filhote"
+          },
+          "categoria": {
+            "type": "string",
+            "example": "Cuidados"
+          },
+          "qualPet": {
+            "type": "string",
+            "example": "Cachorro"
+          },
+          "conteudo": {
+            "type": "string",
+            "example": "Ofereça alimentação adequada e mantenha as vacinas em dia."
+          }
+        }
+      },
+      "Doacao": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "id_usuario": {
+            "type": "integer",
+            "example": 1
+          },
+          "nome_ong": {
+            "type": "string",
+            "example": "ONG Entre Laços"
+          },
+          "cidade_ong": {
+            "type": "string",
+            "example": "Presidente Prudente"
+          },
+          "categoria": {
+            "type": "string",
+            "example": "Alimentação"
+          },
+          "classificacao": {
+            "type": "string",
+            "example": "Urgente"
+          },
+          "item": {
+            "type": "string",
+            "example": "Ração para cães"
+          },
+          "quantidade": {
+            "type": "string",
+            "example": "10 kg"
+          },
+          "descricao": {
+            "type": "string",
+            "example": "Precisamos de ração para os animais resgatados."
+          },
+          "local_entrega": {
+            "type": "string",
+            "example": "Sede da ONG"
+          },
+          "tipo_entrega": {
+            "type": "string",
+            "example": "Presencial"
+          },
+          "tipo_pix": {
+            "type": "string",
+            "nullable": true,
+            "example": "E-mail"
+          },
+          "pix": {
+            "type": "string",
+            "nullable": true,
+            "example": "contato@entrelacos.org"
+          },
+          "banco": {
+            "type": "string",
+            "nullable": true,
+            "example": "Banco do Brasil"
+          },
+          "conta": {
+            "type": "string",
+            "nullable": true,
+            "example": "12345-6"
+          }
+        }
+      },
+      "Evento": {
+        "type": "object",
+        "properties": {
+          "id_evento": {
+            "type": "integer",
+            "example": 1
+          },
+          "id_ong": {
+            "type": "integer",
+            "example": 1
+          },
+          "nome_evento": {
+            "type": "string",
+            "example": "Feira de Adoção"
+          },
+          "hora": {
+            "type": "string",
+            "example": "14:00"
+          },
+          "data": {
+            "type": "string",
+            "example": "2026-10-20"
+          },
+          "endereco": {
+            "type": "string",
+            "example": "Praça Central, 100"
+          },
+          "categoria": {
+            "type": "string",
+            "example": "Adoção"
+          },
+          "localizacao": {
+            "type": "string",
+            "example": "Praça Central"
+          },
+          "imagem": {
+            "type": "string",
+            "nullable": true,
+            "example": "data:image/jpeg;base64,..."
+          },
+          "latitude": {
+            "type": "number",
+            "format": "double",
+            "example": -22.1200
+          },
+          "longitude": {
+            "type": "number",
+            "format": "double",
+            "example": -51.3900
+          }
+        }
+      },
+      "Historia": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "_id": {
+            "type": "string",
+            "example": "1"
+          },
+          "ong_id": {
+            "type": "integer",
+            "example": 1
+          },
+          "titulo": {
+            "type": "string",
+            "example": "A história da Mel"
+          },
+          "texto": {
+            "type": "string",
+            "example": "Mel foi resgatada e encontrou uma nova família."
+          },
+          "imagens": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/mostrar": {
+      "get": {
+        "tags": [
+          "Usuários"
+        ],
+        "summary": "Listar usuários",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de usuários.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Usuario"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token inválido ou não enviado."
+          },
+          "500": {
+            "description": "Erro no servidor."
+          }
+        }
+      }
+    },
+
+    "/inserir": {
+      "post": {
+        "tags": [
+          "Autenticação"
+        ],
+        "summary": "Cadastrar usuário",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "nome",
+                  "email",
+                  "senha"
+                ],
+                "properties": {
+                  "nome": {
+                    "type": "string",
+                    "example": "Maria Silva"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "example": "maria@email.com"
+                  },
+                  "cep": {
+                    "type": "string",
+                    "example": "19000-000"
+                  },
+                  "cpf": {
+                    "type": "string",
+                    "example": "123.456.789-00"
+                  },
+                  "telefone": {
+                    "type": "string",
+                    "example": "(18) 99999-9999"
+                  },
+                  "data_nascimento": {
+                    "type": "string",
+                    "example": "2008-05-15"
+                  },
+                  "senha": {
+                    "type": "string",
+                    "format": "password",
+                    "example": "123456"
+                  },
+                  "palavra_chave": {
+                    "type": "string",
+                    "example": "Meu animal"
+                  },
+                  "tipo": {
+                    "type": "string",
+                    "example": "usuario"
+                  },
+                  "foto_perfil": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "cnpj": {
+                    "type": "string",
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Cadastro efetuado."
+          },
+          "400": {
+            "description": "Nome, e-mail ou senha não informados."
+          },
+          "409": {
+            "description": "E-mail, CPF ou telefone já cadastrado."
+          },
+          "500": {
+            "description": "Erro ao salvar no banco de dados."
+          }
+        }
+      }
+    },
+
+    "/atualizar": {
+      "put": {
+        "tags": [
+          "Usuários"
+        ],
+        "summary": "Atualizar dados do usuário",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "id_usuario"
+                ],
+                "properties": {
+                  "id_usuario": {
+                    "type": "integer",
+                    "example": 1
+                  },
+                  "nome": {
+                    "type": "string",
+                    "example": "Maria Silva"
+                  },
+                  "email": {
+                    "type": "string",
+                    "example": "maria@email.com"
+                  },
+                  "cep": {
+                    "type": "string",
+                    "example": "19000-000"
+                  },
+                  "cpf": {
+                    "type": "string",
+                    "example": "123.456.789-00"
+                  },
+                  "telefone": {
+                    "type": "string",
+                    "example": "(18) 99999-9999"
+                  },
+                  "data_nascimento": {
+                    "type": "string",
+                    "example": "2008-05-15"
+                  },
+                  "palavra_chave": {
+                    "type": "string",
+                    "example": "Meu animal"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Perfil atualizado com sucesso."
+          },
+          "403": {
+            "description": "Sem permissão para atualizar este perfil."
+          },
+          "409": {
+            "description": "E-mail, CPF ou telefone já cadastrado."
+          },
+          "500": {
+            "description": "Erro interno no servidor."
+          }
+        }
+      }
+    },
+
+    "/deletar": {
+      "delete": {
+        "tags": [
+          "Usuários"
+        ],
+        "summary": "Excluir conta",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Conta excluída com sucesso."
+          },
+          "401": {
+            "description": "Token inválido."
+          },
+          "404": {
+            "description": "Usuário não encontrado."
+          },
+          "500": {
+            "description": "Erro ao excluir conta."
+          }
+        }
+      }
+    },
+
+    "/login": {
+      "post": {
+        "tags": [
+          "Autenticação"
+        ],
+        "summary": "Realizar login",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "email",
+                  "senha"
+                ],
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "example": "usuario@email.com"
+                  },
+                  "senha": {
+                    "type": "string",
+                    "format": "password",
+                    "example": "123456"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login realizado com sucesso."
+          },
+          "400": {
+            "description": "E-mail e senha são obrigatórios."
+          },
+          "401": {
+            "description": "E-mail ou senha incorretos."
+          },
+          "500": {
+            "description": "Erro no servidor."
+          }
+        }
+      }
+    },
+
+    "/recuperar-senha": {
+      "put": {
+        "tags": [
+          "Autenticação"
+        ],
+        "summary": "Recuperar senha",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "email",
+                  "senha",
+                  "confirmar_senha",
+                  "palavra_chave"
+                ],
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "example": "usuario@email.com"
+                  },
+                  "senha": {
+                    "type": "string",
+                    "format": "password",
+                    "example": "123456"
+                  },
+                  "confirmar_senha": {
+                    "type": "string",
+                    "format": "password",
+                    "example": "123456"
+                  },
+                  "palavra_chave": {
+                    "type": "string",
+                    "example": "Meu animal"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Senha atualizada com sucesso."
+          },
+          "400": {
+            "description": "Dados obrigatórios ausentes ou senhas diferentes."
+          },
+          "401": {
+            "description": "E-mail ou palavra-chave incorretos."
+          },
+          "500": {
+            "description": "Erro interno."
+          }
+        }
+      }
+    },
+
+    "/api/usuario/alterar-senha": {
+      "put": {
+        "tags": [
+          "Autenticação"
+        ],
+        "summary": "Alterar senha do usuário logado",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "senhaAtual",
+                  "novaSenha",
+                  "confirmarNovaSenha"
+                ],
+                "properties": {
+                  "senhaAtual": {
+                    "type": "string",
+                    "format": "password",
+                    "example": "123456"
+                  },
+                  "novaSenha": {
+                    "type": "string",
+                    "format": "password",
+                    "example": "654321"
+                  },
+                  "confirmarNovaSenha": {
+                    "type": "string",
+                    "format": "password",
+                    "example": "654321"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Senha alterada com sucesso."
+          },
+          "400": {
+            "description": "Dados inválidos."
+          },
+          "401": {
+            "description": "Senha atual incorreta ou usuário não identificado."
+          },
+          "404": {
+            "description": "Usuário não encontrado."
+          },
+          "500": {
+            "description": "Erro interno."
+          }
+        }
+      }
+    },
+
+    "/perfil/alterar-senha": {
+      "put": {
+        "tags": [
+          "Autenticação"
+        ],
+        "summary": "Alterar senha pelo perfil",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "senhaAtual",
+                  "novaSenha",
+                  "confirmarNovaSenha"
+                ],
+                "properties": {
+                  "senhaAtual": {
+                    "type": "string",
+                    "format": "password",
+                    "example": "123456"
+                  },
+                  "novaSenha": {
+                    "type": "string",
+                    "format": "password",
+                    "example": "654321"
+                  },
+                  "confirmarNovaSenha": {
+                    "type": "string",
+                    "format": "password",
+                    "example": "654321"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Senha alterada com sucesso."
+          }
+        }
+      }
+    },
+
+    "/mostrarAnimal": {
+      "get": {
+        "tags": [
+          "Animais"
+        ],
+        "summary": "Listar animais",
+        "parameters": [
+          {
+            "name": "especie",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Cachorro"
+          },
+          {
+            "name": "sexo",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Fêmea"
+          },
+          {
+            "name": "porte",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Médio"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de animais.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Animal"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro ao buscar animais."
+          }
+        }
+      }
+    },
+
+    "/inserirAnimal": {
+      "post": {
+        "tags": [
+          "Animais"
+        ],
+        "summary": "Cadastrar animal",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "nome"
+                ],
+                "properties": {
+                  "nome": {
+                    "type": "string",
+                    "example": "Mel"
+                  },
+                  "especie": {
+                    "type": "string",
+                    "example": "Cachorro"
+                  },
+                  "raca": {
+                    "type": "string",
+                    "example": "SRD"
+                  },
+                  "porte": {
+                    "type": "string",
+                    "example": "Médio"
+                  },
+                  "idade": {
+                    "type": "string",
+                    "example": "2 anos"
+                  },
+                  "sexo": {
+                    "type": "string",
+                    "example": "Fêmea"
+                  },
+                  "descricao": {
+                    "type": "string",
+                    "example": "Cachorra dócil."
+                  },
+                  "status": {
+                    "type": "string",
+                    "example": "Disponível"
+                  },
+                  "imagem": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "ong": {
+                    "type": "string",
+                    "example": "Entre Laços"
+                  },
+                  "cidade": {
+                    "type": "string",
+                    "example": "Presidente Prudente"
+                  },
+                  "estado": {
+                    "type": "string",
+                    "example": "SP"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Animal cadastrado com sucesso."
+          },
+          "400": {
+            "description": "ONG ou nome do animal não identificado."
+          },
+          "401": {
+            "description": "Token inválido."
+          },
+          "500": {
+            "description": "Erro no banco de dados."
+          }
+        }
+      }
+    },
+
+    "/excluirAnimal/{id}": {
+      "delete": {
+        "tags": [
+          "Animais"
+        ],
+        "summary": "Excluir animal",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "example": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Animal excluído com sucesso."
+          },
+          "404": {
+            "description": "Animal não encontrado."
+          },
+          "500": {
+            "description": "Erro técnico no servidor."
+          }
+        }
+      }
+    },
+
+    "/atualizarAnimal/{id}": {
+      "put": {
+        "tags": [
+          "Animais"
+        ],
+        "summary": "Atualizar animal",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "example": 1
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "nome": {
+                    "type": "string",
+                    "example": "Mel"
+                  },
+                  "especie": {
+                    "type": "string",
+                    "example": "Cachorro"
+                  },
+                  "raca": {
+                    "type": "string",
+                    "example": "SRD"
+                  },
+                  "porte": {
+                    "type": "string",
+                    "example": "Médio"
+                  },
+                  "idade": {
+                    "type": "string",
+                    "example": "3 anos"
+                  },
+                  "sexo": {
+                    "type": "string",
+                    "example": "Fêmea"
+                  },
+                  "descricao": {
+                    "type": "string",
+                    "example": "Muito dócil."
+                  },
+                  "status": {
+                    "type": "string",
+                    "example": "Disponível"
+                  },
+                  "imagem": {
+                    "type": "string",
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Animal atualizado com sucesso."
+          },
+          "400": {
+            "description": "Nenhuma alteração detectada."
+          },
+          "404": {
+            "description": "Animal não encontrado."
+          },
+          "500": {
+            "description": "Erro ao atualizar no banco."
+          }
+        }
+      }
+    },
+
+    "/animais": {
+      "get": {
+        "tags": [
+          "Animais"
+        ],
+        "summary": "Listar animais disponíveis ou buscar detalhes",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID do animal para visualizar seus detalhes.",
+            "example": 1
+          },
+          {
+            "name": "especie",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Cachorro"
+          },
+          {
+            "name": "sexo",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Fêmea"
+          },
+          {
+            "name": "porte",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Médio"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Animais encontrados."
+          },
+          "404": {
+            "description": "Animal não encontrado."
+          },
+          "500": {
+            "description": "Erro no servidor."
+          }
+        }
+      }
+    },
+
+    "/minhas-ongs": {
+      "get": {
+        "tags": [
+          "ONGs"
+        ],
+        "summary": "Listar ONGs do usuário",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de ONGs.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ONG"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro ao buscar instituições."
+          }
+        }
+      }
+    },
+
+    "/mostrarOng/{id}": {
+      "get": {
+        "tags": [
+          "ONGs"
+        ],
+        "summary": "Buscar dados de uma ONG",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "example": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Dados da ONG.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ONG"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "ONG não encontrada."
+          },
+          "500": {
+            "description": "Erro interno."
+          }
+        }
+      }
+    },
+
+    "/atualizarOng/{id}": {
+      "put": {
+        "tags": [
+          "ONGs"
+        ],
+        "summary": "Atualizar dados da ONG",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "example": 1
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "nome": {
+                    "type": "string",
+                    "example": "ONG Entre Laços"
+                  },
+                  "email": {
+                    "type": "string",
+                    "example": "contato@entrelacos.org"
+                  },
+                  "telefone": {
+                    "type": "string",
+                    "example": "(18) 99999-9999"
+                  },
+                  "endereco": {
+                    "type": "string",
+                    "example": "Rua das Flores, 100"
+                  },
+                  "cidade": {
+                    "type": "string",
+                    "example": "Presidente Prudente"
+                  },
+                  "estado": {
+                    "type": "string",
+                    "example": "SP"
+                  },
+                  "pix": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "trabalho_ofe": {
+                    "type": "string",
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "ONG atualizada com sucesso."
+          },
+          "404": {
+            "description": "ONG não encontrada."
+          },
+          "500": {
+            "description": "Erro ao atualizar."
+          }
+        }
+      }
+    },
+
+    "/inserirOng": {
+      "post": {
+        "tags": [
+          "ONGs"
+        ],
+        "summary": "Cadastrar nova ONG",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "nome": {
+                    "type": "string",
+                    "example": "ONG Entre Laços"
+                  },
+                  "email": {
+                    "type": "string",
+                    "example": "contato@entrelacos.org"
+                  },
+                  "telefone": {
+                    "type": "string",
+                    "example": "(18) 99999-9999"
+                  },
+                  "endereco": {
+                    "type": "string",
+                    "example": "Rua das Flores, 100"
+                  },
+                  "cidade": {
+                    "type": "string",
+                    "example": "Presidente Prudente"
+                  },
+                  "estado": {
+                    "type": "string",
+                    "example": "SP"
+                  },
+                  "pix": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "trabalho_ofe": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "cnpj": {
+                    "type": "string",
+                    "example": "12.345.678/0001-00"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "ONG cadastrada com sucesso."
+          },
+          "500": {
+            "description": "Erro ao salvar ONG."
+          }
+        }
+      }
+    },
+
+    "/deletarOng/{id}": {
+      "delete": {
+        "tags": [
+          "ONGs"
+        ],
+        "summary": "Excluir ONG",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "example": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "ONG removida com sucesso."
+          },
+          "404": {
+            "description": "ONG não encontrada."
+          },
+          "500": {
+            "description": "Erro ao excluir instituição."
+          }
+        }
+      }
+    },
+
+    "/mostrarDicas": {
+      "get": {
+        "tags": [
+          "Dicas"
+        ],
+        "summary": "Listar dicas",
+        "responses": {
+          "200": {
+            "description": "Lista de dicas.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Dica"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro no MySQL."
+          }
+        }
+      }
+    },
+
+    "/inserirDica": {
+      "post": {
+        "tags": [
+          "Dicas"
+        ],
+        "summary": "Cadastrar dica",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "titulo",
+                  "categoria",
+                  "qualPet",
+                  "conteudo"
+                ],
+                "properties": {
+                  "titulo": {
+                    "type": "string",
+                    "example": "Como cuidar do seu cachorro"
+                  },
+                  "categoria": {
+                    "type": "string",
+                    "example": "Cuidados"
+                  },
+                  "qualPet": {
+                    "type": "string",
+                    "example": "Cachorro"
+                  },
+                  "conteudo": {
+                    "type": "string",
+                    "example": "Mantenha sempre água fresca disponível."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Dica publicada com sucesso."
+          },
+          "400": {
+            "description": "Campos obrigatórios faltando."
+          },
+          "401": {
+            "description": "Usuário não identificado."
+          },
+          "500": {
+            "description": "Erro no banco de dados."
+          }
+        }
+      }
+    },
+
+    "/atualizarDica": {
+      "put": {
+        "tags": [
+          "Dicas"
+        ],
+        "summary": "Atualizar dica",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "id_dica"
+                ],
+                "properties": {
+                  "id_dica": {
+                    "type": "integer",
+                    "example": 1
+                  },
+                  "titulo": {
+                    "type": "string",
+                    "example": "Cuidados com seu pet"
+                  },
+                  "categoria": {
+                    "type": "string",
+                    "example": "Saúde"
+                  },
+                  "qualPet": {
+                    "type": "string",
+                    "example": "Cachorro"
+                  },
+                  "conteudo": {
+                    "type": "string",
+                    "example": "Mantenha as vacinas em dia."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Dica atualizada com sucesso."
+          },
+          "500": {
+            "description": "Erro ao atualizar."
+          }
+        }
+      }
+    },
+
+    "/deletarDica": {
+      "delete": {
+        "tags": [
+          "Dicas"
+        ],
+        "summary": "Excluir dica",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "id_dica"
+                ],
+                "properties": {
+                  "id_dica": {
+                    "type": "integer",
+                    "example": 1
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Dica removida com sucesso."
+          },
+          "500": {
+            "description": "Erro ao deletar."
+          }
+        }
+      }
+    },
+
+    "/mostrarDoacoes": {
+      "get": {
+        "tags": [
+          "Doações"
+        ],
+        "summary": "Listar necessidades de doação",
+        "responses": {
+          "200": {
+            "description": "Lista de necessidades.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Doacao"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro no servidor."
+          }
+        }
+      }
+    },
+
+    "/inserirDoacao": {
+      "post": {
+        "tags": [
+          "Doações"
+        ],
+        "summary": "Cadastrar necessidade de doação",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "nome_ong",
+                  "cidade_ong",
+                  "categoria",
+                  "classificacao",
+                  "item",
+                  "descricao",
+                  "local_entrega",
+                  "tipo_entrega"
+                ],
+                "properties": {
+                  "nome_ong": {
+                    "type": "string",
+                    "example": "ONG Entre Laços"
+                  },
+                  "cidade_ong": {
+                    "type": "string",
+                    "example": "Presidente Prudente"
+                  },
+                  "categoria": {
+                    "type": "string",
+                    "example": "Alimentação"
+                  },
+                  "classificacao": {
+                    "type": "string",
+                    "example": "Urgente"
+                  },
+                  "item": {
+                    "type": "string",
+                    "example": "Ração"
+                  },
+                  "quantidade": {
+                    "type": "string",
+                    "example": "10 kg"
+                  },
+                  "descricao": {
+                    "type": "string",
+                    "example": "Ração para os animais."
+                  },
+                  "local_entrega": {
+                    "type": "string",
+                    "example": "Sede da ONG"
+                  },
+                  "tipo_entrega": {
+                    "type": "string",
+                    "example": "Presencial"
+                  },
+                  "tipo_pix": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "pix": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "banco": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "conta": {
+                    "type": "string",
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Necessidade cadastrada com sucesso."
+          },
+          "400": {
+            "description": "Campos obrigatórios faltando."
+          },
+          "500": {
+            "description": "Erro ao cadastrar necessidade."
+          }
+        }
+      }
+    },
+
+    "/atualizarDoacao/{id}": {
+      "put": {
+        "tags": [
+          "Doações"
+        ],
+        "summary": "Atualizar necessidade de doação",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "example": 1
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Doacao"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Necessidade atualizada."
+          },
+          "403": {
+            "description": "Usuário não possui permissão."
+          },
+          "404": {
+            "description": "Necessidade não encontrada."
+          },
+          "500": {
+            "description": "Erro ao atualizar."
+          }
+        }
+      }
+    },
+
+    "/excluirDoacao/{id}": {
+      "delete": {
+        "tags": [
+          "Doações"
+        ],
+        "summary": "Excluir necessidade de doação",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "example": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Necessidade excluída."
+          },
+          "403": {
+            "description": "Usuário não possui permissão."
+          },
+          "404": {
+            "description": "Necessidade não encontrada."
+          },
+          "500": {
+            "description": "Erro ao excluir."
+          }
+        }
+      }
+    },
+
+    "/mostrarEventos": {
+      "get": {
+        "tags": [
+          "Eventos"
+        ],
+        "summary": "Listar todos os eventos",
+        "responses": {
+          "200": {
+            "description": "Lista de eventos.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Evento"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro no servidor."
+          }
+        }
+      }
+    },
+
+    "/eventos-proximos": {
+      "get": {
+        "tags": [
+          "Eventos"
+        ],
+        "summary": "Buscar eventos próximos",
+        "parameters": [
+          {
+            "name": "lat",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "number",
+              "format": "double"
+            },
+            "example": -22.1200
+          },
+          {
+            "name": "lng",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "number",
+              "format": "double"
+            },
+            "example": -51.3900
+          },
+          {
+            "name": "raio",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "default": 50
+            },
+            "description": "Raio máximo em quilômetros.",
+            "example": 10
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Eventos próximos encontrados."
+          },
+          "400": {
+            "description": "Latitude e longitude são obrigatórias."
+          },
+          "500": {
+            "description": "Erro ao calcular proximidade."
+          }
+        }
+      }
+    },
+
+    "/inserirEvento": {
+      "post": {
+        "tags": [
+          "Eventos"
+        ],
+        "summary": "Cadastrar evento",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "nome_evento"
+                ],
+                "properties": {
+                  "nome_evento": {
+                    "type": "string",
+                    "example": "Feira de Adoção"
+                  },
+                  "hora": {
+                    "type": "string",
+                    "example": "14:00"
+                  },
+                  "data": {
+                    "type": "string",
+                    "example": "2026-10-20"
+                  },
+                  "endereco": {
+                    "type": "string",
+                    "example": "Praça Central"
+                  },
+                  "categoria": {
+                    "type": "string",
+                    "example": "Adoção"
+                  },
+                  "localizacao": {
+                    "type": "string",
+                    "example": "Praça Central"
+                  },
+                  "imagem": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "latitude": {
+                    "type": "number",
+                    "format": "double",
+                    "example": -22.1200
+                  },
+                  "longitude": {
+                    "type": "number",
+                    "format": "double",
+                    "example": -51.3900
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Evento cadastrado com sucesso."
+          },
+          "400": {
+            "description": "Nome do evento não informado."
+          },
+          "403": {
+            "description": "Usuário não possui ONG vinculada."
+          },
+          "500": {
+            "description": "Erro no servidor."
+          }
+        }
+      }
+    },
+
+    "/atualizarEvento": {
+      "put": {
+        "tags": [
+          "Eventos"
+        ],
+        "summary": "Atualizar evento",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "id_evento"
+                ],
+                "properties": {
+                  "id_evento": {
+                    "type": "integer",
+                    "example": 1
+                  },
+                  "nome_evento": {
+                    "type": "string",
+                    "example": "Feira de Adoção"
+                  },
+                  "hora": {
+                    "type": "string",
+                    "example": "15:00"
+                  },
+                  "data": {
+                    "type": "string",
+                    "example": "2026-10-20"
+                  },
+                  "endereco": {
+                    "type": "string",
+                    "example": "Praça Central"
+                  },
+                  "categoria": {
+                    "type": "string",
+                    "example": "Adoção"
+                  },
+                  "localizacao": {
+                    "type": "string",
+                    "example": "Praça Central"
+                  },
+                  "imagem": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "latitude": {
+                    "type": "number",
+                    "example": -22.1200
+                  },
+                  "longitude": {
+                    "type": "number",
+                    "example": -51.3900
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Evento atualizado com sucesso."
+          },
+          "400": {
+            "description": "ID do evento não informado."
+          },
+          "403": {
+            "description": "Usuário sem permissão."
+          },
+          "404": {
+            "description": "Evento não encontrado."
+          },
+          "500": {
+            "description": "Erro no servidor."
+          }
+        }
+      }
+    },
+
+    "/deletarEvento": {
+      "delete": {
+        "tags": [
+          "Eventos"
+        ],
+        "summary": "Excluir evento",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "id_evento"
+                ],
+                "properties": {
+                  "id_evento": {
+                    "type": "integer",
+                    "example": 1
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Evento excluído com sucesso."
+          },
+          "400": {
+            "description": "ID do evento não informado."
+          },
+          "403": {
+            "description": "Usuário sem permissão."
+          },
+          "404": {
+            "description": "Evento não encontrado."
+          },
+          "500": {
+            "description": "Erro ao excluir evento."
+          }
+        }
+      }
+    },
+
+    "/api/historias": {
+      "get": {
+        "tags": [
+          "Histórias"
+        ],
+        "summary": "Listar histórias",
+        "responses": {
+          "200": {
+            "description": "Lista de histórias.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Historia"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro ao buscar histórias."
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Histórias"
+        ],
+        "summary": "Criar história",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "titulo",
+                  "texto"
+                ],
+                "properties": {
+                  "titulo": {
+                    "type": "string",
+                    "example": "A história da Mel"
+                  },
+                  "texto": {
+                    "type": "string",
+                    "example": "Mel foi resgatada e encontrou uma nova família."
+                  },
+                  "imagens": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "História criada com sucesso."
+          },
+          "400": {
+            "description": "Título e texto são obrigatórios."
+          },
+          "500": {
+            "description": "Erro ao salvar história."
+          }
+        }
+      }
+    },
+
+    "/api/historias/{id}": {
+      "put": {
+        "tags": [
+          "Histórias"
+        ],
+        "summary": "Atualizar história",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "example": 1
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "titulo": {
+                    "type": "string",
+                    "example": "A história da Mel"
+                  },
+                  "texto": {
+                    "type": "string",
+                    "example": "Mel encontrou uma família maravilhosa."
+                  },
+                  "imagens": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "História atualizada."
+          },
+          "403": {
+            "description": "Usuário não é o criador da história."
+          },
+          "404": {
+            "description": "História não encontrada."
+          },
+          "500": {
+            "description": "Erro ao atualizar."
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Histórias"
+        ],
+        "summary": "Excluir história",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "example": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "História deletada com sucesso."
+          },
+          "403": {
+            "description": "Usuário não é o criador da história."
+          },
+          "404": {
+            "description": "História não encontrada."
+          },
+          "500": {
+            "description": "Erro interno."
+          }
+        }
+      }
+    },
+
+    "/verificar-duplicado": {
+      "get": {
+        "tags": [
+          "Usuários"
+        ],
+        "summary": "Verificar duplicidade de e-mail, CPF ou telefone",
+        "parameters": [
+          {
+            "name": "campo",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "email",
+                "cpf",
+                "telefone"
+              ]
+            },
+            "example": "email"
+          },
+          {
+            "name": "valor",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "usuario@email.com"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resultado da verificação.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "existe": {
+                      "type": "boolean",
+                      "example": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Campo inválido."
+          },
+          "500": {
+            "description": "Erro interno."
+          }
+        }
+      }
+    },
+
+    "/verificar-email": {
+      "get": {
+        "tags": [
+          "Usuários"
+        ],
+        "summary": "Verificar se um e-mail já está cadastrado",
+        "parameters": [
+          {
+            "name": "email",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "email"
+            },
+            "example": "usuario@email.com"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resultado da verificação.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "existe": {
+                      "type": "boolean",
+                      "example": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "E-mail não informado."
+          },
+          "500": {
+            "description": "Erro ao verificar e-mail."
+          }
+        }
+      }
+    },
+
+    "/perfil": {
+      "get": {
+        "tags": [
+          "Perfil"
+        ],
+        "summary": "Buscar perfil do usuário logado",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Perfil encontrado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "usuario": {
+                      "$ref": "#/components/schemas/Usuario"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Usuário não identificado."
+          },
+          "404": {
+            "description": "Usuário não encontrado."
+          },
+          "500": {
+            "description": "Erro ao carregar perfil."
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Perfil"
+        ],
+        "summary": "Atualizar perfil",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "nome": {
+                    "type": "string",
+                    "example": "Maria Silva"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "example": "maria@email.com"
+                  },
+                  "telefone": {
+                    "type": "string",
+                    "example": "(18) 99999-9999"
+                  },
+                  "foto_perfil": {
+                    "type": "string",
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Perfil atualizado com sucesso."
+          },
+          "400": {
+            "description": "Dados inválidos."
+          },
+          "401": {
+            "description": "Usuário não identificado."
+          },
+          "404": {
+            "description": "Usuário não encontrado."
+          },
+          "409": {
+            "description": "E-mail já cadastrado."
+          },
+          "500": {
+            "description": "Erro ao salvar alterações."
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Perfil"
+        ],
+        "summary": "Excluir conta pelo perfil",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Conta excluída com sucesso."
+          },
+          "401": {
+            "description": "Usuário não identificado."
+          },
+          "404": {
+            "description": "Usuário não encontrado."
+          },
+          "500": {
+            "description": "Erro ao excluir conta."
+          }
+        }
+      }
+    }
+  }
+}
