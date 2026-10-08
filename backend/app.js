@@ -348,7 +348,7 @@ app.delete('/deletar', autenticarToken, async (req, res) => {
 });
 
 // ================= LOGIN UNIFICADO =================
-app.post('/login', async (req, res) => {
+app.post("/login", async (req, res) => {
     try {
         const { email, senha } = req.body;
 
@@ -358,32 +358,38 @@ app.post('/login', async (req, res) => {
             });
         }
 
-        const emailLimpo = String(email).trim().toLowerCase();
+        const emailNormalizado = email.trim().toLowerCase();
 
-        const hash = crypto
+        const senhaHash = crypto
             .createHash("sha256")
-            .update(String(senha).trim())
+            .update(senha)
             .digest("base64");
 
         const [usuarios] = await pool.query(
-            "SELECT * FROM cadastro WHERE LOWER(TRIM(email))=? LIMIT 1",
-            [emailLimpo]
+            `SELECT * FROM cadastro WHERE LOWER(TRIM(email))=? LIMIT 1`,
+            [emailNormalizado]
         );
 
-        if (usuarios.length === 0 || usuarios[0].senha !== hash) {
+        if (usuarios.length === 0) {
             return res.status(401).json({
-                erro: "E-mail ou senha incorretos"
+                erro: "E-mail ou senha incorretos."
             });
         }
 
-        const user = usuarios[0];
+        const usuario = usuarios[0];
+
+        if (usuario.senha !== senhaHash) {
+            return res.status(401).json({
+                erro: "E-mail ou senha incorretos."
+            });
+        }
 
         let possuiOngs = false;
 
-        if (user.tipo === "ong") {
+        if (usuario.tipo === "ong") {
             const [ongs] = await pool.query(
-                "SELECT id_ong FROM usuario_ong WHERE id_usuario=? LIMIT 1",
-                [user.id_usuario]
+                `SELECT id_ong FROM usuario_ong WHERE id_usuario=? LIMIT 1`,
+                [usuario.id_usuario]
             );
 
             possuiOngs = ongs.length > 0;
@@ -391,34 +397,40 @@ app.post('/login', async (req, res) => {
 
         const token = jwt.sign(
             {
-                id_usuario: user.id_usuario,
-                tipo: user.tipo
+                id_usuario: usuario.id_usuario,
+                tipo: usuario.tipo
             },
             process.env.JWT_SECRET || "pet",
-            { expiresIn: "2h" }
+            {
+                expiresIn: "2h"
+            }
         );
 
-        res.json({
+        return res.status(200).json({
+            message: "Login realizado com sucesso.",
             token,
-            possuiOngs,
             usuario: {
-                id_usuario: user.id_usuario,
-                nome: user.nome,
-                email: user.email,
-                tipo: user.tipo,
-                foto_perfil: user.foto_perfil || null
-            }
+                id_usuario: usuario.id_usuario,
+                nome: usuario.nome,
+                email: usuario.email,
+                cep: usuario.cep,
+                cpf: usuario.cpf,
+                telefone: usuario.telefone,
+                data_nascimento: usuario.data_nascimento,
+                tipo: usuario.tipo,
+                foto_perfil: usuario.foto_perfil
+            },
+            possuiOngs
         });
 
-    } catch (error) {
-        console.error("Erro no login:", error);
+    } catch (erro) {
+        console.error("Erro no login:", erro);
 
-        res.status(500).json({
-            erro: "Erro no servidor durante o login"
+        return res.status(500).json({
+            erro: "Erro interno do servidor."
         });
     }
 });
-
 // ================= RECUPERAÇÃO DE SENHA =================
 app.put('/recuperar-senha', async (req, res) => {
     try {
@@ -1564,143 +1576,102 @@ app.get("/verificar-email", async (req, res) => {
 
 
 
-
-
-
 // ================= PERFIL =================
 
-// ================= PERFIL =================
-
-app.get('/perfil', autenticarToken, async (req, res) => {
+app.get("/perfil", autenticarToken, async (req, res) => {
     try {
-        const idUsuario = req.user?.id_usuario;
-
-        if (!idUsuario) {
-            return res.status(401).json({
-                erro: 'Usuário não identificado. Faça login novamente.'
-            });
-        }
+        const idUsuario = req.user.id_usuario;
 
         const [usuarios] = await pool.query(
             `SELECT id_usuario,nome,email,telefone,cep,cpf,data_nascimento,tipo,foto_perfil
-             FROM cadastro
-             WHERE id_usuario=?
-             LIMIT 1`,
+            FROM cadastro
+            WHERE id_usuario=?
+            LIMIT 1`,
             [idUsuario]
         );
 
-        if (!usuarios.length) {
+        if (usuarios.length === 0) {
             return res.status(404).json({
-                erro: 'Usuário não encontrado.'
+                erro: "Usuário não encontrado."
             });
         }
 
-        res.json({
+        return res.status(200).json({
             usuario: usuarios[0]
         });
 
     } catch (erro) {
-        console.error('Erro ao buscar perfil:', erro);
+        console.error("Erro ao buscar perfil:", erro);
 
-        res.status(500).json({
-            erro: 'Erro ao carregar o perfil.'
+        return res.status(500).json({
+            erro: "Erro ao carregar o perfil."
         });
     }
 });
-
-app.put('/perfil', autenticarToken, async (req, res) => {
+app.put("/perfil", autenticarToken, async (req, res) => {
     try {
-        const idUsuario = req.user?.id_usuario;
+        const idUsuario = req.user.id_usuario;
 
-        if (!idUsuario) {
-            return res.status(401).json({
-                erro: 'Usuário não identificado. Faça login novamente.'
-            });
-        }
+        let {
+            nome,
+            email,
+            telefone,
+            foto_perfil
+        } = req.body;
 
-        const { nome, email, telefone, foto_perfil } = req.body;
+        nome = nome ? String(nome).trim() : "";
+        email = email ? String(email).trim().toLowerCase() : "";
+        telefone = telefone ? String(telefone).trim() : "";
 
-        const [usuarios] = await pool.query(
-            `SELECT id_usuario,nome,email,telefone,foto_perfil
-             FROM cadastro
-             WHERE id_usuario=?
-             LIMIT 1`,
-            [idUsuario]
-        );
-
-        if (!usuarios.length) {
-            return res.status(404).json({
-                erro: 'Usuário não encontrado.'
-            });
-        }
-
-        const usuarioAtual = usuarios[0];
-
-        const nomeFinal = nome !== undefined
-            ? String(nome).trim()
-            : usuarioAtual.nome;
-
-        const emailFinal = email !== undefined
-            ? String(email).trim().toLowerCase()
-            : usuarioAtual.email;
-
-        const telefoneFinal = telefone !== undefined
-            ? String(telefone).trim()
-            : usuarioAtual.telefone;
-
-        const fotoFinal = foto_perfil !== undefined
-            ? foto_perfil
-            : usuarioAtual.foto_perfil;
-
-        if (!nomeFinal) {
+        if (!nome) {
             return res.status(400).json({
-                erro: 'Informe seu nome.'
+                erro: "O nome é obrigatório."
             });
         }
 
-        if (!emailFinal) {
+        if (!email) {
             return res.status(400).json({
-                erro: 'Informe seu e-mail.'
+                erro: "O e-mail é obrigatório."
             });
         }
 
         const emailValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-        if (!emailValido.test(emailFinal)) {
+        if (!emailValido.test(email)) {
             return res.status(400).json({
-                erro: 'Informe um e-mail válido.'
+                erro: "Informe um e-mail válido."
             });
         }
 
-        const [emailExiste] = await pool.query(
+        const [duplicados] = await pool.query(
             `SELECT id_usuario
              FROM cadastro
-             WHERE LOWER(TRIM(email)) = ?
-             AND id_usuario != ?
+             WHERE LOWER(TRIM(email))=?
+             AND id_usuario<>?
              LIMIT 1`,
-            [emailFinal, idUsuario]
+            [email, idUsuario]
         );
 
-        if (emailExiste.length > 0) {
+        if (duplicados.length > 0) {
             return res.status(409).json({
-                erro: 'Este e-mail já está cadastrado.'
+                erro: "Este e-mail já está cadastrado."
             });
         }
 
         await pool.query(
             `UPDATE cadastro
-             SET nome=?, email=?, telefone=?, foto_perfil=?
+             SET nome=?,email=?,telefone=?,foto_perfil=?
              WHERE id_usuario=?`,
             [
-                nomeFinal,
-                emailFinal,
-                telefoneFinal || null,
-                fotoFinal || null,
+                nome,
+                email,
+                telefone,
+                foto_perfil || null,
                 idUsuario
             ]
         );
 
-        const [usuarioAtualizado] = await pool.query(
+        const [usuarios] = await pool.query(
             `SELECT id_usuario,nome,email,telefone,cep,cpf,data_nascimento,tipo,foto_perfil
              FROM cadastro
              WHERE id_usuario=?
@@ -1708,62 +1679,68 @@ app.put('/perfil', autenticarToken, async (req, res) => {
             [idUsuario]
         );
 
-        return res.json({
-            sucesso: true,
-            mensagem: 'Perfil atualizado com sucesso!',
-            usuario: usuarioAtualizado[0]
+        if (usuarios.length === 0) {
+            return res.status(404).json({
+                erro: "Usuário não encontrado após atualização."
+            });
+        }
+
+        return res.status(200).json({
+            message: "Perfil atualizado com sucesso.",
+            usuario: usuarios[0]
         });
 
     } catch (erro) {
-        console.error('Erro ao atualizar perfil:', erro);
+        console.error("Erro ao atualizar perfil:", erro);
 
-        if (erro.code === 'ER_DUP_ENTRY') {
+        if (erro.code === "ER_DUP_ENTRY") {
             return res.status(409).json({
-                erro: 'Este e-mail já está cadastrado.'
+                erro: "Este e-mail já está cadastrado."
             });
         }
 
         return res.status(500).json({
-            erro: 'Erro ao salvar alterações no banco de dados.'
+            erro: "Erro ao atualizar o perfil."
         });
     }
 });
 // EXCLUIR CONTA
-app.delete('/perfil', autenticarToken, async (req, res) => {
+
+app.delete("/perfil", autenticarToken, async (req, res) => {
     try {
         const idUsuario = req.user?.id_usuario || req.usuario?.id_usuario;
 
         if (!idUsuario) {
             return res.status(401).json({
-                erro: 'Usuário não identificado. Faça login novamente.'
+                erro: "Usuário não identificado. Faça login novamente."
             });
         }
 
         await pool.query(
-            'DELETE FROM usuario_ong WHERE id_usuario=?',
+            "DELETE FROM usuario_ong WHERE id_usuario=?",
             [idUsuario]
         );
 
         const [resultado] = await pool.query(
-            'DELETE FROM cadastro WHERE id_usuario=?',
+            "DELETE FROM cadastro WHERE id_usuario=?",
             [idUsuario]
         );
 
         if (resultado.affectedRows === 0) {
             return res.status(404).json({
-                erro: 'Usuário não encontrado.'
+                erro: "Usuário não encontrado."
             });
         }
 
-        res.json({
-            mensagem: 'Conta excluída com sucesso.'
+        return res.json({
+            mensagem: "Conta excluída com sucesso."
         });
 
     } catch (erro) {
-        console.error('Erro ao excluir conta:', erro);
+        console.error("Erro ao excluir conta:", erro);
 
-        res.status(500).json({
-            erro: 'Erro ao excluir conta.'
+        return res.status(500).json({
+            erro: "Erro ao excluir conta."
         });
     }
 });
