@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entrar - Entre laços</title>
+    <link rel="stylesheet" href="ong.css">
+    <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <header class="cabecalho">
+        <div class="cabecalho-conteudo">
+            <div class="logo">
+                <img src="logo.png" alt="logo" height="40">
+                <span>Entre Laços</span>
+            </div>
+            <nav class="menu-links">
+                <a href="index.html" onclick="return verificarNavegacao(event)">Início</a>
+                <a href="animais.html" onclick="return verificarNavegacao(event)">Animais</a>
+                <a href="doar.html" onclick="return verificarNavegacao(event)">Doar</a>
+                <a href="eventos.html" onclick="return verificarNavegacao(event)">Eventos</a>
+                <a href="historias.html" onclick="return verificarNavegacao(event)">Histórias</a>
+                <a href="dicas.html" onclick="return verificarNavegacao(event)">Dicas</a>
+            </nav>
+            <div class="perfil-topo">
+                <a href="perfil.html" class="foto-header-link" title="Meu perfil">
+                    <img id="fotoPerfilHeader" class="foto-header" src="logo.png" alt="Foto de perfil">
+                </a>
+                <a class="botao-voltar" href="escolherOng.html">Voltar</a>
+            </div>
+        </div>
+    </header>
+
+    <div class="caixinha-container">
+        <div class="titulo-area">
+            <h1>Completar Perfil da ONG</h1>
+            <p>Preencha as informações da sua instituição para conectar mais animais a novos lares.</p>
+        </div>
+
+        <form id="formOng">
+            <div class="conteudo-formulario">
+                <p id="infoUsuario"></p>
+                <input id="nome" placeholder="Nome da ONG" maxlength="100" required>
+                <input id="email" type="email" placeholder="E-mail de Contato da ONG" maxlength="100" required>
+                <input id="cnpj" placeholder="CNPJ" maxlength="18" required>
+                <input id="telefone" placeholder="Telefone" maxlength="15" required>
+                <input id="endereco" placeholder="Endereço Completo" maxlength="150" required>
+                <input id="cidade" placeholder="Cidade" maxlength="50" required>
+                <input id="estado" placeholder="UF (Ex: SP)" maxlength="2" style="text-transform: uppercase;" required>
+                <input id="pix" placeholder="Chave PIX (Opcional)" maxlength="100">
+                <textarea id="trabalho_ofe" placeholder="Descrição curta do trabalho da ONG" maxlength="500"></textarea>
+                <button type="submit" class="btn-acao">Finalizar Cadastro</button>
+                <div style="margin-top: 15px;">
+                    <span class="link-alternar">
+                        Já tem uma ONG cadastrada?
+                        <a href="escolherOng.html">Escolher Instituição</a>
+                    </span>
+                </div>
+            </div>
+        </form>
+
+        <div class="conteudo-imagem">
+            <img src="https://i.pinimg.com/1200x/1a/43/c7/1a43c7dfbdf32b73644ec86b99f05775.jpg" alt="Pet feliz">
+        </div>
+    </div>
+
+    <footer class="fim">
+        <div class="fim-container">
+            <div class="fim-sobre">
+                <div class="fim-logo">
+                    <img src="logo.png" alt="Logo Entre Laços" height="40">
+                    <h3>Entre Laços</h3>
+                </div>
+                <p>
+                    Conectando corações e transformando vidas. Nossa missão é encontrar lares amorosos para animais
+                    resgatados e promover a posse responsável.
+                </p>
+            </div>
+            <div class="fim-contato">
+                <h4>Contato</h4>
+                <span>Email: contato@entrelacos.org</span>
+                <span>Telefone: (00) 00000-0000</span>
+                <span>Facebook: entrelaços.consulta</span>
+                <span>Instagram: entrelaços.consulta</span>
+            </div>
+        </div>
+        <div class="fim-copy">
+            © 2026 Entre Laços. Todos os direitos reservados.
+        </div>
+    </footer>
+
+    <script>
+        const API = "http://localhost:3000";
+
+        async function carregarFotoPerfilHeader() {
+            const foto = document.getElementById("fotoPerfilHeader");
+            if (!foto) return;
+
+            const token = localStorage.getItem("token");
+
+            if (!token) {
+                foto.src = "logo.png";
+                return;
+            }
+
+            try {
+                const resposta = await fetch(`${API}/perfil?atualizacao=${Date.now()}`, {
+                    method: "GET",
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    },
+                    cache: "no-store"
+                });
+
+                if (!resposta.ok) {
+                    console.error("Erro ao buscar foto do perfil:", resposta.status);
+                    foto.src = "logo.png";
+                    return;
+                }
+
+                const dados = await resposta.json();
+                const fotoBanco = dados?.usuario?.foto_perfil;
+
+                if (fotoBanco && String(fotoBanco).trim() !== "") {
+                    foto.src = fotoBanco;
+                } else {
+                    foto.src = "logo.png";
+                }
+
+                foto.onerror = function () {
+                    this.onerror = null;
+                    this.src = "logo.png";
+                };
+            } catch (erro) {
+                console.error("Erro ao carregar foto de perfil:", erro);
+                foto.src = "logo.png";
+            }
+        }
+
+        document.getElementById("cnpj").addEventListener("input", function (e) {
+            let v = e.target.value.replace(/\D/g, "");
+            v = v.replace(/^(\d{2})(\d)/, "$1.$2");
+            v = v.replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3");
+            v = v.replace(/\.(\d{3})(\d)/, ".$1/$2");
+            v = v.replace(/(\d{4})(\d)/, "$1-$2");
+            e.target.value = v;
+        });
+
+        document.getElementById("telefone").addEventListener("input", function (e) {
+            let v = e.target.value.replace(/\D/g, "");
+            v = v.replace(/^(\d{2})(\d)/g, "($1) $2");
+            v = v.replace(/(\d{5})(\d)/, "$1-$2");
+            e.target.value = v;
+        });
+
+        document.getElementById("estado").addEventListener("input", function (e) {
+            e.target.value = e.target.value
+                .toUpperCase()
+                .replace(/[^A-Z]/g, "");
+        });
+
+        function verificarNavegacao(event) {
+            const ongAtiva = localStorage.getItem("idOngAtiva");
+
+            if (!ongAtiva || ongAtiva === "null") {
+                event.preventDefault();
+                alert("Ação necessária: Você precisa cadastrar uma ONG para continuar.");
+                return false;
+            }
+
+            return true;
+        }
+
+        const infoUser = document.getElementById("infoUsuario");
+        const nomeResponsavel =
+            sessionStorage.getItem("nome") ||
+            localStorage.getItem("nome") ||
+            "Usuário";
+
+        infoUser.innerText = `Responsável: ${nomeResponsavel}`;
+
+        function validarEmail(email) {
+            const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return regex.test(email);
+        }
+
+        function validarCNPJ(cnpj) {
+            cnpj = cnpj.replace(/\D/g, "");
+            return cnpj.length === 14 && !/^(\d)\1{13}$/.test(cnpj);
+        }
+
+        function validarTelefone(telefone) {
+            telefone = telefone.replace(/\D/g, "");
+
+            if (telefone.length !== 10 && telefone.length !== 11) {
+                return false;
+            }
+
+            if (/^(\d)\1+$/.test(telefone)) {
+                return false;
+            }
+
+            return true;
+        }
+
+        function validarDadosOng() {
+            const nome = document.getElementById("nome").value.trim();
+            const email = document.getElementById("email").value.trim();
+            const cnpj = document.getElementById("cnpj").value.trim();
+            const telefone = document.getElementById("telefone").value.trim();
+            const endereco = document.getElementById("endereco").value.trim();
+            const cidade = document.getElementById("cidade").value.trim();
+            const estado = document.getElementById("estado").value.trim().toUpperCase();
+            const pix = document.getElementById("pix").value.trim();
+            const trabalho = document.getElementById("trabalho_ofe").value.trim();
+
+            if (nome.length < 3) {
+                alert("Informe o nome completo da ONG.");
+                document.getElementById("nome").focus();
+                return false;
+            }
+
+            if (!validarEmail(email)) {
+                alert("Informe um e-mail válido para a ONG.");
+                document.getElementById("email").focus();
+                return false;
+            }
+
+            if (!validarCNPJ(cnpj)) {
+                alert("Informe um CNPJ válido.");
+                document.getElementById("cnpj").focus();
+                return false;
+            }
+
+            if (!validarTelefone(telefone)) {
+                alert("Informe um telefone válido com DDD.");
+                document.getElementById("telefone").focus();
+                return false;
+            }
+
+            if (endereco.length < 5) {
+                alert("Informe um endereço válido e completo.");
+                document.getElementById("endereco").focus();
+                return false;
+            }
+
+            if (cidade.length < 2) {
+                alert("Informe uma cidade válida.");
+                document.getElementById("cidade").focus();
+                return false;
+            }
+
+            if (!/^[A-Z]{2}$/.test(estado)) {
+                alert("Informe uma UF válida com 2 letras, como SP.");
+                document.getElementById("estado").focus();
+                return false;
+            }
+
+            if (pix !== "" && pix.length < 3) {
+                alert("A chave PIX informada não parece válida.");
+                document.getElementById("pix").focus();
+                return false;
+            }
+
+            if (trabalho !== "" && trabalho.length < 10) {
+                alert("A descrição do trabalho da ONG precisa ter pelo menos 10 caracteres.");
+                document.getElementById("trabalho_ofe").focus();
+                return false;
+            }
+
+            return true;
+        }
+
+        document.getElementById("formOng").addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            console.log("Botão clicado, preparando envio...");
+
+            if (!validarDadosOng()) {
+                return;
+            }
+
+            const token = localStorage.getItem("token");
+
+            if (!token) {
+                alert("Sessão expirada. Faça login novamente.");
+                window.location.href = "acesso.html";
+                return;
+            }
+
+            const dados = {
+                nome: document.getElementById("nome").value.trim(),
+                email: document.getElementById("email").value.trim(),
+                cnpj: document.getElementById("cnpj").value.replace(/\D/g, ""),
+                telefone: document.getElementById("telefone").value.replace(/\D/g, ""),
+                endereco: document.getElementById("endereco").value.trim(),
+                cidade: document.getElementById("cidade").value.trim(),
+                estado: document.getElementById("estado").value.trim().toUpperCase(),
+                pix: document.getElementById("pix").value.trim() || null,
+                trabalho_ofe: document.getElementById("trabalho_ofe").value.trim() || null
+            };
+
+            console.log("Dados enviados:", dados);
+
+            try {
+                const response = await fetch(`${API}/inserirOng`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    },
+                    body: JSON.stringify(dados)
+                });
+
+                const resultado = await response.json();
+
+                if (response.ok) {
+                    alert("ONG cadastrada com sucesso!");
+                    window.location.href = "escolherOng.html";
+                } else {
+                    alert("Erro: " + (resultado.erro || "Falha ao cadastrar"));
+                }
+            } catch (error) {
+                console.error("Erro na requisição:", error);
+                alert("Erro ao conectar com o servidor. Verifique se o backend está rodando.");
+            }
+        });
+
+        carregarFotoPerfilHeader();
+    </script>
+</body>
+
+</html>
