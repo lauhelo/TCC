@@ -1,0 +1,826 @@
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dicas - Entre Laços</title>
+  <link rel="stylesheet" href="dicas.css">
+  <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="cabecalho">
+    <div class="cabecalho-conteudo">
+      <a class="logo" href="index.html">
+        <img src="logo.png" alt="Logo Entre Laços" height="40">
+        <span>Entre Laços</span>
+      </a>
+      <nav class="menu-links">
+        <a href="index.html">Início</a>
+        <a href="animais.html">Animais</a>
+        <a href="doar.html">Doar</a>
+        <a href="eventos.html">Eventos</a>
+        <a href="historias.html">Histórias</a>
+        <a href="dicas.html" class="ativo">Dicas</a>
+      </nav>
+      <div class="perfil-topo">
+        <a id="link-entrar" class="nome-usuario" href="acesso.html">Cadastrar / Entrar</a>
+        <a id="link-foto-perfil-header" class="foto-header-link" href="perfil.html" title="Editar perfil" aria-label="Editar perfil" style="display:none;">
+          <img id="fotoPerfilHeader" class="foto-header" src="logo.png" alt="Foto de perfil">
+          <span class="texto-editar-perfil">Editar perfil</span>
+        </a>
+        <a id="link-voltar" class="botao-voltar" href="index.html">Voltar ao Início</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container-dicas">
+    <div class="titulo-secao">
+      <div class="titulo-area">
+        <h1>Dicas para seu Pet</h1>
+        <p>Clique na pata para visualizar a dica completa.</p>
+      </div>
+      <button type="button" class="botao-cadastrar" id="btnCadastrarDica" style="display:none;">➕ Cadastrar Dica</button>
+    </div>
+
+    <div class="card-destaque-dicas">
+      <div class="icone-destaque">🐾</div>
+      <div class="destaque-texto">
+        <h2>Ajude a compartilhar dicas</h2>
+        <p>Compartilhe cuidados, informações e dicas importantes para melhorar a vida dos animais.</p>
+      </div>
+    </div>
+
+    <div id="areaFormularioDica" class="area-formulario-dica" style="display:none;">
+      <div class="caixa-formulario-dica">
+        <div class="imagem-modal">
+          <img src="https://i.pinimg.com/1200x/06/63/d5/0663d55d58f7cfa09956fea9b9c7fe8d.jpg" alt="Pet fofo">
+        </div>
+        <div class="conteudo-formulario-modal">
+          <div class="cabecalho-formulario-dica">
+            <div>
+              <h2 id="tituloFormulario">Cadastrar Nova Dica</h2>
+              <p>Preencha os campos abaixo para compartilhar a sua dica.</p>
+            </div>
+            <button type="button" id="btnFecharFormulario" class="btn-fechar-formulario" aria-label="Fechar">×</button>
+          </div>
+
+          <form id="formCadDica" novalidate>
+            <div class="campo-grupo">
+              <label for="titulo">Título da Dica</label>
+              <input type="text" id="titulo" placeholder="Ex: Banho em Gatos Filhotes" minlength="5" maxlength="100" required>
+            </div>
+
+            <div class="linha-formulario">
+              <div class="campo-grupo">
+                <label for="categoria">Categoria</label>
+                <select id="categoria" required>
+                  <option value="" disabled selected>Selecione...</option>
+                  <option value="Alimentação">Alimentação</option>
+                  <option value="Saúde">Saúde</option>
+                  <option value="Passeio">Passeio</option>
+                  <option value="Bem-estar">Bem-estar</option>
+                  <option value="Higiene">Higiene</option>
+                </select>
+              </div>
+              <div class="campo-grupo">
+                <label for="qualPet">Para qual Pet?</label>
+                <select id="qualPet" required>
+                  <option value="" disabled selected>Selecione...</option>
+                  <option value="Cachorro">Cachorro</option>
+                  <option value="Gato">Gato</option>
+                  <option value="Todos">Todos os Pets</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="campo-grupo">
+              <label for="conteudo">Conteúdo da Dica</label>
+              <textarea id="conteudo" placeholder="Escreva detalhadamente o passo a passo da sua dica aqui..." rows="4" minlength="20" maxlength="3000" required></textarea>
+            </div>
+
+            <div class="botoes-formulario-dica">
+              <button type="button" id="btnCancelarFormulario" class="btn-cancelar-formulario">Voltar</button>
+              <button type="submit" id="btnSalvarDica" class="btn-salvar-formulario">Publicar Dica</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="barra-filtros">
+      <input type="text" id="busca-dica" placeholder="🔍 Procurar nas dicas (título ou conteúdo)...">
+      <select id="filtro-pet">
+        <option value="todos">🐾 Todos os Pets</option>
+        <option value="cachorro">🐶 Cachorro</option>
+        <option value="gato">🐱 Gato</option>
+      </select>
+    </div>
+
+    <div class="grid-dicas"></div>
+  </main>
+
+  <div id="modalVisualizarDica" class="modal-visualizar-dica" style="display:none;">
+    <div class="caixa-visualizar-dica" role="dialog" aria-modal="true" aria-labelledby="tituloModalDica">
+      <div class="conteudo-visualizar-dica">
+        <div class="cabecalho-visualizar-dica">
+          <div class="titulo-modal-area">
+            <span class="subtitulo-modal-dica">ENTRE LAÇOS · DICAS PET</span>
+            <h2 id="tituloModalDica"></h2>
+          </div>
+          <div class="acoes-topo-modal">
+            <div id="acoesModalDica" class="acoes-modal-dica" style="display:none;">
+              <button type="button" id="editarModalDica" class="btn-editar-modal" title="Editar dica" aria-label="Editar dica"></button>
+              <button type="button" id="excluirModalDica" class="btn-excluir-modal" title="Excluir dica" aria-label="Excluir dica"></button>
+            </div>
+            <button type="button" id="fecharModalDica" class="fechar-modal-dica" aria-label="Fechar">×</button>
+          </div>
+        </div>
+
+        <div class="tags-modal-dica">
+          <span id="categoriaModalDica" class="tag-dica"></span>
+          <span id="petModalDica" class="tag-dica tag-pet"></span>
+        </div>
+
+        <div class="texto-modal-dica">
+          <h3>Sobre esta dica</h3>
+          <p id="conteudoModalDica"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="fim">
+    <div class="fim-container">
+      <div class="fim-sobre">
+        <div class="fim-logo">
+          <img src="logo.png" alt="Logo Entre Laços" height="40">
+          <h3>Entre Laços</h3>
+        </div>
+        <p>Conectando corações e transformando vidas. Nossa missão é encontrar lares amorosos para animais resgatados e promover a posse responsável.</p>
+      </div>
+      <div class="fim-contato">
+        <h4>Contato</h4>
+        <span>Email: contato@entrelacos.org</span>
+        <span>Telefone: (00) 00000-0000</span>
+        <span>Facebook: entrelaços.consulta</span>
+        <span>Instagram: entrelaços.consulta</span>
+      </div>
+    </div>
+    <div class="fim-copy">© 2026 Entre Laços. Todos os direitos reservados.</div>
+  </footer>
+
+  
+<script>
+    const linkEntrar = document.getElementById("link-entrar");
+    const linkVoltar = document.getElementById("link-voltar");
+    const linkFotoPerfilHeader = document.getElementById("link-foto-perfil-header");
+    const btnCadastrarDica = document.getElementById("btnCadastrarDica");
+    const API = "http://localhost:3000";
+
+    let todasAsDicas = [];
+    let idDicaEmEdicao = null;
+    let dicaSelecionadaNoModal = null;
+
+    const mapaCoresCategoria = {
+        "Alimentação": "#F4A261",
+        "Saúde": "#E63946",
+        "Passeio": "#2A9D8F",
+        "Bem-estar": "#6A994E",
+        "Higiene": "#4D96FF"
+    };
+
+    const mapaClassesCategoria = {
+        "alimentação": "categoria-alimentacao",
+        "saúde": "categoria-saude",
+        "passeio": "categoria-passeio",
+        "bem-estar": "categoria-bem-estar",
+        "higiene": "categoria-higiene"
+    };
+
+    function normalizarCategoria(categoria) {
+        return String(categoria || "").trim().toLocaleLowerCase("pt-BR");
+    }
+
+    function obterClasseCategoria(categoria) {
+        return mapaClassesCategoria[normalizarCategoria(categoria)] || "categoria-padrao";
+    }
+
+    function obterCorCategoria(categoria) {
+        const chave = Object.keys(mapaCoresCategoria).find(
+            item => normalizarCategoria(item) === normalizarCategoria(categoria)
+        );
+
+        return chave ? mapaCoresCategoria[chave] : "#6c757d";
+    }
+
+    function obterDadosToken() {
+        const token = localStorage.getItem("token");
+        if (!token) return null;
+
+        try {
+            const partes = token.split(".");
+            if (partes.length !== 3) return null;
+
+            const payload = partes[1].replace(/-/g, "+").replace(/_/g, "/");
+
+            return JSON.parse(
+                decodeURIComponent(
+                    atob(payload)
+                        .split("")
+                        .map(c => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+                        .join("")
+                )
+            );
+        } catch (erro) {
+            console.error("Erro ao ler token:", erro);
+            return null;
+        }
+    }
+
+    async function carregarFotoPerfilHeader() {
+        const foto = document.getElementById("fotoPerfilHeader");
+        if (!foto) return;
+
+        const token = localStorage.getItem("token");
+
+        if (!token) {
+            foto.src = "logo.png";
+            return;
+        }
+
+        foto.onerror = function() {
+            this.onerror = null;
+            this.src = "logo.png";
+        };
+
+        try {
+            const resposta = await fetch(`${API}/perfil?atualizacao=${Date.now()}`, {
+                method: "GET",
+                headers: { "Authorization": `Bearer ${token}` },
+                cache: "no-store"
+            });
+
+            if (!resposta.ok) {
+                foto.src = "logo.png";
+                return;
+            }
+
+            const dados = await resposta.json();
+            const fotoBanco = dados?.usuario?.foto_perfil;
+
+            foto.src = fotoBanco && String(fotoBanco).trim() !== ""
+                ? fotoBanco
+                : "logo.png";
+        } catch (erro) {
+            console.error("Erro ao carregar foto de perfil:", erro);
+            foto.src = "logo.png";
+        }
+    }
+
+    function usuarioEstaLogado() {
+        return !!localStorage.getItem("token");
+    }
+
+    function obterTipoUsuario() {
+        const dados = obterDadosToken();
+        if (!dados) return null;
+
+        return dados.tipo ?? dados.tipo_usuario ?? dados.role ?? dados.perfil ?? null;
+    }
+
+    function usuarioEhOng() {
+        const tipo = obterTipoUsuario();
+        if (!tipo) return false;
+
+        const normalizado = String(tipo).toLowerCase();
+        return normalizado === "ong" || normalizado === "admin";
+    }
+
+    function obterIdUsuarioLogado() {
+        const dados = obterDadosToken();
+        if (!dados) return null;
+
+        return dados.id_usuario ?? dados.id ?? dados.usuario_id ??
+            dados.idUsuario ?? dados.userId ?? null;
+    }
+
+    function obterIdDica(dica) {
+        return dica.id_dica ?? dica._id ?? dica.id ?? null;
+    }
+
+    function controlarVisibilidadeBotaoCadastro() {
+        if (btnCadastrarDica) {
+            btnCadastrarDica.style.display =
+                usuarioEstaLogado() && usuarioEhOng() ? "inline-flex" : "none";
+        }
+    }
+
+    function atualizarInterface() {
+        if (linkEntrar) {
+            linkEntrar.style.display = usuarioEstaLogado() ? "none" : "inline-flex";
+        }
+
+        if (linkVoltar) {
+            linkVoltar.style.display = usuarioEstaLogado() ? "inline-flex" : "none";
+        }
+
+        if (linkFotoPerfilHeader) {
+            linkFotoPerfilHeader.style.display =
+                usuarioEstaLogado() ? "inline-flex" : "none";
+        }
+
+        controlarVisibilidadeBotaoCadastro();
+    }
+
+    document.querySelectorAll(".menu-links a:not(.ativo)").forEach(elemento => {
+        elemento.addEventListener("click", function(event) {
+            if (!usuarioEstaLogado()) {
+                event.preventDefault();
+                alert("Acesso restrito! Por favor, faça login para continuar.");
+                window.location.href = "acesso.html";
+            }
+        });
+    });
+
+    function abrirCadastro() {
+        if (!usuarioEstaLogado()) {
+            alert("Você precisa estar logado para cadastrar uma dica!");
+            window.location.href = "acesso.html";
+            return;
+        }
+
+        if (!usuarioEhOng()) {
+            alert("Apenas contas do tipo ONG têm permissão para cadastrar dicas.");
+            return;
+        }
+
+        idDicaEmEdicao = null;
+
+        document.getElementById("tituloFormulario").textContent = "Cadastrar Nova Dica";
+        document.getElementById("btnSalvarDica").textContent = "Publicar Dica";
+        document.getElementById("formCadDica").reset();
+        document.getElementById("areaFormularioDica").style.display = "flex";
+        document.body.style.overflow = "hidden";
+        document.getElementById("titulo").focus();
+    }
+
+    function editarDica(id) {
+        if (!usuarioEstaLogado()) {
+            alert("Você precisa estar logado para editar uma dica!");
+            window.location.href = "acesso.html";
+            return;
+        }
+
+        if (!usuarioEhOng()) {
+            alert("Apenas contas do tipo ONG têm permissão para editar dicas.");
+            return;
+        }
+
+        const idUsuario = obterIdUsuarioLogado();
+        const dica = todasAsDicas.find(
+            item => String(obterIdDica(item)) === String(id)
+        );
+
+        if (!dica) {
+            alert("Dica não encontrada.");
+            return;
+        }
+
+        const donoId = dica.id_usuario ?? dica.usuario_id ??
+            dica.ong_id ?? dica.criador_id;
+
+        if (idUsuario != null && donoId != null &&
+            String(donoId) !== String(idUsuario)) {
+            alert("Você só pode editar suas próprias dicas.");
+            return;
+        }
+
+        idDicaEmEdicao = id;
+
+        document.getElementById("tituloFormulario").textContent = "Editar Dica";
+        document.getElementById("btnSalvarDica").textContent = "Salvar Alterações";
+        document.getElementById("titulo").value = dica.titulo || "";
+        document.getElementById("categoria").value = dica.categoria || "";
+        document.getElementById("qualPet").value = dica.qualPet || "";
+        document.getElementById("conteudo").value = dica.conteudo || "";
+        document.getElementById("areaFormularioDica").style.display = "flex";
+        document.body.style.overflow = "hidden";
+        document.getElementById("titulo").focus();
+    }
+
+    function fecharFormulario() {
+        idDicaEmEdicao = null;
+        document.getElementById("formCadDica").reset();
+        document.getElementById("areaFormularioDica").style.display = "none";
+        document.body.style.overflow = "";
+    }
+
+    function abrirModalDica(dica) {
+        const modal = document.getElementById("modalVisualizarDica");
+
+        dicaSelecionadaNoModal = dica;
+
+        document.getElementById("tituloModalDica").textContent = dica.titulo || "";
+
+        const categoria = document.getElementById("categoriaModalDica");
+        categoria.textContent = dica.categoria || "";
+        categoria.style.backgroundColor = obterCorCategoria(dica.categoria);
+
+        document.getElementById("petModalDica").textContent =
+            "🐾 " + (dica.qualPet || "");
+
+        document.getElementById("conteudoModalDica").textContent =
+            dica.conteudo || "";
+
+        const acoesModal = document.getElementById("acoesModalDica");
+        if (acoesModal) acoesModal.style.display = "none";
+
+        modal.style.display = "flex";
+        document.body.style.overflow = "hidden";
+        document.getElementById("fecharModalDica").focus();
+    }
+
+    function fecharModalDica() {
+        document.getElementById("modalVisualizarDica").style.display = "none";
+        document.body.style.overflow = "";
+        dicaSelecionadaNoModal = null;
+    }
+
+    document.getElementById("fecharModalDica").addEventListener(
+        "click",
+        fecharModalDica
+    );
+
+    document.getElementById("modalVisualizarDica").addEventListener(
+        "click",
+        function(event) {
+            if (event.target === this) fecharModalDica();
+        }
+    );
+
+    async function carregarDicasDoBanco() {
+        try {
+            const resposta = await fetch(`${API}/mostrarDicas`);
+
+            if (!resposta.ok) {
+                throw new Error("Erro ao buscar dicas.");
+            }
+
+            const resultado = await resposta.json();
+
+            if (Array.isArray(resultado)) {
+                todasAsDicas = resultado;
+            } else if (resultado && Array.isArray(resultado.dicas)) {
+                todasAsDicas = resultado.dicas;
+            } else {
+                todasAsDicas = [];
+            }
+
+            filtrarDicas();
+        } catch (erro) {
+            console.error("Erro ao carregar dicas:", erro);
+
+            document.querySelector(".grid-dicas").innerHTML =
+                '<p class="sem-resultados">Não foi possível carregar as dicas no momento.</p>';
+        }
+    }
+
+    function exibirDicas(listaDeDicas) {
+        const gridDicas = document.querySelector(".grid-dicas");
+        gridDicas.innerHTML = "";
+
+        if (!listaDeDicas || listaDeDicas.length === 0) {
+            gridDicas.innerHTML =
+                '<p class="sem-resultados">Nenhuma dica encontrada para os filtros selecionados.</p>';
+            return;
+        }
+
+        listaDeDicas.forEach(dica => {
+            const card = document.createElement("div");
+            card.className = "card-dica " + obterClasseCategoria(dica.categoria);
+            card.style.backgroundColor = "#fff";
+            card.style.borderColor = obterCorCategoria(dica.categoria);
+
+            const botaoPata = document.createElement("button");
+            botaoPata.type = "button";
+            botaoPata.className = "botao-patinha-dica";
+            botaoPata.setAttribute(
+                "aria-label",
+                "Visualizar dica: " + (dica.titulo || "")
+            );
+
+            botaoPata.innerHTML =
+                '<span class="icone-pata-grande">🐾</span>' +
+                '<span class="titulo-pata-preview"></span>';
+
+            botaoPata.querySelector(".titulo-pata-preview").textContent =
+                dica.titulo || "";
+
+            botaoPata.addEventListener("click", () => abrirModalDica(dica));
+            card.appendChild(botaoPata);
+
+            const idUsuario = obterIdUsuarioLogado();
+            const donoId = dica.id_usuario ?? dica.usuario_id ??
+                dica.ong_id ?? dica.criador_id;
+
+            const podeGerenciar =
+                usuarioEstaLogado() &&
+                usuarioEhOng() &&
+                idUsuario != null &&
+                donoId != null &&
+                String(donoId) === String(idUsuario);
+
+            if (podeGerenciar) {
+                const acoes = document.createElement("div");
+                acoes.className = "acoes-dica";
+
+                const botaoEditar = document.createElement("button");
+                botaoEditar.type = "button";
+                botaoEditar.className = "btn-acao editar";
+                botaoEditar.title = "Editar dica";
+                botaoEditar.setAttribute("aria-label", "Editar dica");
+                botaoEditar.textContent = "✏️";
+
+                botaoEditar.addEventListener("click", event => {
+                    event.stopPropagation();
+                    editarDica(obterIdDica(dica));
+                });
+
+                const botaoExcluir = document.createElement("button");
+                botaoExcluir.type = "button";
+                botaoExcluir.className = "btn-acao excluir";
+                botaoExcluir.title = "Excluir dica";
+                botaoExcluir.setAttribute("aria-label", "Excluir dica");
+                botaoExcluir.textContent = "🗑️";
+
+                botaoExcluir.addEventListener("click", event => {
+                    event.stopPropagation();
+                    deletarDica(obterIdDica(dica));
+                });
+
+                acoes.appendChild(botaoEditar);
+                acoes.appendChild(botaoExcluir);
+                card.appendChild(acoes);
+            }
+
+            gridDicas.appendChild(card);
+        });
+    }
+
+    function filtrarDicas() {
+        const termoBusca = document.getElementById("busca-dica").value
+            .toLowerCase().trim();
+
+        const petSelecionado = document.getElementById("filtro-pet").value
+            .toLowerCase();
+
+        const dicasFiltradas = todasAsDicas.filter(dica => {
+            const titulo = String(dica.titulo || "").toLowerCase();
+            const conteudo = String(dica.conteudo || "").toLowerCase();
+            const categoria = String(dica.categoria || "").toLowerCase();
+            const pet = String(dica.qualPet || "").toLowerCase();
+
+            const bateTexto =
+                titulo.includes(termoBusca) ||
+                conteudo.includes(termoBusca) ||
+                categoria.includes(termoBusca);
+
+            const batePet =
+                petSelecionado === "todos" || pet.includes(petSelecionado);
+
+            return bateTexto && batePet;
+        });
+
+        exibirDicas(dicasFiltradas);
+    }
+
+    /*
+     * CADASTRO E EDIÇÃO
+     * Confirme os nomes das rotas abaixo no seu backend.
+     */
+    document.getElementById("formCadDica").addEventListener(
+        "submit",
+        async function(event) {
+            event.preventDefault();
+
+            if (!usuarioEstaLogado()) {
+                alert("Você precisa estar logado para cadastrar uma dica!");
+                window.location.href = "acesso.html";
+                return;
+            }
+
+            if (!usuarioEhOng()) {
+                alert("Apenas contas do tipo ONG têm permissão para cadastrar dicas.");
+                return;
+            }
+
+            const titulo = document.getElementById("titulo").value.trim();
+            const categoria = document.getElementById("categoria").value;
+            const qualPet = document.getElementById("qualPet").value;
+            const conteudo = document.getElementById("conteudo").value.trim();
+
+            if (!titulo || !categoria || !qualPet || !conteudo) {
+                alert("Preencha todos os campos antes de salvar.");
+                return;
+            }
+
+            const editando = idDicaEmEdicao !== null;
+            const token = localStorage.getItem("token");
+
+            const dados = {
+                titulo,
+                categoria,
+                qualPet,
+                conteudo
+            };
+
+            if (editando) {
+                dados.id_dica = idDicaEmEdicao;
+            }
+
+            const btnSalvar = document.getElementById("btnSalvarDica");
+            const textoOriginal = btnSalvar.textContent;
+
+            btnSalvar.disabled = true;
+            btnSalvar.textContent = "Salvando...";
+
+            try {
+                const resposta = await fetch(
+                    `${API}/${editando ? "atualizarDica" : "inserirDica"}`,
+                    {
+                        method: editando ? "PUT" : "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "Authorization": `Bearer ${token}`
+                        },
+                        body: JSON.stringify(dados)
+                    }
+                );
+
+                const texto = await resposta.text();
+                let resultado = {};
+
+                try {
+                    resultado = texto ? JSON.parse(texto) : {};
+                } catch (erro) {
+                    resultado = { mensagem: texto };
+                }
+
+                if (!resposta.ok) {
+                    throw new Error(
+                        resultado.erro ||
+                        resultado.mensagem ||
+                        resultado.message ||
+                        `Erro HTTP ${resposta.status}`
+                    );
+                }
+
+                alert(editando
+                    ? "Dica atualizada com sucesso!"
+                    : "Dica cadastrada com sucesso!"
+                );
+
+                fecharFormulario();
+                await carregarDicasDoBanco();
+            } catch (erro) {
+                console.error("Erro ao salvar dica:", erro);
+                alert("Erro ao salvar a dica: " + erro.message);
+            } finally {
+                btnSalvar.disabled = false;
+                btnSalvar.textContent = textoOriginal;
+            }
+        }
+    );
+
+    async function deletarDica(id) {
+        if (!usuarioEstaLogado()) {
+            alert("Você precisa estar logado para excluir uma dica.");
+            window.location.href = "acesso.html";
+            return;
+        }
+
+        if (!usuarioEhOng()) {
+            alert("Apenas ONGs têm permissão para excluir dicas.");
+            return;
+        }
+
+        const dica = todasAsDicas.find(
+            item => String(obterIdDica(item)) === String(id)
+        );
+
+        if (!dica) {
+            alert("Dica não encontrada.");
+            return;
+        }
+
+        const idUsuario = obterIdUsuarioLogado();
+        const donoId = dica.id_usuario ?? dica.usuario_id ??
+            dica.ong_id ?? dica.criador_id;
+
+        if (idUsuario != null && donoId != null &&
+            String(donoId) !== String(idUsuario)) {
+            alert("Você só pode excluir suas próprias dicas.");
+            return;
+        }
+
+        if (!confirm("Tem certeza que deseja remover esta dica?")) return;
+
+        const token = localStorage.getItem("token");
+
+        try {
+            const resposta = await fetch(`${API}/deletarDica`, {
+                method: "DELETE",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify({ id_dica: id })
+            });
+
+            const texto = await resposta.text();
+            let resultado = {};
+
+            try {
+                resultado = texto ? JSON.parse(texto) : {};
+            } catch (erro) {
+                resultado = { mensagem: texto };
+            }
+
+            if (!resposta.ok) {
+                throw new Error(
+                    resultado.erro ||
+                    resultado.mensagem ||
+                    resultado.message ||
+                    `Erro HTTP ${resposta.status}`
+                );
+            }
+
+            alert("Dica removida com sucesso!");
+
+            if (dicaSelecionadaNoModal &&
+                String(obterIdDica(dicaSelecionadaNoModal)) === String(id)) {
+                fecharModalDica();
+            }
+
+            await carregarDicasDoBanco();
+        } catch (erro) {
+            console.error("Erro ao excluir dica:", erro);
+            alert("Erro ao deletar: " + erro.message);
+        }
+    }
+
+    if (btnCadastrarDica) {
+        btnCadastrarDica.addEventListener("click", abrirCadastro);
+    }
+
+    document.getElementById("btnFecharFormulario").addEventListener(
+        "click",
+        fecharFormulario
+    );
+
+    document.getElementById("btnCancelarFormulario").addEventListener(
+        "click",
+        fecharFormulario
+    );
+
+    document.getElementById("busca-dica").addEventListener(
+        "input",
+        filtrarDicas
+    );
+
+    document.getElementById("filtro-pet").addEventListener(
+        "change",
+        filtrarDicas
+    );
+
+    document.getElementById("areaFormularioDica").addEventListener(
+        "click",
+        function(event) {
+            if (event.target === this) fecharFormulario();
+        }
+    );
+
+    document.addEventListener("keydown", function(event) {
+        if (event.key === "Escape") {
+            const modal = document.getElementById("modalVisualizarDica");
+            const formulario = document.getElementById("areaFormularioDica");
+
+            if (modal.style.display === "flex") {
+                fecharModalDica();
+            } else if (formulario.style.display === "flex") {
+                fecharFormulario();
+            }
+        }
+    });
+
+    document.addEventListener("DOMContentLoaded", function() {
+        atualizarInterface();
+        carregarFotoPerfilHeader();
+        carregarDicasDoBanco();
+    });
+</script>
+
+  <script src="/js/perfil.js"></script>
+</body>
+</html>
