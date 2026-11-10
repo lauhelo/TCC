@@ -1,0 +1,535 @@
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Escolha de ONGs - Entre Laços</title>
+<link rel="stylesheet" href="escolherOng.css">
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+#formCadastroOng{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+#formCadastroOng .campo-formulario{display:flex;flex-direction:column;gap:5px;min-width:0;width:100%;grid-column:span 1}
+#formCadastroOng #infoResponsavelCadastro,#formCadastroOng #mensagemFormulario,#formCadastroOng .campo-completo,#formCadastroOng #btnFinalizarCadastro{grid-column:1/-1}
+#formCadastroOng .campo-formulario input,#formCadastroOng .campo-formulario textarea{width:100%;min-width:0;box-sizing:border-box}
+#formCadastroOng .erro-campo{display:block;min-height:0;margin:0;color:#d94343;font-size:12px;line-height:1.4;text-align:left}
+#formCadastroOng .erro-campo:empty{display:none}
+#formCadastroOng .campo-invalido{border:1px solid #d94343!important;outline-color:#d94343}
+#formCadastroOng .campo-valido{border-color:#27834a!important}
+#mensagemFormulario{font-size:13px;line-height:1.5;text-align:center}
+#mensagemFormulario.erro-campo{color:#d94343}
+#mensagemFormulario.sucesso-campo{color:#27834a}
+@media(max-width:600px){#formCadastroOng{grid-template-columns:1fr}#formCadastroOng .campo-formulario,#formCadastroOng #infoResponsavelCadastro,#formCadastroOng #mensagemFormulario,#formCadastroOng .campo-completo,#formCadastroOng #btnFinalizarCadastro{grid-column:1/-1}}
+</style>
+</head>
+<body>
+<header class="cabecalho">
+<div class="cabecalho-conteudo">
+<div class="logo">
+<img src="logo.png" alt="Logo Entre Laços">
+<span>Entre Laços</span>
+</div>
+<nav class="menu-links">
+<a href="index.html" onclick="return verificarNavegacao(event)">Início</a>
+<a href="animais.html" onclick="return verificarNavegacao(event)">Animais</a>
+<a href="doar.html" onclick="return verificarNavegacao(event)">Doar</a>
+<a href="eventos.html" onclick="return verificarNavegacao(event)">Eventos</a>
+<a href="historias.html" onclick="return verificarNavegacao(event)">Histórias</a>
+<a href="dicas.html" onclick="return verificarNavegacao(event)">Dicas</a>
+</nav>
+<div class="perfil-topo">
+<a href="perfil.html" class="foto-header-link" title="Editar perfil" aria-label="Editar perfil">
+<img id="fotoPerfilHeader" class="foto-header" src="logo.png" alt="Foto de perfil">
+<span class="texto-editar-perfil" aria-hidden="true">Editar perfil</span>
+</a>
+<a class="botao-principal" href="index.html">Voltar ao Início</a>
+</div>
+</div>
+</header>
+
+<main class="container-escolha">
+<div class="titulo-principal">
+<h1>Suas Instituições</h1>
+<p>Selecione uma ONG para gerenciar ou cadastre uma nova instituição.</p>
+</div>
+<div id="listaOngs" class="lista-ongs" aria-live="polite">
+<p class="carregando">Buscando suas ONGs...</p>
+</div>
+<button type="button" class="btn-novo" onclick="abrirCadastroOng()"><span>+</span> Cadastrar Nova ONG</button>
+</main>
+
+<div id="modalCadastroOng" class="modal-cadastro-ong" role="dialog" aria-modal="true" aria-labelledby="tituloCadastroOng" aria-hidden="true">
+<div class="modal-cadastro-container">
+<button type="button" class="fechar-cadastro" onclick="fecharCadastroOng()" aria-label="Fechar formulário">&times;</button>
+<div class="modal-cadastro-conteudo">
+<div class="modal-cadastro-titulo">
+<h2 id="tituloCadastroOng">Cadastrar nova ONG</h2>
+<p>Preencha as informações da sua instituição para conectar mais animais a novos lares.</p>
+</div>
+<form id="formCadastroOng" novalidate>
+<p id="infoResponsavelCadastro"></p>
+<div class="campo-formulario">
+<input id="cadNome" name="nome" type="text" placeholder="Nome da ONG" maxlength="100" autocomplete="organization" required aria-describedby="erroCadNome">
+<span id="erroCadNome" class="erro-campo" aria-live="polite"></span>
+</div>
+<div class="campo-formulario">
+<input id="cadEmail" name="email" type="email" placeholder="E-mail de contato da ONG" maxlength="100" autocomplete="email" required aria-describedby="erroCadEmail">
+<span id="erroCadEmail" class="erro-campo" aria-live="polite"></span>
+</div>
+<div class="campo-formulario">
+<input id="cadCnpj" name="cnpj" type="text" placeholder="CNPJ" maxlength="18" inputmode="numeric" required aria-describedby="erroCadCnpj">
+<span id="erroCadCnpj" class="erro-campo" aria-live="polite"></span>
+</div>
+<div class="campo-formulario">
+<input id="cadTelefone" name="telefone" type="tel" placeholder="Telefone com DDD" maxlength="15" inputmode="tel" required aria-describedby="erroCadTelefone">
+<span id="erroCadTelefone" class="erro-campo" aria-live="polite"></span>
+</div>
+<div class="campo-formulario campo-completo">
+<input id="cadEndereco" name="endereco" type="text" placeholder="Endereço completo" maxlength="150" autocomplete="street-address" required aria-describedby="erroCadEndereco">
+<span id="erroCadEndereco" class="erro-campo" aria-live="polite"></span>
+</div>
+<div class="campo-formulario">
+<input id="cadCidade" name="cidade" type="text" placeholder="Cidade" maxlength="50" autocomplete="address-level2" required aria-describedby="erroCadCidade">
+<span id="erroCadCidade" class="erro-campo" aria-live="polite"></span>
+</div>
+<div class="campo-formulario">
+<input id="cadEstado" name="estado" type="text" placeholder="UF (Ex.: SP)" maxlength="2" style="text-transform:uppercase" autocomplete="address-level1" required aria-describedby="erroCadEstado">
+<span id="erroCadEstado" class="erro-campo" aria-live="polite"></span>
+</div>
+<div class="campo-formulario campo-completo">
+<input id="cadPix" name="pix" type="text" placeholder="Chave PIX (opcional)" maxlength="100" aria-describedby="erroCadPix">
+<span id="erroCadPix" class="erro-campo" aria-live="polite"></span>
+</div>
+<div class="campo-formulario campo-completo">
+<textarea id="cadTrabalho" name="trabalho_ofe" placeholder="Descrição curta do trabalho da ONG" maxlength="500" rows="4" aria-describedby="erroCadTrabalho"></textarea>
+<span id="erroCadTrabalho" class="erro-campo" aria-live="polite"></span>
+</div>
+<p id="mensagemFormulario" role="status" aria-live="polite"></p>
+<button id="btnFinalizarCadastro" type="submit" class="btn-acao">Finalizar Cadastro</button>
+</form>
+</div>
+</div>
+</div>
+
+<footer class="fim">
+<div class="fim-container">
+<div class="fim-sobre">
+<div class="fim-logo">
+<img src="logo.png" alt="Logo Entre Laços" height="40">
+<h3>Entre Laços</h3>
+</div>
+<p>Conectando corações e transformando vidas. Nossa missão é encontrar lares amorosos para animais resgatados e promover a posse responsável.</p>
+</div>
+<div class="fim-contato">
+<h4>Contato</h4>
+<span>Email: contato@entrelacos.org</span>
+<span>Telefone: (00) 00000-0000</span>
+<span>Facebook: entrelaços.consulta</span>
+<span>Instagram: entrelaços.consulta</span>
+</div>
+</div>
+<div class="fim-copy">© 2026 Entre Laços. Todos os direitos reservados.</div>
+</footer>
+
+<script>
+const API_URL="http://localhost:3000";
+const $=id=>document.getElementById(id);
+let modoFormularioOng="cadastro";
+let idOngEdicao=null;
+let ultimoFocoCadastro=null;
+let ultimaListaOngs=[];
+
+function escaparHTML(valor){
+return String(valor??"").replace(/[&<>"']/g,caractere=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[caractere]));
+}
+
+async function carregarFotoPerfilHeader(){
+const foto=$("fotoPerfilHeader");
+const token=localStorage.getItem("token");
+if(!token){foto.src="logo.png";return;}
+try{
+const resposta=await fetch(`${API_URL}/perfil?atualizacao=${Date.now()}`,{headers:{Authorization:`Bearer ${token}`},cache:"no-store"});
+if(!resposta.ok){foto.src="logo.png";return;}
+const dados=await resposta.json();
+foto.src=dados?.usuario?.foto_perfil||"logo.png";
+foto.onerror=function(){this.onerror=null;this.src="logo.png";};
+}catch(erro){
+console.error("Erro ao carregar foto de perfil:",erro);
+foto.src="logo.png";
+}
+}
+
+function verificarNavegacao(event){
+const tipoUsuario=localStorage.getItem("tipoUsuario");
+const ongAtiva=localStorage.getItem("idOngAtiva");
+if(tipoUsuario==="ong"&&(!ongAtiva||ongAtiva==="null")){
+event.preventDefault();
+alert("Acesso bloqueado: selecione uma ONG na lista para gerenciar o sistema.");
+return false;
+}
+return true;
+}
+
+async function carregarOngs(){
+carregarFotoPerfilHeader();
+localStorage.removeItem("idOngAtiva");
+localStorage.removeItem("nomeOngAtiva");
+const token=localStorage.getItem("token");
+if(!token){
+alert("Sessão expirada. Faça login novamente.");
+window.location.href="acesso.html";
+return;
+}
+try{
+const resposta=await fetch(`${API_URL}/minhas-ongs`,{headers:{Authorization:`Bearer ${token}`}});
+if(!resposta.ok)throw new Error("Erro ao carregar as ONGs.");
+const ongs=await resposta.json();
+if(!Array.isArray(ongs))throw new Error("Resposta inválida do servidor.");
+ultimaListaOngs=ongs;
+renderizarOngs(ongs);
+}catch(erro){
+console.error(erro);
+$("listaOngs").innerHTML='<div class="erro-ongs"><p>Erro ao conectar com o servidor.</p><span>Tente novamente mais tarde.</span></div>';
+}
+}
+
+function renderizarOngs(ongs){
+const container=$("listaOngs");
+if(!ongs.length){
+container.innerHTML='<div class="sem-ongs"><div class="icone-sem-ongs">♡</div><h3>Nenhuma ONG cadastrada</h3><p>Clique no botão abaixo para cadastrar sua primeira instituição.</p></div>';
+return;
+}
+container.innerHTML=ongs.map((ong,indice)=>`
+<div class="card-ong">
+<div class="info-ong">
+<h3>${escaparHTML(ong.nome)}</h3>
+<p class="localizacao">📍 ${escaparHTML(ong.cidade||"Cidade")} - ${escaparHTML(ong.estado||"UF")}</p>
+<p class="cnpj">CNPJ: ${escaparHTML(formatarCNPJ(ong.cnpj||""))||"Não informado"}</p>
+<div class="acoes-admin">
+<button type="button" class="btn-editar" data-editar="${indice}">Editar</button>
+<button type="button" class="btn-excluir" data-excluir="${indice}">Excluir</button>
+</div>
+</div>
+<button type="button" class="btn-selecionar" data-selecionar="${indice}">Gerenciar</button>
+</div>`).join("");
+
+container.querySelectorAll("[data-editar]").forEach(botao=>{
+botao.addEventListener("click",()=>abrirModalEdicao(ultimaListaOngs[Number(botao.dataset.editar)]));
+});
+container.querySelectorAll("[data-excluir]").forEach(botao=>{
+botao.addEventListener("click",()=>deletarOng(ultimaListaOngs[Number(botao.dataset.excluir)].id_ong));
+});
+container.querySelectorAll("[data-selecionar]").forEach(botao=>{
+botao.addEventListener("click",()=>{
+const ong=ultimaListaOngs[Number(botao.dataset.selecionar)];
+selecionarOng(ong.id_ong,ong.nome);
+});
+});
+}
+
+function selecionarOng(id,nome){
+localStorage.setItem("idOngAtiva",id);
+localStorage.setItem("nomeOngAtiva",nome);
+window.location.href="index.html";
+}
+
+function abrirFormularioOng(){
+const modal=$("modalCadastroOng");
+modal.classList.add("aberto");
+modal.setAttribute("aria-hidden","false");
+document.body.classList.add("modal-aberto");
+$("cadNome").focus();
+}
+
+function abrirCadastroOng(){
+if(!localStorage.getItem("token")){
+alert("Sessão expirada. Faça login novamente.");
+window.location.href="acesso.html";
+return;
+}
+modoFormularioOng="cadastro";
+idOngEdicao=null;
+ultimoFocoCadastro=document.activeElement;
+$("formCadastroOng").reset();
+limparTodosErros();
+$("tituloCadastroOng").textContent="Cadastrar nova ONG";
+$("btnFinalizarCadastro").textContent="Finalizar Cadastro";
+$("infoResponsavelCadastro").textContent=`Responsável: ${sessionStorage.getItem("nome")||localStorage.getItem("nome")||"Usuário"}`;
+abrirFormularioOng();
+}
+
+function abrirModalEdicao(ong){
+if(!ong)return;
+if(!localStorage.getItem("token")){
+alert("Sessão expirada. Faça login novamente.");
+window.location.href="acesso.html";
+return;
+}
+modoFormularioOng="edicao";
+idOngEdicao=ong.id_ong;
+ultimoFocoCadastro=document.activeElement;
+$("formCadastroOng").reset();
+limparTodosErros();
+$("cadNome").value=ong.nome||"";
+$("cadEmail").value=ong.email||"";
+$("cadCnpj").value=formatarCNPJ(ong.cnpj||"");
+$("cadTelefone").value=formatarTelefone(ong.telefone||"");
+$("cadEndereco").value=ong.endereco||"";
+$("cadCidade").value=ong.cidade||"";
+$("cadEstado").value=(ong.estado||"").toUpperCase();
+$("cadPix").value=ong.pix||"";
+$("cadTrabalho").value=ong.trabalho_ofe||"";
+$("tituloCadastroOng").textContent="Editar informações da ONG";
+$("btnFinalizarCadastro").textContent="Salvar Alterações";
+$("infoResponsavelCadastro").textContent="Atualize as informações da sua instituição.";
+abrirFormularioOng();
+}
+
+function fecharCadastroOng(){
+const modal=$("modalCadastroOng");
+modal.classList.remove("aberto");
+modal.setAttribute("aria-hidden","true");
+document.body.classList.remove("modal-aberto");
+if(ultimoFocoCadastro&&document.contains(ultimoFocoCadastro))ultimoFocoCadastro.focus();
+}
+
+$("modalCadastroOng").addEventListener("click",event=>{
+if(event.target===$("modalCadastroOng"))fecharCadastroOng();
+});
+
+document.addEventListener("keydown",event=>{
+if(event.key==="Escape"&&$("modalCadastroOng").classList.contains("aberto"))fecharCadastroOng();
+});
+
+function formatarCNPJ(valor){
+const numeros=String(valor).replace(/\D/g,"").slice(0,14);
+if(numeros.length>12)return numeros.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{1,2}).*/,"$1.$2.$3/$4-$5");
+if(numeros.length>8)return numeros.replace(/^(\d{2})(\d{3})(\d{3})(\d{1,4}).*/,"$1.$2.$3/$4");
+if(numeros.length>5)return numeros.replace(/^(\d{2})(\d{3})(\d{1,3}).*/,"$1.$2.$3");
+if(numeros.length>2)return numeros.replace(/^(\d{2})(\d{1,3}).*/,"$1.$2");
+return numeros;
+}
+
+function formatarTelefone(valor){
+const numeros=String(valor).replace(/\D/g,"").slice(0,11);
+if(numeros.length>10)return numeros.replace(/^(\d{2})(\d{5})(\d{1,4}).*/,"($1) $2-$3");
+if(numeros.length>6)return numeros.replace(/^(\d{2})(\d{4})(\d{1,4}).*/,"($1) $2-$3");
+if(numeros.length>2)return numeros.replace(/^(\d{2})(\d{1,5})/,"($1) $2");
+if(numeros.length)return `(${numeros}`;
+return "";
+}
+
+function validarEmail(email){
+return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email);
+}
+
+function validarCNPJ(valor){
+const cnpj=String(valor).replace(/\D/g,"");
+if(cnpj.length!==14||/^(\d)\1{13}$/.test(cnpj))return false;
+const calcularDigito=(base,pesos)=>{
+let soma=0;
+for(let i=0;i<pesos.length;i++)soma+=Number(base[i])*pesos[i];
+const resto=soma%11;
+return resto<2?0:11-resto;
+};
+const base=cnpj.slice(0,12);
+const digito1=calcularDigito(base,[5,4,3,2,9,8,7,6,5,4,3,2]);
+const digito2=calcularDigito(base+digito1,[6,5,4,3,2,9,8,7,6,5,4,3,2]);
+return cnpj===base+digito1+digito2;
+}
+
+function validarTelefone(telefone){
+const numeros=String(telefone).replace(/\D/g,"");
+return(numeros.length===10||numeros.length===11)&&!/^(\d)\1+$/.test(numeros)&&/^[1-9]{2}/.test(numeros);
+}
+
+const camposValidacao={
+cadNome:{erro:"erroCadNome",validar:valor=>valor.trim().length>=3,mensagem:"Informe o nome da ONG com pelo menos 3 caracteres."},
+cadEmail:{erro:"erroCadEmail",validar:validarEmail,mensagem:"Informe um e-mail válido."},
+cadCnpj:{erro:"erroCadCnpj",validar:validarCNPJ,mensagem:"Informe um CNPJ válido."},
+cadTelefone:{erro:"erroCadTelefone",validar:validarTelefone,mensagem:"Informe um telefone válido com DDD."},
+cadEndereco:{erro:"erroCadEndereco",validar:valor=>valor.trim().length>=5,mensagem:"Informe um endereço completo e válido."},
+cadCidade:{erro:"erroCadCidade",validar:valor=>valor.trim().length>=2,mensagem:"Informe uma cidade válida."},
+cadEstado:{erro:"erroCadEstado",validar:valor=>/^[A-Z]{2}$/.test(valor.trim().toUpperCase()),mensagem:"Informe a UF com duas letras, como SP."},
+cadPix:{erro:"erroCadPix",validar:valor=>!valor.trim()||valor.trim().length>=3,mensagem:"A chave PIX precisa ter pelo menos 3 caracteres."},
+cadTrabalho:{erro:"erroCadTrabalho",validar:valor=>!valor.trim()||valor.trim().length>=10,mensagem:"A descrição precisa ter pelo menos 10 caracteres."}
+};
+
+function mostrarErroCampo(id,mensagem){
+const campo=$(id);
+const configuracao=camposValidacao[id];
+if(!campo||!configuracao)return;
+const erro=$(configuracao.erro);
+erro.textContent=mensagem||"";
+campo.classList.toggle("campo-invalido",Boolean(mensagem));
+campo.classList.toggle("campo-valido",!mensagem&&campo.value.trim()!=="");
+campo.setAttribute("aria-invalid",mensagem?"true":"false");
+}
+
+function limparErroCampo(id){
+const configuracao=camposValidacao[id];
+if(!configuracao)return;
+const campo=$(id);
+const erro=$(configuracao.erro);
+erro.textContent="";
+campo.classList.remove("campo-invalido","campo-valido");
+campo.removeAttribute("aria-invalid");
+}
+
+function limparTodosErros(){
+Object.keys(camposValidacao).forEach(limparErroCampo);
+$("mensagemFormulario").textContent="";
+$("mensagemFormulario").className="";
+}
+
+function validarCampo(id){
+const campo=$(id);
+const configuracao=camposValidacao[id];
+const valor=campo.value;
+const valido=configuracao.validar(valor);
+mostrarErroCampo(id,valido?"":configuracao.mensagem);
+return valido;
+}
+
+Object.keys(camposValidacao).forEach(id=>{
+$(id).addEventListener("input",()=>{
+if(id==="cadCnpj")$(id).value=formatarCNPJ($(id).value);
+if(id==="cadTelefone")$(id).value=formatarTelefone($(id).value);
+if(id==="cadEstado")$(id).value=$(id).value.toUpperCase().replace(/[^A-Z]/g,"").slice(0,2);
+validarCampo(id);
+$("mensagemFormulario").textContent="";
+});
+$(id).addEventListener("blur",()=>validarCampo(id));
+});
+
+function validarDadosCadastroOng(){
+let primeiroCampoInvalido=null;
+for(const id of Object.keys(camposValidacao)){
+if(!validarCampo(id)&&!primeiroCampoInvalido)primeiroCampoInvalido=id;
+}
+if(primeiroCampoInvalido){
+$(primeiroCampoInvalido).focus();
+return false;
+}
+return true;
+}
+
+function mostrarMensagemFormulario(mensagem,tipo="erro"){
+const elemento=$("mensagemFormulario");
+elemento.textContent=mensagem;
+elemento.className=tipo==="erro"?"erro-campo":"sucesso-campo";
+}
+
+function exibirErroRespostaServidor(mensagem){
+const texto=String(mensagem||"Não foi possível salvar os dados da ONG.");
+const normalizado=texto.toLowerCase();
+if(normalizado.includes("cnpj")){
+mostrarErroCampo("cadCnpj",texto);
+$("cadCnpj").focus();
+return;
+}
+if(normalizado.includes("email")||normalizado.includes("e-mail")){
+mostrarErroCampo("cadEmail",texto);
+$("cadEmail").focus();
+return;
+}
+if(normalizado.includes("cidade")){
+mostrarErroCampo("cadCidade",texto);
+$("cadCidade").focus();
+return;
+}
+if(normalizado.includes("estado")||normalizado.includes("uf")){
+mostrarErroCampo("cadEstado",texto);
+$("cadEstado").focus();
+return;
+}
+mostrarMensagemFormulario(texto);
+}
+
+$("formCadastroOng").addEventListener("submit",async event=>{
+event.preventDefault();
+$("mensagemFormulario").textContent="";
+if(!validarDadosCadastroOng())return;
+
+const token=localStorage.getItem("token");
+if(!token){
+mostrarMensagemFormulario("Sua sessão expirou. Entre novamente para continuar.");
+return;
+}
+
+const editando=modoFormularioOng==="edicao";
+const botao=$("btnFinalizarCadastro");
+botao.disabled=true;
+botao.textContent=editando?"Salvando alterações...":"Cadastrando...";
+
+const dados={
+nome:$("cadNome").value.trim(),
+email:$("cadEmail").value.trim(),
+cnpj:$("cadCnpj").value.replace(/\D/g,""),
+telefone:$("cadTelefone").value.replace(/\D/g,""),
+endereco:$("cadEndereco").value.trim(),
+cidade:$("cadCidade").value.trim(),
+estado:$("cadEstado").value.trim().toUpperCase(),
+pix:$("cadPix").value.trim()||null,
+trabalho_ofe:$("cadTrabalho").value.trim()||null
+};
+
+try{
+const url=editando?`${API_URL}/atualizarOng/${encodeURIComponent(idOngEdicao)}`:`${API_URL}/inserirOng`;
+const resposta=await fetch(url,{
+method:editando?"PUT":"POST",
+headers:{"Content-Type":"application/json","Authorization":`Bearer ${token}`},
+body:JSON.stringify(dados)
+});
+const resultado=await resposta.json().catch(()=>({}));
+if(!resposta.ok){
+exibirErroRespostaServidor(resultado.erro||resultado.mensagem||"Não foi possível salvar os dados da ONG.");
+return;
+}
+mostrarMensagemFormulario(editando?"ONG atualizada com sucesso!":"ONG cadastrada com sucesso!","sucesso");
+modoFormularioOng="cadastro";
+idOngEdicao=null;
+await carregarOngs();
+setTimeout(()=>{
+fecharCadastroOng();
+$("formCadastroOng").reset();
+limparTodosErros();
+$("tituloCadastroOng").textContent="Cadastrar nova ONG";
+$("btnFinalizarCadastro").textContent="Finalizar Cadastro";
+},700);
+}catch(erro){
+console.error("Erro ao salvar ONG:",erro);
+mostrarMensagemFormulario("Erro ao conectar com o servidor. Verifique se o backend está funcionando.");
+}finally{
+botao.disabled=false;
+botao.textContent=modoFormularioOng==="edicao"?"Salvar Alterações":"Finalizar Cadastro";
+}
+});
+
+async function deletarOng(id){
+if(!confirm("Tem certeza que deseja excluir esta ONG permanentemente?"))return;
+const token=localStorage.getItem("token");
+if(!token){
+alert("Sessão expirada. Faça login novamente.");
+window.location.href="acesso.html";
+return;
+}
+try{
+const resposta=await fetch(`${API_URL}/deletarOng/${encodeURIComponent(id)}`,{method:"DELETE",headers:{Authorization:`Bearer ${token}`}});
+const resultado=await resposta.json().catch(()=>({}));
+if(!resposta.ok){
+alert(resultado.erro||"Erro ao excluir a instituição.");
+return;
+}
+alert("ONG removida com sucesso!");
+await carregarOngs();
+}catch(erro){
+console.error("Erro ao excluir ONG:",erro);
+alert("Erro de conexão ao excluir a instituição.");
+}
+}
+
+carregarOngs();
+</script>
+</body>
+</html>
