@@ -1,0 +1,1631 @@
+require('dotenv').config();
+const express = require('express');
+const cors = require('cors');
+const path = require('path');
+const pool = require("./db.js");
+
+const swaggerUi = require('swagger-ui-express');
+const swaggerDocument = require('./swagger.json');
+const crypto = require('crypto');
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
+
+const app = express();
+const porta = 3000;
+
+app.use(cors({
+    origin: '*',
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
+
+app.use(express.static(path.join(__dirname, '../frontend')));
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+
+function autenticarToken(req, res, next) {
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader) {
+        return res.status(401).json({ erro: "Token não enviado" });
+    }
+
+    const token = authHeader.split(" ")[1];
+
+    if (!token) {
+        return res.status(401).json({ erro: "Token mal formatado" });
+    }
+
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || "pet");
+        req.user = decoded;
+        req.usuario = decoded;
+        next();
+    } catch (err) {
+        return res.status(401).json({ erro: "Token inválido ou expirado" });
+    }
+}
+app.listen(porta, () => {
+    console.log(`Servidor rodando em: http://localhost:${porta}`);
+    console.log(`Swagger em: http://localhost:${porta}/api-docs`);
+});
+
+// ================= CADASTRO USUÁRIOS =================
+app.get('/mostrar', autenticarToken, async (req, res) => {
+    try {
+        const [resultado] = await pool.query("SELECT * FROM cadastro");
+        res.json(resultado);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ erro: "Erro no servidor" });
+    }
+});
+
+app.post('/inserir', async (req, res) => {
+    try {
+        const {
+            nome, email, cep, cpf, telefone, data_nascimento, senha, palavra_chave, tipo, foto_perfil, cnpj
+        } = req.body;
+
+        if (!nome || !email || !senha) {
+            return res.status(400).json({
+                erro: "Nome, e-mail e senha são obrigatórios."
+            });
+        }
+
+        const emailLimpo = String(email).trim().toLowerCase();
+
+        const hash = crypto
+            .createHash("sha256")
+            .update(String(senha).trim())
+            .digest("base64");
+
+        const fotoFinal = foto_perfil || null;
+
+        const sql = `
+            INSERT INTO cadastro(
+                nome, email, cep, cpf, telefone, data_nascimento ,senha ,palavra_chave , tipo , foto_perfil
+            )
+            VALUES(?,?,?,?,?,?,?,?,?,?)
+        `;
+
+        const [resultado] = await pool.query(sql, [
+            String(nome).trim(),
+            emailLimpo,
+            cep || null,
+            cpf || null,
+            telefone || null,
+            data_nascimento || null,
+            hash,
+            palavra_chave || null,
+            tipo || "usuario",
+            fotoFinal
+        ]);
+
+        const token = jwt.sign(
+            {
+                id_usuario: resultado.insertId,
+                tipo: tipo || "usuario"
+            },
+            process.env.JWT_SECRET || "pet",
+            { expiresIn: "2h" }
+        );
+
+        res.status(201).json({
+            resposta: "Cadastro efetuado!",
+            token,
+            usuario: {
+                id_usuario: resultado.insertId,
+                nome: String(nome).trim(),
+                email: emailLimpo,
+                tipo: tipo || "usuario",
+                foto_perfil: fotoFinal
+            }
+        });
+
+    } catch (error) {
+        console.error("ERRO NO CADASTRO:", error);
+
+        if (error.code === "ER_DUP_ENTRY") {
+            return res.status(409).json({
+                erro: "E-mail, CPF ou telefone já cadastrado."
+            });
+        }
+
+        res.status(500).json({
+            erro: "Erro ao salvar no banco de dados."
+        });
+    }
+});
+
+// ================= ATUALIZAR PERFIL =================
+app.put('/atualizar', autenticarToken, async (req, res) => {
+    try {
+        const { nome, email, cep, cpf, telefone, data_nascimento, palavra_chave, id_usuario } = req.body;
+
+        if (Number(req.user.id_usuario) !== Number(id_usuario)) {
+            return res.status(403).json({
+                erro: "Sem permissão para atualizar este perfil"
+            });
+        }
+
+        const emailLimpo = String(email).trim().toLowerCase();
+
+        const [resultado] = await pool.query(
+            `UPDATE cadastro SET nome=?,email=?,cep=?,cpf=?,telefone=?,data_nascimento=?,palavra_chave=? WHERE id_usuario=?`,
+            [
+                String(nome).trim(),
+                emailLimpo,
+                cep || null,
+                cpf || null,
+                telefone || null,
+                data_nascimento || null,
+                palavra_chave || null,
+                id_usuario
+            ]
+        );
+
+        res.json({
+            resposta: resultado.affectedRows
+                ? "Perfil atualizado com sucesso!"
+                : "Nenhuma alteração realizada."
+        });
+
+    } catch (error) {
+        console.error("Erro ao atualizar:", error);
+
+        if (error.code === "ER_DUP_ENTRY") {
+            return res.status(409).json({
+                erro: "E-mail, CPF ou telefone já cadastrado."
+            });
+        }
+
+        res.status(500).json({
+            erro: "Erro interno no servidor"
+        });
+    }
+});
+
+// ================= ALTERAR SENHA LOGADO =================
+async function alterarSenha(req, res) {
+    try {
+        const id_usuario = req.user?.id_usuario;
+
+        if (!id_usuario) {
+            return res.status(401).json({
+                erro: "Usuário não identificado. Faça login novamente."
+            });
+        }
+
+        const { senhaAtual, novaSenha, confirmarNovaSenha } = req.body;
+
+        if (!senhaAtual || !novaSenha || !confirmarNovaSenha) {
+            return res.status(400).json({
+                erro: "Preencha todos os campos de senha."
+            });
+        }
+
+        if (String(novaSenha).trim().length < 6) {
+            return res.status(400).json({
+                erro: "A nova senha deve ter pelo menos 6 caracteres."
+            });
+        }
+
+        if (String(novaSenha) !== String(confirmarNovaSenha)) {
+            return res.status(400).json({
+                erro: "A nova senha e a confirmação não coincidem."
+            });
+        }
+
+        if (String(senhaAtual).trim() === String(novaSenha).trim()) {
+            return res.status(400).json({
+                erro: "A nova senha deve ser diferente da senha atual."
+            });
+        }
+
+        const [usuarios] = await pool.query(
+            `SELECT senha
+             FROM cadastro
+             WHERE id_usuario=?
+             LIMIT 1`,
+            [id_usuario]
+        );
+
+        if (usuarios.length === 0) {
+            return res.status(404).json({
+                erro: "Usuário não encontrado."
+            });
+        }
+
+        const hashAtual = crypto
+            .createHash("sha256")
+            .update(String(senhaAtual).trim())
+            .digest("base64");
+
+        if (usuarios[0].senha !== hashAtual) {
+            return res.status(401).json({
+                erro: "A senha atual está incorreta."
+            });
+        }
+
+        const novaHash = crypto
+            .createHash("sha256")
+            .update(String(novaSenha).trim())
+            .digest("base64");
+
+        await pool.query(
+            `UPDATE cadastro
+             SET senha=?
+             WHERE id_usuario=?`,
+            [novaHash, id_usuario]
+        );
+
+        return res.status(200).json({
+            sucesso: true,
+            resposta: "Senha alterada com sucesso!"
+        });
+
+    } catch (error) {
+        console.error("Erro ao alterar senha:", error);
+
+        return res.status(500).json({
+            erro: "Erro interno ao alterar a senha."
+        });
+    }
+}
+
+app.put(
+    '/api/usuario/alterar-senha',
+    autenticarToken,
+    alterarSenha
+);
+
+app.put(
+    '/perfil/alterar-senha',
+    autenticarToken,
+    alterarSenha
+);
+// ================= DELETAR CONTA =================
+app.delete('/deletar', autenticarToken, async (req, res) => {
+    try {
+        const id_usuario = req.user.id_usuario;
+
+        await pool.query(
+            "DELETE FROM usuario_ong WHERE id_usuario=?",
+            [id_usuario]
+        );
+
+        const [resultado] = await pool.query(
+            "DELETE FROM cadastro WHERE id_usuario=?",
+            [id_usuario]
+        );
+
+        if (resultado.affectedRows > 0) {
+            res.json({
+                resposta: "Conta excluída com sucesso!"
+            });
+        } else {
+            res.status(404).json({
+                erro: "Usuário não encontrado."
+            });
+        }
+
+    } catch (error) {
+        console.error("Erro ao deletar:", error);
+
+        res.status(500).json({
+            erro: "Erro ao excluir conta. Verifique dependências."
+        });
+    }
+});
+
+// ================= LOGIN UNIFICADO =================
+app.post("/login", async (req, res) => {
+    try {
+        const { email, senha } = req.body;
+
+        if (!email || !senha) {
+            return res.status(400).json({
+                erro: "E-mail e senha são obrigatórios."
+            });
+        }
+
+        const emailNormalizado = email.trim().toLowerCase();
+
+        const senhaHash = crypto
+            .createHash("sha256")
+            .update(senha)
+            .digest("base64");
+
+        const [usuarios] = await pool.query(
+            `SELECT * FROM cadastro WHERE LOWER(TRIM(email))=? LIMIT 1`,
+            [emailNormalizado]
+        );
+
+        if (usuarios.length === 0) {
+            return res.status(401).json({
+                erro: "E-mail ou senha incorretos."
+            });
+        }
+
+        const usuario = usuarios[0];
+
+        if (usuario.senha !== senhaHash) {
+            return res.status(401).json({
+                erro: "E-mail ou senha incorretos."
+            });
+        }
+
+        let possuiOngs = false;
+
+        if (usuario.tipo === "ong") {
+            const [ongs] = await pool.query(
+                `SELECT id_ong FROM usuario_ong WHERE id_usuario=? LIMIT 1`,
+                [usuario.id_usuario]
+            );
+
+            possuiOngs = ongs.length > 0;
+        }
+
+        const token = jwt.sign(
+            {
+                id_usuario: usuario.id_usuario,
+                tipo: usuario.tipo
+            },
+            process.env.JWT_SECRET || "pet",
+            {
+                expiresIn: "2h"
+            }
+        );
+
+        return res.status(200).json({
+            message: "Login realizado com sucesso.",
+            token,
+            usuario: {
+                id_usuario: usuario.id_usuario,
+                nome: usuario.nome,
+                email: usuario.email,
+                cep: usuario.cep,
+                cpf: usuario.cpf,
+                telefone: usuario.telefone,
+                data_nascimento: usuario.data_nascimento,
+                tipo: usuario.tipo,
+                foto_perfil: usuario.foto_perfil
+            },
+            possuiOngs
+        });
+
+    } catch (erro) {
+        console.error("Erro no login:", erro);
+
+        return res.status(500).json({
+            erro: "Erro interno do servidor."
+        });
+    }
+});
+// ================= RECUPERAÇÃO DE SENHA =================
+app.put('/recuperar-senha', async (req, res) => {
+    try {
+        const { email, senha, confirmar_senha, palavra_chave } = req.body;
+
+        if (!email || !senha || !confirmar_senha || !palavra_chave) {
+            return res.status(400).json({
+                erro: "Todos os campos são obrigatórios."
+            });
+        }
+
+        if (senha !== confirmar_senha) {
+            return res.status(400).json({
+                erro: "A senha e a confirmação não coincidem."
+            });
+        }
+
+        if (String(senha).trim().length < 6) {
+            return res.status(400).json({
+                erro: "A senha deve ter pelo menos 6 caracteres."
+            });
+        }
+
+        const emailLimpo = String(email).trim().toLowerCase();
+        const palavraLimpa = String(palavra_chave).trim();
+
+        const hash = crypto
+            .createHash("sha256")
+            .update(String(senha).trim())
+            .digest("base64");
+
+        const [resultado] = await pool.query(
+            "UPDATE cadastro SET senha=? WHERE LOWER(TRIM(email))=? AND palavra_chave=?",
+            [hash, emailLimpo, palavraLimpa]
+        );
+
+        if (resultado.affectedRows === 0) {
+            return res.status(401).json({
+                erro: "E-mail ou Palavra-Chave incorretos."
+            });
+        }
+
+        res.json({
+            resposta: "Senha atualizada com sucesso!"
+        });
+
+    } catch (error) {
+        console.error("Erro na recuperação de senha:", error);
+
+        res.status(500).json({
+            erro: "Erro interno no servidor ao atualizar senha."
+        });
+    }
+});
+
+// ================= CADASTRO ANIMAIS ==============
+// Mostrar 
+app.get('/mostrarAnimal', async (req, res) => {
+    try {
+
+        const { especie, sexo, porte } = req.query;
+
+        let sql = `SELECT * FROM animais WHERE 1=1`;
+        let valores = [];
+
+        if (especie) {
+            sql += ` AND LOWER(especie) = LOWER(?)`;
+            valores.push(especie);
+        }
+
+        if (sexo) {
+            sql += ` AND LOWER(sexo) LIKE ?`;
+            valores.push(sexo.toLowerCase().charAt(0) + '%');
+        }
+
+        if (porte) {
+            sql += ` AND LOWER(porte) LIKE ?`;
+            valores.push(porte.toLowerCase().charAt(0) + '%');
+        }
+
+        const [resultado] = await pool.query(sql, valores);
+
+        res.json(resultado);
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ erro: "Erro ao buscar animais" });
+    }
+});
+//inserir
+app.post('/inserirAnimal', autenticarToken, async (req, res) => {
+    try {
+        const id_ong = (req.usuario && req.usuario.id) || req.body.id_ong;
+
+        const { nome, especie, raca, porte, idade, sexo, descricao, status, imagem, ong, cidade, estado } = req.body;
+
+        if (!id_ong) {
+            return res.status(400).json({ erro: "O sistema não conseguiu identificar a ONG logada. Tente fazer login novamente." });
+        }
+
+        if (!nome) {
+            return res.status(400).json({ erro: "O nome do animal é obrigatório." });
+        }
+
+        const sql = `INSERT INTO animais (id_ong, nome, especie, raca, porte, idade, sexo, descricao, status, imagem, ong, cidade, estado) 
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+
+        const [resultado] = await pool.query(sql, [
+            id_ong, nome, especie, raca, porte, idade, sexo, descricao, status,
+            imagem || "", 
+            ong, cidade, estado
+        ]);
+
+        res.json({ resposta: "Animal cadastrado com sucesso!" });
+
+    } catch (error) {
+        console.error("ERRO NO BANCO:", error);
+        res.status(500).json({
+            erro: "Erro interno no banco de dados",
+            detalhe: error.sqlMessage || error.message
+        });
+    }
+});
+
+// ROTA PARA EXCLUIR
+app.delete('/excluirAnimal/:id', autenticarToken, async (req, res) => {
+    try {
+        const idAnimal = req.params.id;
+
+        console.log("ID para excluir:", idAnimal);
+
+        const sql = "DELETE FROM animais WHERE id_animal = ?";
+
+        const [resultado] = await pool.query(sql, [idAnimal]);
+
+        if (resultado.affectedRows === 0) {
+            return res.status(404).json({ erro: "Animal não encontrado no banco." });
+        }
+
+        res.json({ resposta: "Excluído com sucesso!" });
+
+    } catch (error) {
+        console.error("ERRO REAL DO MYSQL:", error.sqlMessage || error);
+
+        res.status(500).json({
+            erro: "Erro técnico no servidor",
+            detalhe: error.sqlMessage || "Erro desconhecido"
+        });
+    }
+});
+// ROTA PARA ATUALIZAR O ANIMAL
+app.put('/atualizarAnimal/:id', autenticarToken, async (req, res) => {
+    const { id } = req.params;
+    const { nome, especie, raca, porte, idade, sexo, descricao, status, imagem } = req.body;
+
+    try {
+        const [animal] = await pool.query("SELECT * FROM animais WHERE id_animal = ?", [id]);
+        if (animal.length === 0) return res.status(404).json({ erro: "Animal não encontrado." });
+
+        let sql = `UPDATE animais SET nome=?, especie=?, raca=?, porte=?, idade=?, sexo=?, descricao=?, status=?`;
+        let params = [nome, especie, raca, porte, idade, sexo, descricao, status];
+
+        if (imagem && imagem.trim() !== "") {
+            sql += `, imagem = ? WHERE id_animal = ?`;
+            params.push(imagem, id);
+        } else {
+            sql += ` WHERE id_animal = ?`;
+            params.push(id);
+        }
+
+        const [resultado] = await pool.query(sql, params);
+
+        if (resultado.affectedRows > 0) {
+            res.json({ mensagem: "Atualizado com sucesso!" });
+        } else {
+            res.status(400).json({ erro: "Nenhuma alteração detectada." });
+        }
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ erro: "Erro ao atualizar no banco." });
+    }
+});
+// ================= ANIMAIS (LISTAGEM, FILTROS E DETALHES) =================
+app.get("/animais", autenticarToken, async (req, res) => {
+    try {
+        const { id, especie, sexo, porte } = req.query;
+
+        if (id) {
+            const [dados] = await pool.query(
+                `SELECT 
+                    a.*,
+                    o.nome AS ong_nome,
+                    o.email AS ong_email,
+                    o.telefone AS ong_telefone,
+                    o.endereco AS ong_endereco,
+                    o.cidade AS ong_cidade,
+                    o.estado AS ong_estado,
+                    o.pix AS ong_pix,
+                    o.cnpj AS ong_cnpj,
+                    o.trabalho_ofe AS ong_trabalho_ofe
+                FROM animais a
+                LEFT JOIN ong o ON a.id_ong = o.id_ong
+                WHERE a.id_animal = ?`, [id]);
+
+            if (dados.length === 0) {
+                return res.status(404).json({ erro: "Animal não encontrado" });
+            }
+
+            return res.json(dados[0]);
+        }
+
+        let sql = "SELECT * FROM animais WHERE (LOWER(status) = 'disponivel' OR LOWER(status) = 'disponível')";
+        let valores = [];
+
+        if (especie) {
+            sql += " AND LOWER(especie) = LOWER(?)";
+            valores.push(especie);
+        }
+
+        if (sexo) {
+            if (sexo.toLowerCase().includes("feme")) {
+
+                sql += " AND (LOWER(sexo) = 'femea' OR LOWER(sexo) = 'fêmea')";
+            } else {
+                sql += " AND LOWER(sexo) = LOWER(?)";
+                valores.push(sexo);
+            }
+        }
+
+        if (porte) {
+            if (porte.toLowerCase().includes("medi")) {
+                sql += " AND (LOWER(porte) LIKE 'medi%' OR LOWER(porte) LIKE 'méd %')";
+            } else {
+                sql += " AND LOWER(porte) = LOWER(?)";
+                valores.push(porte);
+            }
+        }
+        sql += " ORDER BY id_animal DESC";
+
+        const [resultado] = await pool.query(sql, valores);
+        res.json(resultado);
+
+    } catch (error) {
+        console.error("Erro na rota /animais:", error);
+        res.status(500).json({ erro: "Erro no servidor" });
+    }
+});
+
+// ================= GESTÃO DE ONGS =================
+
+app.get('/minhas-ongs', autenticarToken, async (req, res) => {
+    try {
+        const id_usuario = req.user.id_usuario;
+
+        const sql = `
+            SELECT ong.id_ong, ong.nome, ong.cidade, ong.estado, ong.email, ong.cnpj
+            FROM ong
+            INNER JOIN usuario_ong ON ong.id_ong = usuario_ong.id_ong
+            WHERE usuario_ong.id_usuario = ?`;
+
+        const [ongs] = await pool.query(sql, [id_usuario]);
+        res.json(ongs);
+    } catch (error) {
+        console.error("ERRO AO BUSCAR ONGS:", error);
+        res.status(500).json({ erro: "Erro ao buscar instituições." });
+    }
+});
+
+app.get('/mostrarOng/:id', autenticarToken, async (req, res) => {
+    const { id } = req.params;
+    try {
+        const [rows] = await pool.execute('SELECT * FROM ong WHERE id_ong = ?', [id]);
+
+        if (rows.length > 0) {
+            res.json(rows[0]);
+        } else {
+            res.status(404).json({ erro: "ONG não encontrada no banco de dados." });
+        }
+    } catch (err) {
+        console.error("Erro no Banco (GET /mostrarOng):", err.message);
+        res.status(500).json({ erro: "Erro interno ao buscar dados da ONG." });
+    }
+});
+
+// 3. ATUALIZAR DADOS DA ONG
+app.put('/atualizarOng/:id', autenticarToken, async (req, res) => {
+    const { id } = req.params;
+    const {
+        nome, email, telefone, endereco,
+        cidade, estado, pix, trabalho_ofe
+    } = req.body;
+
+    try {
+        const sql = `
+            UPDATE ong 
+            SET nome = ?, email = ?, telefone = ?, endereco = ?, 
+                cidade = ?, estado = ?, pix = ?, trabalho_ofe = ? 
+            WHERE id_ong = ?
+        `;
+
+        const valores = [nome, email, telefone, endereco, cidade, estado, pix || null, trabalho_ofe || null, id];
+
+        const [result] = await pool.execute(sql, valores);
+
+        if (result.affectedRows > 0) {
+            res.json({ mensagem: "ONG atualizada com sucesso!" });
+        } else {
+            res.status(404).json({ erro: "ONG não encontrada para atualizar." });
+        }
+    } catch (err) {
+        console.error("Erro no Banco (PUT /atualizarOng):", err.message);
+        res.status(500).json({ erro: "Erro ao atualizar os dados." });
+    }
+});
+
+// 4. INSERIR NOVA ONG
+app.post('/inserirOng', autenticarToken, async (req, res) => {
+    try {
+        const { nome, email, telefone, endereco, cidade, estado, pix, trabalho_ofe, cnpj } = req.body;
+        const id_usuario = req.user.id_usuario;
+
+        const sqlOng = `INSERT INTO ong (nome, email, telefone, endereco, cnpj, cidade, estado, pix, trabalho_ofe) 
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+
+        const [resultado] = await pool.query(sqlOng, [
+            nome, email, telefone, endereco, cnpj, cidade, estado, pix || null, trabalho_ofe || null
+        ]);
+
+        const id_ong = resultado.insertId;
+
+        await pool.query("INSERT INTO usuario_ong (id_usuario, id_ong) VALUES (?, ?)", [id_usuario, id_ong]);
+
+        res.json({ resposta: "ONG cadastrada com sucesso!", id_ong });
+    } catch (error) {
+        console.error("ERRO AO INSERIR ONG:", error.message);
+        res.status(500).json({ erro: "Erro ao salvar ONG no banco." });
+    }
+});
+
+// 5. DELETAR ONG
+app.delete('/deletarOng/:id', autenticarToken, async (req, res) => {
+    const { id } = req.params;
+    try {
+        await pool.execute('DELETE FROM usuario_ong WHERE id_ong = ?', [id]);
+        const [result] = await pool.execute('DELETE FROM ong WHERE id_ong = ?', [id]);
+
+        if (result.affectedRows > 0) {
+            res.json({ mensagem: "ONG removida com sucesso!" });
+        } else {
+            res.status(404).json({ erro: "ONG não encontrada." });
+        }
+    } catch (err) {
+        console.error("ERRO AO DELETAR:", err.message);
+        res.status(500).json({ erro: "Erro ao excluir a instituição." });
+    }
+});
+
+
+// ================= DICAS ===========================================
+
+app.get('/mostrarDicas', async (req, res) => {
+    try {
+        const [resultado] = await pool.query(`SELECT * FROM dicas ORDER BY id_dica DESC`);
+        return res.json(resultado);
+    } catch (error) {
+        return res.status(500).json({ erro: "Erro no MySQL ao buscar", detalhe: error.message });
+    }
+});
+
+app.post('/inserirDica', autenticarToken, async (req, res) => {
+    try {
+        const usuario = req.user || req.usuario;
+        const id_usuario = usuario.id_usuario || usuario.id || null;
+
+        if (!id_usuario) {
+            return res.status(401).json({ erro: "ID do usuário não encontrado dentro do seu Token." });
+        }
+
+        const { titulo, categoria, qualPet, conteudo } = req.body;
+
+        if (!titulo || !categoria || !qualPet || !conteudo) {
+            return res.status(400).json({ erro: "Campos obrigatórios faltando no formulário." });
+        }
+
+        const sql = `INSERT INTO dicas (id_usuario, titulo, categoria, qualPet, conteudo) VALUES (?, ?, ?, ?, ?)`;
+
+        const [resultado] = await pool.query(sql, [
+            id_usuario, titulo, categoria, qualPet, conteudo
+        ]);
+
+        return res.json({ resposta: "Dica publicada com sucesso!" });
+
+    } catch (error) {
+        return res.status(500).json({
+            erro: "O MySQL rejeitou a inserção",
+            mensagemBanco: error.message,
+            codigoBanco: error.code
+        });
+    }
+});
+
+app.put('/atualizarDica', autenticarToken, async (req, res) => {
+    try {
+        const { id_dica, titulo, categoria, qualPet, conteudo } = req.body;
+        const sql = `UPDATE dicas SET titulo = ?, categoria = ?, qualPet = ?, conteudo = ? WHERE id_dica = ?`;
+        await pool.query(sql, [titulo, categoria, qualPet, conteudo, id_dica]);
+        return res.json({ resposta: "Dica updated com sucesso!" });
+    } catch (error) {
+        return res.status(500).json({ erro: "Erro ao atualizar", mensagemBanco: error.message });
+    }
+});
+
+app.delete('/deletarDica', autenticarToken, async (req, res) => {
+    try {
+        const { id_dica } = req.body;
+        await pool.query(`DELETE FROM dicas WHERE id_dica = ?`, [id_dica]);
+        return res.json({ resposta: "Dica removida com sucesso!" });
+    } catch (error) {
+        return res.status(500).json({ erro: "Erro ao deletar", mensagemBanco: error.message });
+    }
+});
+
+
+// ================= DOAÇÕES / NECESSIDADES ==============================
+// MOSTRAR DOAÇÕES
+app.get('/mostrarDoacoes', async (req, res) => {
+    try {
+        const [resultado] = await pool.query(`
+            SELECT *
+            FROM doacao
+            ORDER BY data_cadastro DESC
+        `)
+
+        res.json(resultado)
+
+    } catch (error) {
+        console.log("Erro ao mostrar doações:", error)
+        res.status(500).json({ erro: "Erro no servidor" })
+    }
+})
+
+
+// INSERIR DOAÇÃO / NECESSIDADE
+app.post('/inserirDoacao', autenticarToken, async (req, res) => {
+    try {
+        const id_usuario = req.user.id_usuario;
+
+        const {
+            nome_ong, cidade_ong, categoria, classificacao, item,
+            quantidade, descricao, local_entrega, tipo_entrega,
+            tipo_pix, pix, banco, conta
+        } = req.body;
+
+        if (!nome_ong || !cidade_ong || !categoria || !classificacao || !item || !descricao || !local_entrega || !tipo_entrega) {
+            return res.status(400).json({ erro: "Preencha todos os campos obrigatórios" });
+        }
+
+        const sql = `
+            INSERT INTO doacao (
+                id_usuario, nome_ong, cidade_ong, categoria, classificacao, item,
+                quantidade, descricao, local_entrega, tipo_entrega, tipo_pix, pix, banco, conta
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `;
+
+        const [resultado] = await pool.query(sql, [
+            id_usuario, nome_ong, cidade_ong, categoria, classificacao, item,
+            quantidade || null, descricao, local_entrega, tipo_entrega,
+            tipo_pix || null, pix || null, banco || null, conta || null
+        ]);
+
+        return res.status(201).json({
+            sucesso: true,
+            resposta: "Necessidade cadastrada com sucesso!",
+            id: resultado.insertId
+        });
+    } catch (error) {
+        console.error("Erro ao inserir doação:", error);
+        return res.status(500).json({ erro: "Erro ao cadastrar necessidade", detalhes: error.message });
+    }
+});
+
+
+// ================= ATUALIZAR DOAÇÃO =================
+app.put('/atualizarDoacao/:id', autenticarToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const id_usuario = req.user.id_usuario;
+
+        const [doacoes] = await pool.query('SELECT id_usuario FROM doacao WHERE id = ?', [id]);
+
+        if (doacoes.length === 0) {
+            return res.status(404).json({ erro: "Necessidade não encontrada" });
+        }
+
+        if (Number(doacoes[0].id_usuario) !== Number(id_usuario)) {
+            return res.status(403).json({ erro: "Ação não permitida. Você não tem permissão para editar este registro." });
+        }
+
+        const {
+            nome_ong, cidade_ong, categoria, classificacao, item,
+            quantidade, descricao, local_entrega, tipo_entrega,
+            tipo_pix, pix, banco, conta
+        } = req.body;
+
+        const sql = `
+            UPDATE doacao
+            SET nome_ong = ?, cidade_ong = ?, categoria = ?, classificacao = ?, item = ?,
+                quantidade = ?, descricao = ?, local_entrega = ?, tipo_entrega = ?,
+                tipo_pix = ?, pix = ?, banco = ?, conta = ?
+            WHERE id = ? AND id_usuario = ?
+        `;
+
+        await pool.query(sql, [
+            nome_ong, cidade_ong, categoria, classificacao, item,
+            quantidade || null, descricao, local_entrega, tipo_entrega,
+            tipo_pix || null, pix || null, banco || null, conta || null,
+            id, id_usuario
+        ]);
+
+        return res.json({ sucesso: true, resposta: "Necessidade atualizada com sucesso!" });
+
+    } catch (error) {
+        console.error("Erro ao atualizar doação:", error);
+        return res.status(500).json({ erro: "Erro ao atualizar necessidade", detalhes: error.message });
+    }
+});
+
+// ================= DELETAR DOAÇÃO =================
+app.delete('/excluirDoacao/:id', autenticarToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const id_usuario = req.user.id_usuario;
+
+        const [doacoes] = await pool.query('SELECT id_usuario FROM doacao WHERE id = ?', [id]);
+
+        if (doacoes.length === 0) {
+            return res.status(404).json({ erro: "Necessidade não encontrada" });
+        }
+
+        if (Number(doacoes[0].id_usuario) !== Number(id_usuario)) {
+            return res.status(403).json({ erro: "Ação não permitida. Você não tem permissão para excluir este registro." });
+        }
+
+        await pool.query('DELETE FROM doacao WHERE id = ? AND id_usuario = ?', [id, id_usuario]);
+
+        return res.json({ sucesso: true, resposta: "Necessidade excluída com sucesso!" });
+
+    } catch (error) {
+        console.error("Erro ao excluir doação:", error);
+        return res.status(500).json({ erro: "Erro ao excluir necessidade", detalhes: error.message });
+    }
+});
+// ================= EVENTOS =================
+// MOSTRAR TODOS OS EVENTOS
+app.get('/mostrarEventos', async (req, res) => {
+    try {
+        const [resultado] = await pool.query(`
+            SELECT
+                e.*,
+                o.nome AS ong,
+                o.id_ong,
+                (
+                    SELECT uo.id_usuario
+                    FROM usuario_ong uo
+                    WHERE uo.id_ong = e.id_ong
+                    LIMIT 1
+                ) AS id_usuario
+            FROM eventos e
+            JOIN ong o ON e.id_ong = o.id_ong
+            ORDER BY e.data ASC, e.hora ASC
+        `);
+
+        res.json(resultado);
+    } catch (error) {
+        console.error("Erro ao mostrar eventos:", error);
+        res.status(500).json({ erro: "Erro no servidor." });
+    }
+});
+
+// BUSCAR EVENTOS PRÓXIMOS
+app.get('/eventos-proximos', async (req, res) => {
+    try {
+        const { lat, lng, raio } = req.query;
+
+        if (!lat || !lng) {
+            return res.status(400).json({ erro: "Latitude (lat) e Longitude (lng) são obrigatórias." });
+        }
+
+        const raioMaximo = raio ? parseFloat(raio) : 50;
+        const userLat = parseFloat(lat);
+        const userLng = parseFloat(lng);
+
+        const sql = `
+            SELECT
+                e.*,
+                o.nome AS ong,
+                o.id_ong,
+                (
+                    SELECT uo.id_usuario
+                    FROM usuario_ong uo
+                    WHERE uo.id_ong = e.id_ong
+                    LIMIT 1
+                ) AS id_usuario,
+                (
+                    6371 * ACOS(
+                        COS(RADIANS(?)) *
+                        COS(RADIANS(e.latitude)) *
+                        COS(RADIANS(e.longitude) - RADIANS(?)) +
+                        SIN(RADIANS(?)) *
+                        SIN(RADIANS(e.latitude))
+                    )
+                ) AS distancia_km
+            FROM eventos e
+            JOIN ong o ON e.id_ong = o.id_ong
+            HAVING distancia_km <= ?
+            ORDER BY distancia_km ASC
+        `;
+
+        const [resultado] = await pool.query(sql, [userLat, userLng, userLat, raioMaximo]);
+        res.json(resultado);
+    } catch (error) {
+        console.error("Erro ao buscar eventos próximos:", error);
+        res.status(500).json({ erro: "Erro interno no servidor ao calcular proximidade." });
+    }
+});
+
+// INSERIR EVENTO
+app.post('/inserirEvento', autenticarToken, async (req, res) => {
+    try {
+        const id_usuario = req.user.id_usuario;
+        const { nome_evento, hora, data, endereco, categoria, localizacao, imagem, latitude, longitude } = req.body;
+
+        if (!nome_evento) {
+            return res.status(400).json({ erro: "O nome do evento é obrigatório." });
+        }
+
+        const [ongs] = await pool.query(`
+            SELECT id_ong
+            FROM usuario_ong
+            WHERE id_usuario = ?
+            LIMIT 1
+        `, [id_usuario]);
+
+        if (ongs.length === 0) {
+            return res.status(403).json({ erro: "Este perfil não possui nenhuma ONG cadastrada para criar eventos." });
+        }
+
+        const id_ong = ongs[0].id_ong;
+
+        const sql = `
+            INSERT INTO eventos (
+                id_ong, nome_evento, hora, data, endereco,
+                categoria, localizacao, imagem, latitude, longitude
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `;
+
+        await pool.query(sql, [
+            id_ong, nome_evento, hora, data, endereco,
+            categoria, localizacao, imagem || null,
+            latitude || null, longitude || null
+        ]);
+
+        return res.json({ resposta: "Evento cadastrado com sucesso!" });
+    } catch (error) {
+        console.error("ERRO AO INSERIR EVENTO:", error);
+        return res.status(500).json({
+            erro: "Erro no servidor.",
+            detalhe: error.sqlMessage || error.message
+        });
+    }
+});
+
+// ATUALIZAR EVENTO
+app.put('/atualizarEvento', autenticarToken, async (req, res) => {
+    try {
+        const id_usuario = req.user.id_usuario;
+        const { id_evento, nome_evento, hora, data, endereco, categoria, localizacao, imagem, latitude, longitude } = req.body;
+
+        if (!id_evento) {
+            return res.status(400).json({ erro: "ID do evento não informado." });
+        }
+
+        const [ongs] = await pool.query(`
+            SELECT id_ong
+            FROM usuario_ong
+            WHERE id_usuario = ?
+            LIMIT 1
+        `, [id_usuario]);
+
+        if (ongs.length === 0) {
+            return res.status(403).json({ erro: "Você não possui ONG vinculada." });
+        }
+
+        const id_ong = ongs[0].id_ong;
+
+        const [eventos] = await pool.query(`
+            SELECT id_ong
+            FROM eventos
+            WHERE id_evento = ?
+        `, [id_evento]);
+
+        if (eventos.length === 0) {
+            return res.status(404).json({ erro: "Evento não encontrado." });
+        }
+
+        if (Number(eventos[0].id_ong) !== Number(id_ong)) {
+            return res.status(403).json({ erro: "Você não tem permissão para editar este evento." });
+        }
+
+        await pool.query(`
+            UPDATE eventos
+            SET
+                nome_evento = ?,
+                hora = ?,
+                data = ?,
+                endereco = ?,
+                categoria = ?,
+                localizacao = ?,
+                imagem = ?,
+                latitude = ?,
+                longitude = ?
+            WHERE id_evento = ?
+        `, [
+            nome_evento, hora, data, endereco, categoria,
+            localizacao, imagem, latitude, longitude, id_evento
+        ]);
+
+        return res.json({ resposta: "Evento atualizado com sucesso!" });
+    } catch (error) {
+        console.error("Erro ao atualizar evento:", error);
+        return res.status(500).json({ erro: "Erro no servidor." });
+    }
+});
+// EXCLUIR EVENTO
+app.delete('/deletarEvento', autenticarToken, async (req, res) => {
+    try {
+        const id_usuario = req.user.id_usuario;
+        const { id_evento } = req.body;
+
+        if (!id_evento) {
+            return res.status(400).json({
+                erro: "ID do evento não informado."
+            });
+        }
+
+        const [ongs] = await pool.query(
+            `
+            SELECT id_ong
+            FROM usuario_ong
+            WHERE id_usuario = ?
+            LIMIT 1
+            `,
+            [id_usuario]
+        );
+
+        if (ongs.length === 0) {
+            return res.status(403).json({
+                erro: "Você não possui ONG vinculada."
+            });
+        }
+
+        const id_ong = ongs[0].id_ong;
+
+        const [eventos] = await pool.query(
+            `
+            SELECT id_ong
+            FROM eventos
+            WHERE id_evento = ?
+            `,
+            [id_evento]
+        );
+
+        if (eventos.length === 0) {
+            return res.status(404).json({
+                erro: "Evento não encontrado."
+            });
+        }
+
+        if (Number(eventos[0].id_ong) !== Number(id_ong)) {
+            return res.status(403).json({
+                erro: "Você não tem permissão para excluir este evento."
+            });
+        }
+
+        await pool.query(
+            `
+            DELETE FROM eventos
+            WHERE id_evento = ?
+            `,
+            [id_evento]
+        );
+
+        return res.json({
+            mensagem: "Evento excluído com sucesso."
+        });
+
+    } catch (error) {
+        console.error(
+            "Erro ao excluir evento:",
+            error
+        );
+
+        return res.status(500).json({
+            erro: "Erro ao excluir evento."
+        });
+    }
+});
+// ================= CRUD HISTÓRIAS / HOMENAGENS =================
+// BUSCAR HISTÓRIAS 
+app.get('/api/historias', async (req, res) => {
+    try {
+        const [linhas] = await pool.query("SELECT * FROM historias ORDER BY id DESC");
+
+        const historiasFormatadas = linhas.map(h => ({
+            _id: String(h.id),
+            id: h.id,
+            ong_id: h.ong_id,
+            titulo: h.titulo,
+            texto: h.texto,
+            imagens: [h.imagem1 || 'https://placehold.co/400x300?text=Sem+Foto']
+        }));
+
+        res.json(historiasFormatadas);
+    } catch (error) {
+        console.error("Erro ao buscar histórias:", error);
+        res.status(500).json({ erro: "Erro no servidor ao buscar homenagens." });
+    }
+});
+
+// 2. CRIAR HISTÓRIA 
+app.post('/api/historias', autenticarToken, async (req, res) => {
+    try {
+        const { titulo, texto, imagens } = req.body;
+        const idOngLogada = req.user?.id_usuario || 1;
+
+        if (!titulo || !texto) {
+            return res.status(400).json({ erro: "Título e texto são obrigatórios." });
+        }
+
+        const imgUsuario = (imagens && imagens[0] && imagens[0].trim() !== "") ? imagens[0] : 'https://placehold.co/400x300?text=Sem+Foto';
+
+        const sql = `INSERT INTO historias (titulo, texto, imagem1, ong_id) VALUES (?, ?, ?, ?)`;
+        const [resultado] = await pool.query(sql, [titulo, texto, imgUsuario, idOngLogada]);
+
+        res.status(201).json({
+            _id: String(resultado.insertId),
+            id: resultado.insertId,
+            ong_id: idOngLogada,
+            titulo,
+            texto,
+            imagens: [imgUsuario]
+        });
+    } catch (error) {
+        console.error("Erro ao inserir história:", error);
+        res.status(500).json({ erro: "Erro ao salvar a homenagem no banco de dados." });
+    }
+});
+
+// 3. ATUALIZAR HISTÓRIA 
+app.put('/api/historias/:id', autenticarToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { titulo, texto, imagens } = req.body;
+        const idOngLogada = req.user.id_usuario;
+
+        const [historias] = await pool.query("SELECT ong_id FROM historias WHERE id = ?", [id]);
+        if (historias.length === 0) {
+            return res.status(404).json({ erro: "História não encontrada." });
+        }
+
+        if (Number(historias[0].ong_id) !== Number(idOngLogada)) {
+            return res.status(403).json({ erro: "Ação não permitida. Você não é o criador desta história." });
+        }
+
+        const imgUsuario = (imagens && imagens[0] && imagens[0].trim() !== "") ? imagens[0] : 'https://placehold.co/400x300?text=Sem+Foto';
+
+        const sql = `UPDATE historias SET titulo = ?, texto = ?, imagem1 = ? WHERE id = ?`;
+        await pool.query(sql, [titulo, texto, imgUsuario, id]);
+
+        res.json({ _id: id, id, titulo, texto, imagens: [imgUsuario] });
+    } catch (error) {
+        console.error("Erro ao atualizar história:", error);
+        res.status(500).json({ erro: "Erro ao atualizar história no servidor." });
+    }
+});
+
+// 4. DELETAR HISTÓRIA 
+app.delete('/api/historias/:id', autenticarToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const idOngLogada = req.user.id_usuario;
+
+        const [historias] = await pool.query("SELECT ong_id FROM historias WHERE id = ?", [id]);
+        if (historias.length === 0) {
+            return res.status(404).json({ erro: "História não encontrada." });
+        }
+
+        if (Number(historias[0].ong_id) !== Number(idOngLogada)) {
+            return res.status(403).json({ erro: "Ação não permitida. Você não é o criador desta história." });
+        }
+
+        await pool.query("DELETE FROM historias WHERE id = ?", [id]);
+        res.json({ resposta: "História deletada com sucesso!", id: id });
+    } catch (error) {
+        console.error("Erro ao deletar história:", error);
+        res.status(500).json({ erro: "Erro interno ao deletar a história." });
+    }
+});
+app.get("/verificar-duplicado", async (req, res) => {
+    const { campo, valor } = req.query;
+    const camposPermitidos = ["email", "cpf", "telefone"];
+
+    if (!camposPermitidos.includes(campo)) {
+        return res.status(400).json({ erro: "Campo inválido." });
+    }
+
+    try {
+        let valorLimpo = String(valor || "").trim();
+        let sql = "";
+
+        if (!valorLimpo) {
+            return res.json({ existe: false });
+        }
+
+        if (campo === "email") {
+            valorLimpo = valorLimpo.toLowerCase();
+            sql = "SELECT 1 FROM cadastro WHERE LOWER(TRIM(email))=? LIMIT 1";
+        }
+
+        if (campo === "cpf") {
+            valorLimpo = valorLimpo.replace(/\D/g, "");
+            sql = "SELECT 1 FROM cadastro WHERE REPLACE(REPLACE(REPLACE(cpf,'.',''),'-',''),' ','')=? LIMIT 1";
+        }
+
+        if (campo === "telefone") {
+            valorLimpo = valorLimpo.replace(/\D/g, "");
+            sql = "SELECT 1 FROM cadastro WHERE REPLACE(REPLACE(REPLACE(REPLACE(telefone,'(',''),')',''),' ',''),'-','')=? LIMIT 1";
+        }
+
+        const [rows] = await pool.query(sql, [valorLimpo]);
+
+        res.set("Cache-Control", "no-store");
+
+        return res.json({
+            existe: rows.length > 0
+        });
+
+    } catch (error) {
+
+        console.error(
+            "Erro na verificação de duplicidade:",
+            error
+        );
+
+        return res.status(500).json({
+            existe: false,
+            erro: "Erro interno no servidor."
+        });
+    }
+});
+
+app.get("/verificar-email", async (req, res) => {
+    res.set("Cache-Control", "no-store");
+
+    try {
+        const email = String(req.query.email || "").trim().toLowerCase();
+
+        if (!email) {
+            return res.status(400).json({ existe: false });
+        }
+
+        const [rows] = await pool.query(
+            "SELECT 1 FROM cadastro WHERE LOWER(TRIM(email)) = ? LIMIT 1",
+            [email]
+        );
+
+        res.json({ existe: rows.length > 0 });
+    } catch (error) {
+        console.error("Erro ao verificar e-mail:", error);
+        res.status(500).json({
+            existe: false,
+            erro: "Erro ao verificar e-mail."
+        });
+    }
+});
+
+// ================= PERFIL =================
+
+app.get("/perfil", autenticarToken, async (req, res) => {
+    try {
+        const idUsuario = req.user.id_usuario;
+
+        const [usuarios] = await pool.query(
+            `SELECT id_usuario,nome,email,telefone,cep,cpf,data_nascimento,tipo,foto_perfil
+            FROM cadastro
+            WHERE id_usuario=?
+            LIMIT 1`,
+            [idUsuario]
+        );
+
+        if (usuarios.length === 0) {
+            return res.status(404).json({
+                erro: "Usuário não encontrado."
+            });
+        }
+
+        return res.status(200).json({
+            usuario: usuarios[0]
+        });
+
+    } catch (erro) {
+        console.error("Erro ao buscar perfil:", erro);
+
+        return res.status(500).json({
+            erro: "Erro ao carregar o perfil."
+        });
+    }
+});
+app.put("/perfil", autenticarToken, async (req, res) => {
+    try {
+        const idUsuario = req.user.id_usuario;
+
+        let {
+            nome,
+            email,
+            telefone,
+            foto_perfil
+        } = req.body;
+
+        nome = nome ? String(nome).trim() : "";
+        email = email ? String(email).trim().toLowerCase() : "";
+        telefone = telefone ? String(telefone).trim() : "";
+
+        if (!nome) {
+            return res.status(400).json({
+                erro: "O nome é obrigatório."
+            });
+        }
+
+        if (!email) {
+            return res.status(400).json({
+                erro: "O e-mail é obrigatório."
+            });
+        }
+
+        const emailValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        if (!emailValido.test(email)) {
+            return res.status(400).json({
+                erro: "Informe um e-mail válido."
+            });
+        }
+
+        const [duplicados] = await pool.query(
+            `SELECT id_usuario
+             FROM cadastro
+             WHERE LOWER(TRIM(email))=?
+             AND id_usuario<>?
+             LIMIT 1`,
+            [email, idUsuario]
+        );
+
+        if (duplicados.length > 0) {
+            return res.status(409).json({
+                erro: "Este e-mail já está cadastrado."
+            });
+        }
+
+        await pool.query(
+            `UPDATE cadastro
+             SET nome=?,email=?,telefone=?,foto_perfil=?
+             WHERE id_usuario=?`,
+            [
+                nome,
+                email,
+                telefone,
+                foto_perfil || null,
+                idUsuario
+            ]
+        );
+
+        const [usuarios] = await pool.query(
+            `SELECT id_usuario,nome,email,telefone,cep,cpf,data_nascimento,tipo,foto_perfil
+             FROM cadastro
+             WHERE id_usuario=?
+             LIMIT 1`,
+            [idUsuario]
+        );
+
+        if (usuarios.length === 0) {
+            return res.status(404).json({
+                erro: "Usuário não encontrado após atualização."
+            });
+        }
+
+        return res.status(200).json({
+            message: "Perfil atualizado com sucesso.",
+            usuario: usuarios[0]
+        });
+
+    } catch (erro) {
+        console.error("Erro ao atualizar perfil:", erro);
+
+        if (erro.code === "ER_DUP_ENTRY") {
+            return res.status(409).json({
+                erro: "Este e-mail já está cadastrado."
+            });
+        }
+
+        return res.status(500).json({
+            erro: "Erro ao atualizar o perfil."
+        });
+    }
+});
+// EXCLUIR CONTA
+
+app.delete("/perfil", autenticarToken, async (req, res) => {
+    let conexao;
+
+    try {
+        const idUsuario = req.user?.id_usuario || req.usuario?.id_usuario;
+
+        if (!idUsuario) {
+            return res.status(401).json({
+                erro: "Usuário não autenticado."
+            });
+        }
+
+        conexao = await pool.getConnection();
+        await conexao.beginTransaction();
+
+        // Busca todas as ONGs vinculadas ao usuário
+        const [ongs] = await conexao.query(
+            "SELECT id_ong FROM usuario_ong WHERE id_usuario = ?",
+            [idUsuario]
+        );
+
+        const idsOng = ongs.map(ong => ong.id_ong);
+
+        // Exclui os registros relacionados às ONGs
+        if (idsOng.length > 0) {
+            await conexao.query(
+                "DELETE FROM eventos WHERE id_ong IN (?)",
+                [idsOng]
+            );
+
+            await conexao.query(
+                "DELETE FROM animais WHERE id_ong IN (?)",
+                [idsOng]
+            );
+        }
+
+        // Exclui os registros relacionados ao usuário
+        await conexao.query(
+            "DELETE FROM historias WHERE ong_id = ?",
+            [idUsuario]
+        );
+
+        await conexao.query(
+            "DELETE FROM dicas WHERE id_usuario = ?",
+            [idUsuario]
+        );
+
+        await conexao.query(
+            "DELETE FROM doacao WHERE id_usuario = ?",
+            [idUsuario]
+        );
+
+        // Remove os vínculos entre o usuário e as ONGs
+        await conexao.query(
+            "DELETE FROM usuario_ong WHERE id_usuario = ?",
+            [idUsuario]
+        );
+
+        // Exclui todas as ONGs vinculadas ao usuário
+        if (idsOng.length > 0) {
+            await conexao.query(
+                "DELETE FROM ong WHERE id_ong IN (?)",
+                [idsOng]
+            );
+        }
+
+        // Exclui a conta do usuário
+        const [resultado] = await conexao.query(
+            "DELETE FROM cadastro WHERE id_usuario = ?",
+            [idUsuario]
+        );
+
+        if (resultado.affectedRows === 0) {
+            await conexao.rollback();
+
+            return res.status(404).json({
+                erro: "Usuário não encontrado."
+            });
+        }
+
+        // Confirma todas as exclusões
+        await conexao.commit();
+
+        return res.status(200).json({
+            mensagem: "Conta, ONGs e dados relacionados excluídos com sucesso."
+        });
+
+    } catch (erro) {
+        if (conexao) {
+            await conexao.rollback();
+        }
+
+        console.error("Erro ao excluir conta:", erro);
+
+        return res.status(500).json({
+            erro: "Não foi possível excluir a conta e as ONGs.",
+            detalhe: erro.sqlMessage || erro.message
+        });
+
+    } finally {
+        if (conexao) {
+            conexao.release();
+        }
+    }
+});
