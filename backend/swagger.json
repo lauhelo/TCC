@@ -1,0 +1,2820 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "API Entre Laços",
+    "description": "Documentação das rotas da API Entre Laços. Rotas protegidas utilizam JWT no cabeçalho Authorization: Bearer {token}.",
+    "version": "1.0.0"
+  },
+  "host": "localhost:3000",
+  "basePath": "/",
+  "schemes": [
+    "http"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "securityDefinitions": {
+    "BearerAuth": {
+      "type": "apiKey",
+      "name": "Authorization",
+      "in": "header",
+      "description": "Informe: Bearer {token}"
+    }
+  },
+  "tags": [
+    {
+      "name": "Usuários e autenticação"
+    },
+    {
+      "name": "Animais"
+    },
+    {
+      "name": "ONGs"
+    },
+    {
+      "name": "Dicas"
+    },
+    {
+      "name": "Doações"
+    },
+    {
+      "name": "Eventos"
+    },
+    {
+      "name": "Histórias e homenagens"
+    },
+    {
+      "name": "Verificações"
+    },
+    {
+      "name": "Perfil"
+    }
+  ],
+  "definitions": {
+    "Erro": {
+      "type": "object",
+      "properties": {
+        "erro": {
+          "type": "string"
+        },
+        "detalhe": {
+          "type": "string"
+        },
+        "mensagemBanco": {
+          "type": "string"
+        },
+        "codigoBanco": {
+          "type": "string"
+        }
+      }
+    },
+    "Resposta": {
+      "type": "object",
+      "properties": {
+        "resposta": {
+          "type": "string"
+        },
+        "mensagem": {
+          "type": "string"
+        },
+        "sucesso": {
+          "type": "boolean"
+        }
+      }
+    },
+    "Cadastro": {
+      "type": "object",
+      "required": [
+        "nome",
+        "email",
+        "senha"
+      ],
+      "properties": {
+        "id_usuario": {
+          "type": "integer"
+        },
+        "nome": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string",
+          "format": "email"
+        },
+        "cep": {
+          "type": "string"
+        },
+        "cpf": {
+          "type": "string"
+        },
+        "telefone": {
+          "type": "string"
+        },
+        "data_nascimento": {
+          "type": "string",
+          "format": "date"
+        },
+        "senha": {
+          "type": "string",
+          "format": "password"
+        },
+        "palavra_chave": {
+          "type": "string"
+        },
+        "tipo": {
+          "type": "string",
+          "enum": [
+            "usuario",
+            "ong",
+            "admin"
+          ]
+        },
+        "foto_perfil": {
+          "type": "string"
+        },
+        "cnpj": {
+          "type": "string"
+        }
+      }
+    },
+    "Login": {
+      "type": "object",
+      "required": [
+        "email",
+        "senha"
+      ],
+      "properties": {
+        "email": {
+          "type": "string",
+          "format": "email"
+        },
+        "senha": {
+          "type": "string",
+          "format": "password"
+        }
+      }
+    },
+    "TokenResponse": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string"
+        },
+        "token": {
+          "type": "string"
+        },
+        "possuiOngs": {
+          "type": "boolean"
+        },
+        "usuario": {
+          "$ref": "#/definitions/Usuario"
+        }
+      }
+    },
+    "Usuario": {
+      "type": "object",
+      "properties": {
+        "id_usuario": {
+          "type": "integer"
+        },
+        "nome": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "cep": {
+          "type": "string"
+        },
+        "cpf": {
+          "type": "string"
+        },
+        "telefone": {
+          "type": "string"
+        },
+        "data_nascimento": {
+          "type": "string"
+        },
+        "tipo": {
+          "type": "string"
+        },
+        "foto_perfil": {
+          "type": "string"
+        }
+      }
+    },
+    "AlterarSenha": {
+      "type": "object",
+      "required": [
+        "senhaAtual",
+        "novaSenha",
+        "confirmarNovaSenha"
+      ],
+      "properties": {
+        "senhaAtual": {
+          "type": "string",
+          "format": "password"
+        },
+        "novaSenha": {
+          "type": "string",
+          "format": "password"
+        },
+        "confirmarNovaSenha": {
+          "type": "string",
+          "format": "password"
+        }
+      }
+    },
+    "RecuperarSenha": {
+      "type": "object",
+      "required": [
+        "email",
+        "senha",
+        "confirmar_senha",
+        "palavra_chave"
+      ],
+      "properties": {
+        "email": {
+          "type": "string",
+          "format": "email"
+        },
+        "senha": {
+          "type": "string",
+          "format": "password"
+        },
+        "confirmar_senha": {
+          "type": "string",
+          "format": "password"
+        },
+        "palavra_chave": {
+          "type": "string"
+        }
+      }
+    },
+    "Animal": {
+      "type": "object",
+      "properties": {
+        "id_animal": {
+          "type": "integer"
+        },
+        "id_ong": {
+          "type": "integer"
+        },
+        "nome": {
+          "type": "string"
+        },
+        "especie": {
+          "type": "string"
+        },
+        "raca": {
+          "type": "string"
+        },
+        "porte": {
+          "type": "string"
+        },
+        "idade": {
+          "type": "string"
+        },
+        "sexo": {
+          "type": "string"
+        },
+        "descricao": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "imagem": {
+          "type": "string"
+        },
+        "ong": {
+          "type": "string"
+        },
+        "cidade": {
+          "type": "string"
+        },
+        "estado": {
+          "type": "string"
+        }
+      }
+    },
+    "Ong": {
+      "type": "object",
+      "properties": {
+        "id_ong": {
+          "type": "integer"
+        },
+        "nome": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string",
+          "format": "email"
+        },
+        "telefone": {
+          "type": "string"
+        },
+        "endereco": {
+          "type": "string"
+        },
+        "cnpj": {
+          "type": "string"
+        },
+        "cidade": {
+          "type": "string"
+        },
+        "estado": {
+          "type": "string"
+        },
+        "pix": {
+          "type": "string"
+        },
+        "trabalho_ofe": {
+          "type": "string"
+        }
+      }
+    },
+    "Dica": {
+      "type": "object",
+      "required": [
+        "titulo",
+        "categoria",
+        "qualPet",
+        "conteudo"
+      ],
+      "properties": {
+        "id_dica": {
+          "type": "integer"
+        },
+        "id_usuario": {
+          "type": "integer"
+        },
+        "titulo": {
+          "type": "string"
+        },
+        "categoria": {
+          "type": "string"
+        },
+        "qualPet": {
+          "type": "string"
+        },
+        "conteudo": {
+          "type": "string"
+        }
+      }
+    },
+    "Doacao": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "id_usuario": {
+          "type": "integer"
+        },
+        "nome_ong": {
+          "type": "string"
+        },
+        "cidade_ong": {
+          "type": "string"
+        },
+        "categoria": {
+          "type": "string"
+        },
+        "classificacao": {
+          "type": "string"
+        },
+        "item": {
+          "type": "string"
+        },
+        "quantidade": {
+          "type": "string"
+        },
+        "descricao": {
+          "type": "string"
+        },
+        "local_entrega": {
+          "type": "string"
+        },
+        "tipo_entrega": {
+          "type": "string"
+        },
+        "tipo_pix": {
+          "type": "string"
+        },
+        "pix": {
+          "type": "string"
+        },
+        "banco": {
+          "type": "string"
+        },
+        "conta": {
+          "type": "string"
+        }
+      }
+    },
+    "Evento": {
+      "type": "object",
+      "properties": {
+        "id_evento": {
+          "type": "integer"
+        },
+        "id_ong": {
+          "type": "integer"
+        },
+        "nome_evento": {
+          "type": "string"
+        },
+        "hora": {
+          "type": "string"
+        },
+        "data": {
+          "type": "string",
+          "format": "date"
+        },
+        "endereco": {
+          "type": "string"
+        },
+        "categoria": {
+          "type": "string"
+        },
+        "localizacao": {
+          "type": "string"
+        },
+        "imagem": {
+          "type": "string"
+        },
+        "latitude": {
+          "type": "number",
+          "format": "double"
+        },
+        "longitude": {
+          "type": "number",
+          "format": "double"
+        }
+      }
+    },
+    "Historia": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "ong_id": {
+          "type": "integer"
+        },
+        "titulo": {
+          "type": "string"
+        },
+        "texto": {
+          "type": "string"
+        },
+        "imagens": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "PerfilAtualizacao": {
+      "type": "object",
+      "required": [
+        "nome",
+        "email"
+      ],
+      "properties": {
+        "nome": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string",
+          "format": "email"
+        },
+        "telefone": {
+          "type": "string"
+        },
+        "foto_perfil": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "paths": {
+    "/mostrar": {
+      "get": {
+        "tags": [
+          "Usuários e autenticação"
+        ],
+        "summary": "Listar cadastros",
+        "operationId": "get_0_mostrar",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Operação realizada com sucesso.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Usuario"
+              }
+            }
+          },
+          "400": {
+            "description": "Requisição inválida.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "401": {
+            "description": "Token não enviado ou inválido.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/inserir": {
+      "post": {
+        "tags": [
+          "Usuários e autenticação"
+        ],
+        "summary": "Cadastrar usuário",
+        "operationId": "post_1_inserir",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Cadastro"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Cadastro efetuado.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "resposta": {
+                  "type": "string"
+                },
+                "token": {
+                  "type": "string"
+                },
+                "usuario": {
+                  "$ref": "#/definitions/Usuario"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Requisição inválida.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "409": {
+            "description": "E-mail, CPF ou telefone já cadastrado.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          }
+        }
+      }
+    },
+    "/atualizar": {
+      "put": {
+        "tags": [
+          "Usuários e autenticação"
+        ],
+        "summary": "Atualizar cadastro do usuário",
+        "operationId": "put_2_atualizar",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": [
+                "id_usuario",
+                "nome",
+                "email"
+              ],
+              "properties": {
+                "id_usuario": {
+                  "type": "integer"
+                },
+                "nome": {
+                  "type": "string"
+                },
+                "email": {
+                  "type": "string"
+                },
+                "cep": {
+                  "type": "string"
+                },
+                "cpf": {
+                  "type": "string"
+                },
+                "telefone": {
+                  "type": "string"
+                },
+                "data_nascimento": {
+                  "type": "string"
+                },
+                "palavra_chave": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Operação realizada com sucesso.",
+            "schema": {
+              "$ref": "#/definitions/Resposta"
+            }
+          },
+          "400": {
+            "description": "Requisição inválida.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "401": {
+            "description": "Token ausente, inválido ou expirado.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "403": {
+            "description": "Sem permissão para atualizar este perfil.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "409": {
+            "description": "E-mail, CPF ou telefone já cadastrado.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/usuario/alterar-senha": {
+      "put": {
+        "tags": [
+          "Usuários e autenticação"
+        ],
+        "summary": "Alterar senha do usuário autenticado",
+        "operationId": "put_3_api_usuario_alterar_senha",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/AlterarSenha"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Operação realizada com sucesso.",
+            "schema": {
+              "$ref": "#/definitions/Resposta"
+            }
+          },
+          "400": {
+            "description": "Requisição inválida.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "401": {
+            "description": "Token ausente, inválido ou expirado.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "404": {
+            "description": "Usuário não encontrado.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/perfil/alterar-senha": {
+      "put": {
+        "tags": [
+          "Usuários e autenticação"
+        ],
+        "summary": "Alterar senha pelo perfil",
+        "operationId": "put_4_perfil_alterar_senha",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/AlterarSenha"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Operação realizada com sucesso.",
+            "schema": {
+              "$ref": "#/definitions/Resposta"
+            }
+          },
+          "400": {
+            "description": "Requisição inválida.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "401": {
+            "description": "Token ausente, inválido ou expirado.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "404": {
+            "description": "Usuário não encontrado.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/deletar": {
+      "delete": {
+        "tags": [
+          "Usuários e autenticação"
+        ],
+        "summary": "Excluir cadastro pela rota antiga",
+        "operationId": "delete_5_deletar",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Operação realizada com sucesso.",
+            "schema": {
+              "$ref": "#/definitions/Resposta"
+            }
+          },
+          "400": {
+            "description": "Requisição inválida.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "401": {
+            "description": "Token ausente, inválido ou expirado.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "404": {
+            "description": "Usuário não encontrado.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/login": {
+      "post": {
+        "tags": [
+          "Usuários e autenticação"
+        ],
+        "summary": "Realizar login",
+        "operationId": "post_6_login",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Login"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Login realizado.",
+            "schema": {
+              "$ref": "#/definitions/TokenResponse"
+            }
+          },
+          "400": {
+            "description": "Requisição inválida.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "401": {
+            "description": "E-mail ou senha incorretos.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          }
+        }
+      }
+    },
+    "/recuperar-senha": {
+      "put": {
+        "tags": [
+          "Usuários e autenticação"
+        ],
+        "summary": "Recuperar senha usando palavra-chave",
+        "operationId": "put_7_recuperar_senha",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/RecuperarSenha"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Operação realizada com sucesso.",
+            "schema": {
+              "$ref": "#/definitions/Resposta"
+            }
+          },
+          "400": {
+            "description": "Requisição inválida.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "401": {
+            "description": "E-mail ou palavra-chave incorretos.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          }
+        }
+      }
+    },
+    "/mostrarAnimal": {
+      "get": {
+        "tags": [
+          "Animais"
+        ],
+        "summary": "Listar animais com filtros opcionais",
+        "operationId": "get_8_mostrarAnimal",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "especie",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "sexo",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "porte",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Operação realizada com sucesso.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Animal"
+              }
+            }
+          },
+          "400": {
+            "description": "Requisição inválida.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          }
+        }
+      }
+    },
+    "/inserirAnimal": {
+      "post": {
+        "tags": [
+          "Animais"
+        ],
+        "summary": "Cadastrar animal",
+        "operationId": "post_9_inserirAnimal",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Animal"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Operação realizada com sucesso.",
+            "schema": {
+              "$ref": "#/definitions/Resposta"
+            }
+          },
+          "400": {
+            "description": "Requisição inválida.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "401": {
+            "description": "Token ausente, inválido ou expirado.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/excluirAnimal/{id}": {
+      "delete": {
+        "tags": [
+          "Animais"
+        ],
+        "summary": "Excluir animal",
+        "operationId": "delete_10_excluirAnimal_id",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "description": "Identificador de id."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Operação realizada com sucesso.",
+            "schema": {
+              "$ref": "#/definitions/Resposta"
+            }
+          },
+          "400": {
+            "description": "Requisição inválida.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "401": {
+            "description": "Token ausente, inválido ou expirado.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "404": {
+            "description": "Animal não encontrado.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/atualizarAnimal/{id}": {
+      "put": {
+        "tags": [
+          "Animais"
+        ],
+        "summary": "Atualizar animal",
+        "operationId": "put_11_atualizarAnimal_id",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "description": "Identificador de id."
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Animal"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Operação realizada com sucesso.",
+            "schema": {
+              "$ref": "#/definitions/Resposta"
+            }
+          },
+          "400": {
+            "description": "Requisição inválida.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "401": {
+            "description": "Token ausente, inválido ou expirado.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "404": {
+            "description": "Animal não encontrado.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/animais": {
+      "get": {
+        "tags": [
+          "Animais"
+        ],
+        "summary": "Listar animais disponíveis ou buscar detalhes por ID",
+        "operationId": "get_12_animais",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "especie",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "sexo",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "porte",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Operação realizada com sucesso.",
+            "schema": {
+              "type": "object",
+              "description": "Com id, retorna um animal; sem id, retorna uma lista de animais."
+            }
+          },
+          "400": {
+            "description": "Requisição inválida.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "401": {
+            "description": "Token ausente, inválido ou expirado.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/minhas-ongs": {
+      "get": {
+        "tags": [
+          "ONGs"
+        ],
+        "summary": "Listar ONGs vinculadas ao usuário autenticado",
+        "operationId": "get_13_minhas_ongs",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Operação realizada com sucesso.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Ong"
+              }
+            }
+          },
+          "400": {
+            "description": "Requisição inválida.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "401": {
+            "description": "Token ausente, inválido ou expirado.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/mostrarOng/{id}": {
+      "get": {
+        "tags": [
+          "ONGs"
+        ],
+        "summary": "Buscar dados de uma ONG",
+        "operationId": "get_14_mostrarOng_id",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "description": "Identificador de id."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Operação realizada com sucesso.",
+            "schema": {
+              "$ref": "#/definitions/Ong"
+            }
+          },
+          "400": {
+            "description": "Requisição inválida.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "401": {
+            "description": "Token ausente, inválido ou expirado.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "404": {
+            "description": "ONG não encontrada.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/atualizarOng/{id}": {
+      "put": {
+        "tags": [
+          "ONGs"
+        ],
+        "summary": "Atualizar dados de uma ONG",
+        "operationId": "put_15_atualizarOng_id",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "description": "Identificador de id."
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "nome": {
+                  "type": "string"
+                },
+                "email": {
+                  "type": "string"
+                },
+                "telefone": {
+                  "type": "string"
+                },
+                "endereco": {
+                  "type": "string"
+                },
+                "cidade": {
+                  "type": "string"
+                },
+                "estado": {
+                  "type": "string"
+                },
+                "pix": {
+                  "type": "string"
+                },
+                "trabalho_ofe": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Operação realizada com sucesso.",
+            "schema": {
+              "$ref": "#/definitions/Resposta"
+            }
+          },
+          "400": {
+            "description": "Requisição inválida.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "401": {
+            "description": "Token ausente, inválido ou expirado.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "404": {
+            "description": "ONG não encontrada.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/inserirOng": {
+      "post": {
+        "tags": [
+          "ONGs"
+        ],
+        "summary": "Cadastrar ONG e vinculá-la ao usuário",
+        "operationId": "post_16_inserirOng",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Ong"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Operação realizada com sucesso.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "resposta": {
+                  "type": "string"
+                },
+                "id_ong": {
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Requisição inválida.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "401": {
+            "description": "Token ausente, inválido ou expirado.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/deletarOng/{id}": {
+      "delete": {
+        "tags": [
+          "ONGs"
+        ],
+        "summary": "Excluir ONG",
+        "operationId": "delete_17_deletarOng_id",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "description": "Identificador de id."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Operação realizada com sucesso.",
+            "schema": {
+              "$ref": "#/definitions/Resposta"
+            }
+          },
+          "400": {
+            "description": "Requisição inválida.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "401": {
+            "description": "Token ausente, inválido ou expirado.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "404": {
+            "description": "ONG não encontrada.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/mostrarDicas": {
+      "get": {
+        "tags": [
+          "Dicas"
+        ],
+        "summary": "Listar dicas",
+        "operationId": "get_18_mostrarDicas",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Operação realizada com sucesso.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Dica"
+              }
+            }
+          },
+          "400": {
+            "description": "Requisição inválida.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          }
+        }
+      }
+    },
+    "/inserirDica": {
+      "post": {
+        "tags": [
+          "Dicas"
+        ],
+        "summary": "Publicar dica",
+        "operationId": "post_19_inserirDica",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Dica"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Operação realizada com sucesso.",
+            "schema": {
+              "$ref": "#/definitions/Resposta"
+            }
+          },
+          "400": {
+            "description": "Requisição inválida.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "401": {
+            "description": "Token ausente, inválido ou expirado.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/atualizarDica": {
+      "put": {
+        "tags": [
+          "Dicas"
+        ],
+        "summary": "Atualizar dica",
+        "operationId": "put_20_atualizarDica",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Dica"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Operação realizada com sucesso.",
+            "schema": {
+              "$ref": "#/definitions/Resposta"
+            }
+          },
+          "400": {
+            "description": "Requisição inválida.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "401": {
+            "description": "Token ausente, inválido ou expirado.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/deletarDica": {
+      "delete": {
+        "tags": [
+          "Dicas"
+        ],
+        "summary": "Excluir dica",
+        "operationId": "delete_21_deletarDica",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": [
+                "id_dica"
+              ],
+              "properties": {
+                "id_dica": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Operação realizada com sucesso.",
+            "schema": {
+              "$ref": "#/definitions/Resposta"
+            }
+          },
+          "400": {
+            "description": "Requisição inválida.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "401": {
+            "description": "Token ausente, inválido ou expirado.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/mostrarDoacoes": {
+      "get": {
+        "tags": [
+          "Doações"
+        ],
+        "summary": "Listar necessidades e doações",
+        "operationId": "get_22_mostrarDoacoes",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Operação realizada com sucesso.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Doacao"
+              }
+            }
+          },
+          "400": {
+            "description": "Requisição inválida.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          }
+        }
+      }
+    },
+    "/inserirDoacao": {
+      "post": {
+        "tags": [
+          "Doações"
+        ],
+        "summary": "Cadastrar necessidade ou doação",
+        "operationId": "post_23_inserirDoacao",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Doacao"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Operação realizada com sucesso.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "sucesso": {
+                  "type": "boolean"
+                },
+                "resposta": {
+                  "type": "string"
+                },
+                "id": {
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Requisição inválida.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "401": {
+            "description": "Token ausente, inválido ou expirado.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/atualizarDoacao/{id}": {
+      "put": {
+        "tags": [
+          "Doações"
+        ],
+        "summary": "Atualizar necessidade do próprio usuário",
+        "operationId": "put_24_atualizarDoacao_id",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "description": "Identificador de id."
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Doacao"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Operação realizada com sucesso.",
+            "schema": {
+              "$ref": "#/definitions/Resposta"
+            }
+          },
+          "400": {
+            "description": "Requisição inválida.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "401": {
+            "description": "Token ausente, inválido ou expirado.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "403": {
+            "description": "Sem permissão para editar.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "404": {
+            "description": "Necessidade não encontrada.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/excluirDoacao/{id}": {
+      "delete": {
+        "tags": [
+          "Doações"
+        ],
+        "summary": "Excluir necessidade do próprio usuário",
+        "operationId": "delete_25_excluirDoacao_id",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "description": "Identificador de id."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Operação realizada com sucesso.",
+            "schema": {
+              "$ref": "#/definitions/Resposta"
+            }
+          },
+          "400": {
+            "description": "Requisição inválida.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "401": {
+            "description": "Token ausente, inválido ou expirado.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "403": {
+            "description": "Sem permissão para excluir.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "404": {
+            "description": "Necessidade não encontrada.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/mostrarEventos": {
+      "get": {
+        "tags": [
+          "Eventos"
+        ],
+        "summary": "Listar eventos com dados da ONG",
+        "operationId": "get_26_mostrarEventos",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Operação realizada com sucesso.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Evento"
+              }
+            }
+          },
+          "400": {
+            "description": "Requisição inválida.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          }
+        }
+      }
+    },
+    "/eventos-proximos": {
+      "get": {
+        "tags": [
+          "Eventos"
+        ],
+        "summary": "Buscar eventos próximos por coordenadas",
+        "operationId": "get_27_eventos_proximos",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "lat",
+            "in": "query",
+            "required": true,
+            "type": "number",
+            "description": "Latitude do usuário."
+          },
+          {
+            "name": "lng",
+            "in": "query",
+            "required": true,
+            "type": "number",
+            "description": "Longitude do usuário."
+          },
+          {
+            "name": "raio",
+            "in": "query",
+            "required": false,
+            "type": "number",
+            "description": "Raio máximo em quilômetros; padrão 50."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Operação realizada com sucesso.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Evento"
+              }
+            }
+          },
+          "400": {
+            "description": "Requisição inválida.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          }
+        }
+      }
+    },
+    "/inserirEvento": {
+      "post": {
+        "tags": [
+          "Eventos"
+        ],
+        "summary": "Cadastrar evento na primeira ONG vinculada ao usuário",
+        "operationId": "post_28_inserirEvento",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Evento"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Operação realizada com sucesso.",
+            "schema": {
+              "$ref": "#/definitions/Resposta"
+            }
+          },
+          "400": {
+            "description": "Requisição inválida.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "401": {
+            "description": "Token ausente, inválido ou expirado.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "403": {
+            "description": "Usuário sem ONG vinculada.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/atualizarEvento": {
+      "put": {
+        "tags": [
+          "Eventos"
+        ],
+        "summary": "Atualizar evento da ONG vinculada",
+        "operationId": "put_29_atualizarEvento",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Evento"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Operação realizada com sucesso.",
+            "schema": {
+              "$ref": "#/definitions/Resposta"
+            }
+          },
+          "400": {
+            "description": "Requisição inválida.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "401": {
+            "description": "Token ausente, inválido ou expirado.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "403": {
+            "description": "Sem permissão para editar o evento.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "404": {
+            "description": "Evento não encontrado.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/deletarEvento": {
+      "delete": {
+        "tags": [
+          "Eventos"
+        ],
+        "summary": "Excluir evento da ONG vinculada",
+        "operationId": "delete_30_deletarEvento",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": [
+                "id_evento"
+              ],
+              "properties": {
+                "id_evento": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Operação realizada com sucesso.",
+            "schema": {
+              "$ref": "#/definitions/Resposta"
+            }
+          },
+          "400": {
+            "description": "Requisição inválida.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "401": {
+            "description": "Token ausente, inválido ou expirado.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "403": {
+            "description": "Sem permissão para excluir o evento.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "404": {
+            "description": "Evento não encontrado.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/historias": {
+      "get": {
+        "tags": [
+          "Histórias e homenagens"
+        ],
+        "summary": "Listar histórias e homenagens",
+        "operationId": "get_31_api_historias",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Operação realizada com sucesso.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Historia"
+              }
+            }
+          },
+          "400": {
+            "description": "Requisição inválida.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Histórias e homenagens"
+        ],
+        "summary": "Criar história ou homenagem",
+        "operationId": "post_31_api_historias",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Historia"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Operação realizada com sucesso.",
+            "schema": {
+              "$ref": "#/definitions/Historia"
+            }
+          },
+          "400": {
+            "description": "Requisição inválida.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "401": {
+            "description": "Token ausente, inválido ou expirado.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/historias/{id}": {
+      "put": {
+        "tags": [
+          "Histórias e homenagens"
+        ],
+        "summary": "Atualizar história criada pelo usuário",
+        "operationId": "put_32_api_historias_id",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "description": "Identificador de id."
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Historia"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Operação realizada com sucesso.",
+            "schema": {
+              "$ref": "#/definitions/Historia"
+            }
+          },
+          "400": {
+            "description": "Requisição inválida.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "401": {
+            "description": "Token ausente, inválido ou expirado.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "403": {
+            "description": "Usuário não é o criador da história.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "404": {
+            "description": "História não encontrada.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "Histórias e homenagens"
+        ],
+        "summary": "Excluir história criada pelo usuário",
+        "operationId": "delete_32_api_historias_id",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "description": "Identificador de id."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Operação realizada com sucesso.",
+            "schema": {
+              "$ref": "#/definitions/Resposta"
+            }
+          },
+          "400": {
+            "description": "Requisição inválida.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "401": {
+            "description": "Token ausente, inválido ou expirado.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "403": {
+            "description": "Usuário não é o criador da história.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "404": {
+            "description": "História não encontrada.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/verificar-duplicado": {
+      "get": {
+        "tags": [
+          "Verificações"
+        ],
+        "summary": "Verificar duplicidade de e-mail, CPF ou telefone",
+        "operationId": "get_33_verificar_duplicado",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "campo",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "description": "email, cpf ou telefone."
+          },
+          {
+            "name": "valor",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "description": "Valor a verificar."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Operação realizada com sucesso.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "existe": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Requisição inválida.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          }
+        }
+      }
+    },
+    "/verificar-email": {
+      "get": {
+        "tags": [
+          "Verificações"
+        ],
+        "summary": "Verificar se um e-mail já está cadastrado",
+        "operationId": "get_34_verificar_email",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "email",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "description": "E-mail para verificar."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Operação realizada com sucesso.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "existe": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Requisição inválida.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          }
+        }
+      }
+    },
+    "/perfil": {
+      "get": {
+        "tags": [
+          "Perfil"
+        ],
+        "summary": "Consultar perfil do usuário autenticado",
+        "operationId": "get_35_perfil",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Operação realizada com sucesso.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "usuario": {
+                  "$ref": "#/definitions/Usuario"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Requisição inválida.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "401": {
+            "description": "Token ausente, inválido ou expirado.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "404": {
+            "description": "Usuário não encontrado.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Perfil"
+        ],
+        "summary": "Atualizar nome, e-mail, telefone e foto do perfil",
+        "operationId": "put_35_perfil",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/PerfilAtualizacao"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Operação realizada com sucesso.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string"
+                },
+                "usuario": {
+                  "$ref": "#/definitions/Usuario"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Requisição inválida.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "401": {
+            "description": "Token ausente, inválido ou expirado.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "404": {
+            "description": "Usuário não encontrado.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "409": {
+            "description": "E-mail já cadastrado.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "Perfil"
+        ],
+        "summary": "Excluir conta, ONGs vinculadas e dados relacionados",
+        "operationId": "delete_35_perfil",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Operação realizada com sucesso.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "mensagem": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Requisição inválida.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "401": {
+            "description": "Token ausente, inválido ou expirado.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "404": {
+            "description": "Usuário não encontrado.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    }
+  }
+}
